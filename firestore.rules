@@ -1,0 +1,272 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - displayName: string (required)
+    //   - email: string (required)
+    //   - photoURL: string (optional)
+    //   - role: string (required, 'admin' or 'player')
+    //   - totalPoints: number (required)
+    //
+    // Collection: predictions
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - groups: map (required)
+    //   - specials: map (required)
+    //   - knockouts: map (required)
+    //   - isLocked: boolean (required)
+    //   - updatedAt: string (optional)
+    //
+    // Collection: results
+    // Document ID: actual
+    // Fields:
+    //   - groups: map (required)
+    //   - specials: map (required)
+    //   - knockouts: map (required)
+    //   - updatedAt: string (optional)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+        ('email' in request.auth.token && request.auth.token.email != null && request.auth.token.email.lower() == "benitodallago@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function hasOnlyAllowedFields(allowedFields) {
+      return request.resource.data.keys().hasOnly(allowedFields);
+    }
+
+    // Domain Validators
+    function isValidCompany(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.code is string && data.code.size() > 0 && data.code.size() < 50 &&
+             (!('hrEmail' in data) || (data.hrEmail is string && data.hrEmail.size() < 100)) &&
+             (!('hrEmails' in data) || (data.hrEmails is list && data.hrEmails.size() <= 10)) &&
+             (!('plan' in data) || (data.plan is string && data.plan in ['base', 'premium'])) &&
+             (!('color' in data) || (data.color is string && data.color.size() < 20)) &&
+             (!('logoUrl' in data) || (data.logoUrl is string && data.logoUrl.size() < 800000)) &&
+             (!('areas' in data) || (data.areas is list && data.areas.size() <= 50)) &&
+             (!('isActive' in data) || data.isActive is bool) &&
+             (!('bannerMessage' in data) || (data.bannerMessage is string && data.bannerMessage.size() < 1000)) &&
+             data.createdBy is string &&
+             data.createdAt is string;
+    }
+
+    function isValidUser(data) {
+      return data.uid is string && data.uid.size() > 0 && data.uid.size() < 128 &&
+             data.displayName is string && data.displayName.size() > 0 && data.displayName.size() < 100 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() < 2000)) &&
+             (!('lastLogin' in data) || data.lastLogin is string) &&
+             data.role in ['admin', 'player', 'company_admin'] &&
+             data.totalPoints is number && data.totalPoints >= 0 &&
+             (!('companyId' in data) || (data.companyId is string && data.companyId.size() > 0)) &&
+             (!('area' in data) || (data.area is string && data.area.size() < 100)) &&
+             (!('isBlocked' in data) || data.isBlocked is bool);
+    }
+
+    function isValidPrediction(data) {
+      return data.uid is string && data.uid.size() > 0 && data.uid.size() < 128 &&
+             data.groups is map &&
+             data.specials is map &&
+             data.knockouts is map &&
+             data.isLocked is bool &&
+             (!('updatedAt' in data) || data.updatedAt is string);
+    }
+
+    function isValidResult(data) {
+      return data.groups is map &&
+             data.specials is map &&
+             data.knockouts is map &&
+             (!('updatedAt' in data) || data.updatedAt is string);
+    }
+
+    function isCompanyAdmin(companyId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'company_admin' &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId == companyId;
+    }
+
+    // Rules
+    match /companies/{companyId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+                    hasOnlyAllowedFields(['name', 'code', 'hrEmail', 'hrEmails', 'plan', 'color', 'logoUrl', 'areas', 'isActive', 'bannerMessage', 'createdBy', 'createdAt']) &&
+                    isValidCompany(request.resource.data) &&
+                    request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAdmin() || (isCompanyAdmin(companyId) && hasOnlyAllowedFields(['name', 'code', 'hrEmail', 'hrEmails', 'plan', 'color', 'logoUrl', 'areas', 'isActive', 'bannerMessage', 'createdBy', 'createdAt']) && isValidCompany(request.resource.data));
+      allow delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      // Anyone authenticated can read users (needed for leaderboard)
+      // Ideally we restrict to same company, but for simplicity and to avoid recursive reads, we allow read if authenticated.
+      // We will filter on the client side.
+      allow read: if isAuthenticated();
+      
+      // Create: User can create their own profile. Role must be 'player' unless they are an admin or their email matches a company's hrEmail.
+      allow create: if isAuthenticated() && isOwner(userId) &&
+                    hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin', 'companyId', 'area']) &&
+                    isValidUser(request.resource.data) &&
+                    request.resource.data.uid == userId &&
+                    (
+                      (request.resource.data.role == 'player' && request.resource.data.totalPoints == 0) || 
+                      (request.resource.data.role == 'company_admin' && request.resource.data.totalPoints == 0 && 
+                       'companyId' in request.resource.data &&
+                       exists(/databases/$(database)/documents/companies/$(request.resource.data.companyId)) &&
+                       'email' in request.auth.token && request.auth.token.email != null &&
+                       (
+                         ('hrEmail' in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data && get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data.hrEmail == request.auth.token.email.lower()) ||
+                         ('hrEmails' in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data && request.auth.token.email.lower() in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data.hrEmails)
+                       )) ||
+                      isAdmin()
+                    );
+                    
+      // Update: User can update their own profile (cannot change points, can only change role to company_admin if email matches). Admin can update any profile. Company admin can block users in their company.
+      allow update: if isAuthenticated() && (
+                      (isOwner(userId) &&
+                       hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin', 'companyId', 'isBlocked', 'area']) &&
+                       isValidUser(request.resource.data) &&
+                       request.resource.data.uid == resource.data.uid &&
+                       request.resource.data.totalPoints == resource.data.totalPoints &&
+                       (!('isBlocked' in request.resource.data) || request.resource.data.isBlocked == false) &&
+                       (
+                         request.resource.data.role == resource.data.role || 
+                         request.resource.data.role == 'player' ||
+                         (request.resource.data.role == 'company_admin' && 
+                          'companyId' in request.resource.data &&
+                          exists(/databases/$(database)/documents/companies/$(request.resource.data.companyId)) &&
+                          'email' in request.auth.token && request.auth.token.email != null &&
+                          (
+                            ('hrEmail' in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data && get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data.hrEmail == request.auth.token.email.lower()) ||
+                            ('hrEmails' in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data && request.auth.token.email.lower() in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data.hrEmails)
+                          ))
+                       )
+                      )
+                      ||
+                      (isAdmin() &&
+                       hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin', 'companyId', 'isBlocked']) &&
+                       isValidUser(request.resource.data) &&
+                       request.resource.data.uid == resource.data.uid)
+                      ||
+                      (isCompanyAdmin(resource.data.companyId) &&
+                       hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin', 'companyId', 'isBlocked']) &&
+                       isValidUser(request.resource.data) &&
+                       request.resource.data.uid == resource.data.uid &&
+                       request.resource.data.companyId == resource.data.companyId &&
+                       request.resource.data.role == resource.data.role &&
+                       request.resource.data.totalPoints == resource.data.totalPoints)
+                    );
+                    
+      // Delete: Only admins can delete users, or company admins can delete users in their company
+      allow delete: if isAdmin() || isCompanyAdmin(resource.data.companyId);
+    }
+
+    match /predictions/{userId} {
+      // Anyone authenticated can read predictions (to see what others guessed)
+      allow read: if isAuthenticated();
+      
+      // Create: User can create their own prediction.
+      allow create: if isAuthenticated() && isOwner(userId) &&
+                    hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
+                    isValidPrediction(request.resource.data) &&
+                    request.resource.data.uid == userId;
+                    
+      // Update: User can update their own prediction IF it's not locked. Admin can update anything.
+      allow update: if isAuthenticated() && (
+                      (isOwner(userId) &&
+                       hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
+                       isValidPrediction(request.resource.data) &&
+                       request.resource.data.uid == resource.data.uid &&
+                       resource.data.isLocked == false)
+                      ||
+                      (isAdmin() &&
+                       hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
+                       isValidPrediction(request.resource.data) &&
+                       request.resource.data.uid == resource.data.uid)
+                    );
+                    
+      // Delete: Only admins can delete predictions, or company admins can delete predictions of users in their company
+      allow delete: if isAdmin() || (
+        isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        isCompanyAdmin(get(/databases/$(database)/documents/users/$(userId)).data.companyId)
+      );
+    }
+
+    match /results/{docId} {
+      // Anyone authenticated can read results
+      allow read: if isAuthenticated();
+      
+      // Only admins can create/update/delete results
+      allow write: if isAdmin() && docId == 'actual' &&
+                   hasOnlyAllowedFields(['groups', 'specials', 'knockouts', 'updatedAt']) &&
+                   isValidResult(request.resource.data);
+    }
+    // ===============================================================
+    // Collection: leagues
+    // ===============================================================
+    match /leagues/{leagueId} {
+      // Anyone authenticated can read all leagues
+      allow read: if isAuthenticated();
+      
+      // Any authenticated user can create a league
+      allow create: if isAuthenticated() &&
+                    hasOnlyAllowedFields(['name', 'createdBy', 'members', 'createdAt', 'isPublic']) &&
+                    request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 50 &&
+                    request.resource.data.createdBy == request.auth.uid &&
+                    request.resource.data.members is list && request.resource.data.members.size() > 0 && request.resource.data.members[0] == request.auth.uid &&
+                    request.resource.data.createdAt is string &&
+                    request.resource.data.isPublic is bool;
+                    
+      // Any authenticated user can update a league (to join/leave)
+      allow update: if isAuthenticated() &&
+                    hasOnlyAllowedFields(['name', 'createdBy', 'members', 'createdAt', 'isPublic']) &&
+                    request.resource.data.name == resource.data.name &&
+                    request.resource.data.createdBy == resource.data.createdBy &&
+                    request.resource.data.createdAt == resource.data.createdAt &&
+                    (!('isPublic' in request.resource.data) || request.resource.data.isPublic == resource.data.isPublic) &&
+                    request.resource.data.members is list && request.resource.data.members.size() <= 1000;
+                    
+      // Only admin can delete, or the last member leaving
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.members.size() == 1 && resource.data.members[0] == request.auth.uid);
+    }
+    // ===============================================================
+    // Collection: reports
+    // ===============================================================
+    match /reports/{reportId} {
+      // Anyone authenticated can create a report
+      allow create: if isAuthenticated() &&
+                    hasOnlyAllowedFields(['message', 'userEmail', 'userName', 'createdAt']) &&
+                    request.resource.data.message is string && request.resource.data.message.size() > 0 && request.resource.data.message.size() < 5000 &&
+                    (!('userEmail' in request.resource.data) || (request.resource.data.userEmail is string && request.resource.data.userEmail.size() < 200)) &&
+                    (!('userName' in request.resource.data) || (request.resource.data.userName is string && request.resource.data.userName.size() < 100)) &&
+                    request.resource.data.createdAt is string;
+                    
+      // Only admins can read, update, delete reports
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
