@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  productionBrowserSourceMaps: false,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -18,6 +19,9 @@ const nextConfig = {
         hostname: 'firebasestorage.googleapis.com',
       }
     ],
+  },
+  experimental: {
+    memoryBasedWorkersCount: true,
   },
 };
 
