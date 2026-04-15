@@ -83,7 +83,8 @@ service cloud.firestore {
              data.totalPoints is number && data.totalPoints >= 0 &&
              (!('companyId' in data) || (data.companyId is string && data.companyId.size() > 0)) &&
              (!('area' in data) || (data.area is string && data.area.size() < 100)) &&
-             (!('isBlocked' in data) || data.isBlocked is bool);
+             (!('isBlocked' in data) || data.isBlocked is bool) &&
+             (!('hasSeenTutorial' in data) || data.hasSeenTutorial is bool);
     }
 
     function isValidPrediction(data) {
@@ -128,7 +129,7 @@ service cloud.firestore {
       
       // Create: User can create their own profile. Role must be 'player' unless they are an admin or their email matches a company's hrEmail.
       allow create: if isAuthenticated() && isOwner(userId) &&
-                    hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin', 'companyId', 'area']) &&
+                    hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin', 'companyId', 'area', 'hasSeenTutorial']) &&
                     isValidUser(request.resource.data) &&
                     request.resource.data.uid == userId &&
                     (
@@ -147,7 +148,7 @@ service cloud.firestore {
       // Update: User can update their own profile (cannot change points, can only change role to company_admin if email matches). Admin can update any profile. Company admin can block users in their company.
       allow update: if isAuthenticated() && (
                       (isOwner(userId) &&
-                       hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin', 'companyId', 'isBlocked', 'area']) &&
+                       hasOnlyAllowedFields(['uid', 'displayName', 'email', 'photoURL', 'role', 'totalPoints', 'lastLogin', 'companyId', 'isBlocked', 'area', 'hasSeenTutorial']) &&
                        isValidUser(request.resource.data) &&
                        request.resource.data.uid == resource.data.uid &&
                        request.resource.data.totalPoints == resource.data.totalPoints &&

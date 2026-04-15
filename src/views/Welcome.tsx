@@ -86,7 +86,7 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <TutorialModal onComplete={() => {}} />
+      <TutorialModal onComplete={() => {}} user={user} />
       <WorldCupBanner />
       <CountdownBanner />
       

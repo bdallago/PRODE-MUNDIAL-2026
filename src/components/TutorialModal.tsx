@@ -1,67 +1,129 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Joyride, CallBackProps, STATUS, Step } from 'react-joyride';
+import { Joyride, CallBackProps, STATUS, Step, EVENTS } from 'react-joyride';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { User } from 'firebase/auth';
 
 interface TutorialModalProps {
   onComplete: () => void;
+  user: User | null;
 }
 
-export function TutorialModal({ onComplete }: TutorialModalProps) {
+// Global variable to ensure it only runs once per session regardless of localStorage
+let sessionTutorialSeen = false;
+
+export function TutorialModal({ onComplete, user }: TutorialModalProps) {
   const [run, setRun] = useState(false);
 
   useEffect(() => {
-    // Check if the user has already seen the tutorial
-    const hasSeenTutorial = localStorage.getItem('hasSeenTutorialV4');
-    if (!hasSeenTutorial) {
-      // Small delay to ensure elements are rendered
-      setTimeout(() => {
-        setRun(true);
-      }, 500);
-    }
-  }, []);
+    const checkTutorialStatus = async () => {
+      if (!user) return;
+      if (sessionTutorialSeen) return;
+
+      // Check local storage first for quick response
+      const localStatus = localStorage.getItem(`hasSeenTutorialV7_${user.uid}`);
+      if (localStatus === 'true') {
+        sessionTutorialSeen = true;
+        return;
+      }
+
+      try {
+        // Check Firestore
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists() && userSnap.data().hasSeenTutorial) {
+          // Sync local storage
+          localStorage.setItem(`hasSeenTutorialV7_${user.uid}`, 'true');
+          sessionTutorialSeen = true;
+          return;
+        }
+
+        // If not seen, show tutorial
+        setTimeout(() => {
+          if (!sessionTutorialSeen) {
+            setRun(true);
+            sessionTutorialSeen = true;
+            localStorage.setItem(`hasSeenTutorialV7_${user.uid}`, 'true');
+            // Also save to Firestore immediately
+            const userRef = doc(db, 'users', user.uid);
+            setDoc(userRef, { hasSeenTutorial: true }, { merge: true }).catch(e => console.error(e));
+          }
+        }, 500);
+      } catch (error) {
+        console.error("Error checking tutorial status:", error);
+        // Fallback to showing it if we can't check
+        setTimeout(() => {
+          if (!sessionTutorialSeen) {
+            setRun(true);
+            sessionTutorialSeen = true;
+            localStorage.setItem(`hasSeenTutorialV7_${user.uid}`, 'true');
+          }
+        }, 500);
+      }
+    };
+
+    checkTutorialStatus();
+  }, [user]);
 
   const steps: Step[] = [
     {
       target: 'body',
       placement: 'center',
       title: '¡Bienvenido a El Prode Mundial 2026!',
-      content: 'Te vamos a dar un recorrido rápido por las secciones principales para que sepas cómo jugar.',
+      content: 'Recorrido rápido por las secciones principales.',
       disableBeacon: true,
     },
     {
       target: '#tutorial-reglas',
       title: '1. Reglas',
-      content: 'Acá te explicamos detalladamente cómo se suman los puntos. ¡Leelas con atención para planear tu estrategia!',
+      content: 'Conocé cómo se suman los puntos.',
       disableBeacon: true,
     },
     {
       target: '#tutorial-predicciones',
       title: '2. Mis Predicciones',
-      content: 'Acá ocurre la magia. Vas a completar la Fase de Grupos, Preguntas Especiales, Resultados por partido y la Fase Eliminatoria.',
+      content: 'Completá tus pronósticos del torneo.',
       disableBeacon: true,
     },
     {
       target: '#tutorial-ranking',
       title: '3. Ranking',
-      content: 'Acá vas a ver la tabla de posiciones en vivo, buscar a tus compañeros y ver quién es el experto. ¡Que gane el mejor!',
+      content: 'Tabla de posiciones en vivo.',
       disableBeacon: true,
     },
     {
       target: '#tutorial-reportes',
       title: '4. Reportes y Sugerencias',
-      content: 'Si encontrás algún error o tenés una idea para mejorar, podés enviarnos un mensaje desde acá.',
+      content: 'Envianos tus sugerencias o reportá errores.',
       disableBeacon: true,
     }
   ];
 
-  const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status } = data;
+  const handleJoyrideCallback = async (data: CallBackProps) => {
+    const { status, action, type } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
 
-    if (finishedStatuses.includes(status)) {
+    // Catch any event that indicates the tour is ending or closed
+    if (finishedStatuses.includes(status) || action === 'close' || type === EVENTS.TOUR_END) {
       setRun(false);
-      localStorage.setItem('hasSeenTutorialV4', 'true');
+      sessionTutorialSeen = true;
+      
+      if (user) {
+        // Save locally immediately
+        localStorage.setItem(`hasSeenTutorialV7_${user.uid}`, 'true');
+        
+        // Save to Firestore
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          await setDoc(userRef, { hasSeenTutorial: true }, { merge: true });
+        } catch (error) {
+          console.error("Error saving tutorial status to Firestore:", error);
+        }
+      }
+      
       onComplete();
     }
   };
