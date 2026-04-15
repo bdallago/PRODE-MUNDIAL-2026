@@ -20,9 +20,6 @@ const nextConfig = {
       }
     ],
   },
-  experimental: {
-    memoryBasedWorkersCount: true,
-  },
 };
 
 export default nextConfig;
