@@ -248,7 +248,7 @@ export default function Admin() {
 
           // Check perfect group
           if (exactMatches === 4) {
-            totalPoints += 2;
+            totalPoints += 3;
           }
         }
 
@@ -262,8 +262,7 @@ export default function Admin() {
           }
         }
 
-        // Calculate Knockout Points (Disabled for now)
-        /*
+        // Calculate Knockout Points
         const pKnockouts = pred.knockouts || {};
         for (const stage of KNOCKOUT_STAGES) {
           const actualTeams = actualK[stage.id] || [];
@@ -276,7 +275,6 @@ export default function Admin() {
             }
           }
         }
-        */
 
         // Update user document
         const userRef = doc(db, "users", pred.id); // Use pred.id which is guaranteed to be the UID

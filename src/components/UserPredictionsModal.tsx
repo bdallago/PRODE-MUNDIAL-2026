@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
-import { GROUPS, SPECIAL_QUESTIONS } from "../data";
+import { GROUPS, SPECIAL_QUESTIONS, TEAM_FLAGS } from "../data";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { X, Lock, Unlock, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "./ui/button";
@@ -185,10 +185,18 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
                           return (
                             <li key={`${groupLetter}-${index}`} className={`p-3 flex items-center justify-between ${bgColor}`}>
                               <div className="flex items-center gap-3">
-                                <span className={`font-bold w-5 text-center ${index < 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                <span className={`font-bold w-5 text-center shrink-0 ${index < 2 ? 'text-blue-600' : 'text-gray-400'}`}>
                                   {index + 1}
                                 </span>
-                                <span className={`font-medium ${textColor}`}>{team}</span>
+                                {TEAM_FLAGS[team] && (
+                                  <img 
+                                    src={`https://flagcdn.com/w40/${TEAM_FLAGS[team]}.png`} 
+                                    alt={`Bandera de ${team}`}
+                                    className="w-6 h-4 object-cover rounded-sm shadow-sm shrink-0"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                )}
+                                <span className={`font-medium truncate ${textColor}`}>{team}</span>
                               </div>
                               {icon && (
                                 <div className="flex items-center gap-2">

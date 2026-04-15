@@ -184,6 +184,15 @@ export default function Predictions({ user }: { user: User }) {
     return <div className="text-center py-10">Cargando tus predicciones...</div>;
   }
 
+  // Calculate progress
+  const groupsFilled = Object.keys(GROUPS).filter(g => JSON.stringify(groupPredictions[g]) !== JSON.stringify(GROUPS[g])).length;
+  const specialsFilled = Object.values(specialPredictions).filter(v => v && v.trim() !== '').length;
+  const matchesFilled = Object.values(matchPredictions).filter(m => m.home !== '' && m.away !== '').length;
+
+  const totalGroups = Object.keys(GROUPS).length;
+  const totalSpecials = SPECIAL_QUESTIONS.length;
+  const totalMatches = MATCHES.length;
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <CountdownBanner />
@@ -226,6 +235,44 @@ export default function Predictions({ user }: { user: User }) {
           )}
         </div>
       </div>
+
+      {/* Progress Section */}
+      <Card className="border-gray-200 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-gray-800">Progreso de tus Predicciones</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-gray-600">Fase de Grupos</span>
+              <span className="font-medium text-blue-600">{groupsFilled} / {totalGroups}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-blue-600 h-2 rounded-full transition-all duration-500" style={{ width: `${(groupsFilled / totalGroups) * 100}%` }}></div>
+            </div>
+          </div>
+          
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-gray-600">Preguntas Especiales</span>
+              <span className="font-medium text-purple-600">{specialsFilled} / {totalSpecials}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-purple-600 h-2 rounded-full transition-all duration-500" style={{ width: `${(specialsFilled / totalSpecials) * 100}%` }}></div>
+            </div>
+          </div>
+          
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-gray-600">Partidos Individuales</span>
+              <span className="font-medium text-green-600">{matchesFilled} / {totalMatches}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-green-600 h-2 rounded-full transition-all duration-500" style={{ width: `${(matchesFilled / totalMatches) * 100}%` }}></div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {message && (
         <div className={`p-4 rounded-md flex items-center gap-3 ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>

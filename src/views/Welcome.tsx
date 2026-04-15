@@ -11,6 +11,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, auth, storage } from "../firebase";
 import { WorldCupBanner } from "../components/WorldCupBanner";
 import { CountdownBanner } from "../components/CountdownBanner";
+import { TutorialModal } from "../components/TutorialModal";
 
 export default function Welcome({ user, companyName, companyDetails }: { user: User | null, companyName: string, companyDetails?: any }) {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -85,6 +86,7 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
+      <TutorialModal onComplete={() => {}} />
       <WorldCupBanner />
       <CountdownBanner />
       
@@ -120,59 +122,33 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
         </div>
       </div>
 
-      <div className="flex flex-col gap-6">
-        <Card className="hover:shadow-md transition-shadow border-t-4 border-t-blue-500">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl flex items-center gap-2 text-blue-900">
-              <BookOpen className="w-5 h-5" /> Reglas
+      <div className="grid gap-4 md:grid-cols-3">
+        <Link href="/instructions" className="block" id="tutorial-reglas">
+          <Card className="hover:shadow-md transition-shadow border-t-4 border-t-blue-500 cursor-pointer h-full flex items-center justify-center p-6">
+            <CardTitle className="text-xl flex items-center gap-2 text-blue-900 m-0">
+              <BookOpen className="w-6 h-6" /> Reglas
             </CardTitle>
-          </CardHeader>
-          <CardContent className="text-gray-600">
-            <p className="mb-4">
-              Antes de empezar, te recomendamos leer las reglas del juego. Acá vas a encontrar cómo funciona el sistema de puntuación y qué necesitás para ganar.
-            </p>
-            <Link href="/instructions">
-              <Button variant="outline" className="w-full">Leer las reglas</Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card className="hover:shadow-md transition-shadow border-t-4 border-t-green-500 h-full flex flex-col">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl flex items-center gap-2 text-green-900">
-                <PenSquare className="w-5 h-5" /> Mis Predicciones
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-gray-600 flex-grow flex flex-col justify-between">
-              <p className="mb-4">
-                El corazón del juego. Acá vas a tener que pronosticar las posiciones de la fase de grupos y responder a las preguntas especiales del torneo.
-              </p>
-              <Link href="/predictions">
-                <Button variant="outline" className="w-full">Hacer mis predicciones</Button>
-              </Link>
-            </CardContent>
           </Card>
+        </Link>
 
-          <Card className="hover:shadow-md transition-shadow border-t-4 border-t-orange-500 h-full flex flex-col">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl flex items-center gap-2 text-orange-900">
-                <Trophy className="w-5 h-5" /> Ranking
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-gray-600 flex-grow flex flex-col justify-between">
-              <p className="mb-4">
-                Seguí la tabla de posiciones general en tiempo real. Descubrí quién lidera el ranking de tu empresa y cómo te ubicás frente al resto.
-              </p>
-              <Link href="/dashboard">
-                <Button variant="outline" className="w-full">Ver ranking</Button>
-              </Link>
-            </CardContent>
+        <Link href="/predictions" className="block" id="tutorial-predicciones">
+          <Card className="hover:shadow-md transition-shadow border-t-4 border-t-green-500 cursor-pointer h-full flex items-center justify-center p-6">
+            <CardTitle className="text-xl flex items-center gap-2 text-green-900 m-0">
+              <PenSquare className="w-6 h-6" /> Mis Predicciones
+            </CardTitle>
           </Card>
-        </div>
+        </Link>
+
+        <Link href="/dashboard" className="block" id="tutorial-ranking">
+          <Card className="hover:shadow-md transition-shadow border-t-4 border-t-orange-500 cursor-pointer h-full flex items-center justify-center p-6">
+            <CardTitle className="text-xl flex items-center gap-2 text-orange-900 m-0">
+              <Trophy className="w-6 h-6" /> Ranking
+            </CardTitle>
+          </Card>
+        </Link>
       </div>
 
-      <Card className="hover:shadow-md transition-shadow border-t-4 border-t-red-500 bg-red-50/50">
+      <Card id="tutorial-reportes" className="hover:shadow-md transition-shadow border-t-4 border-t-red-500 bg-red-50/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl flex items-center gap-2 text-red-900">
             <MessageSquareWarning className="w-5 h-5" /> Reportar Errores o Sugerencias

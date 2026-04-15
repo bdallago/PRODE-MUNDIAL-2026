@@ -4,6 +4,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
+import { TEAM_FLAGS } from '../data';
 
 export const SortableItem: React.FC<{ id: string, team: string, index: number, disabled?: boolean }> = ({ id, team, index, disabled = false }) => {
   const {
@@ -22,6 +23,8 @@ export const SortableItem: React.FC<{ id: string, team: string, index: number, d
     opacity: isDragging ? 0.8 : (disabled ? 0.6 : 1),
   };
 
+  const flagCode = TEAM_FLAGS[team];
+
   return (
     <div
       ref={setNodeRef}
@@ -35,14 +38,22 @@ export const SortableItem: React.FC<{ id: string, team: string, index: number, d
           <GripVertical size={20} />
         </div>
       )}
-      <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
+      <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${
         index === 0 ? 'bg-green-100 text-green-700' : 
         index === 1 ? 'bg-green-50 text-green-600' : 
         'bg-gray-100 text-gray-500'
       }`}>
         {index + 1}
       </div>
-      <span className="font-medium">{team}</span>
+      {flagCode && (
+        <img 
+          src={`https://flagcdn.com/w40/${flagCode}.png`} 
+          alt={`Bandera de ${team}`}
+          className="w-6 h-4 object-cover rounded-sm shadow-sm shrink-0"
+          referrerPolicy="no-referrer"
+        />
+      )}
+      <span className="font-medium truncate">{team}</span>
     </div>
   );
 }

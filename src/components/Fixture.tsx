@@ -2,24 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
-import { GROUPS } from "../data";
+import { GROUPS, TEAM_FLAGS } from "../data";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
-
-const TEAM_CODES: Record<string, string> = {
-  "México": "mx", "Sudáfrica": "za", "Corea del Sur": "kr", "República Checa": "cz",
-  "Canadá": "ca", "Bosnia y Herzegovina": "ba", "Qatar": "qa", "Suiza": "ch",
-  "Brasil": "br", "Marruecos": "ma", "Haití": "ht", "Escocia": "gb-sct",
-  "Estados Unidos": "us", "Paraguay": "py", "Australia": "au", "Turquía": "tr",
-  "Alemania": "de", "Curazao": "cw", "Costa de Marfil": "ci", "Ecuador": "ec",
-  "Países Bajos": "nl", "Japón": "jp", "Suecia": "se", "Túnez": "tn",
-  "Bélgica": "be", "Egipto": "eg", "Irán": "ir", "Nueva Zelanda": "nz",
-  "España": "es", "Cabo Verde": "cv", "Arabia Saudita": "sa", "Uruguay": "uy",
-  "Francia": "fr", "Senegal": "sn", "Irak": "iq", "Noruega": "no",
-  "Argentina": "ar", "Argelia": "dz", "Austria": "at", "Jordania": "jo",
-  "Portugal": "pt", "República Democrática del Congo": "cd", "Uzbekistán": "uz", "Colombia": "co",
-  "Inglaterra": "gb-eng", "Croacia": "hr", "Ghana": "gh", "Panamá": "pa",
-};
 
 // Generar el fixture lógicamente
 const generateFixture = () => {
@@ -68,7 +53,7 @@ const generateFixture = () => {
 const FIXTURE_DATA = generateFixture();
 
 const TeamFlag = ({ teamName }: { teamName: string }) => {
-  const code = TEAM_CODES[teamName];
+  const code = TEAM_FLAGS[teamName];
   if (code) {
     return (
       <img 

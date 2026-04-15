@@ -57,7 +57,7 @@ export default function Instructions() {
                 </li>
                 <li className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 p-3 rounded">
                   <span className="text-sm sm:text-base">Por cada grupo perfecto (acertar el orden exacto del 1º al 4º)</span>
-                  <span className="font-bold text-green-600 bg-green-100 px-2 py-1 rounded whitespace-nowrap self-start sm:self-auto w-28 text-center shrink-0">+2 Puntos</span>
+                  <span className="font-bold text-green-600 bg-green-100 px-2 py-1 rounded whitespace-nowrap self-start sm:self-auto w-28 text-center shrink-0">+3 Puntos</span>
                 </li>
               </ul>
             </div>
@@ -77,28 +77,28 @@ export default function Instructions() {
             </div>
 
             <div>
-              <h3 className="font-bold text-lg mb-2 border-b pb-1">Fase Eliminatoria (Próximamente)</h3>
+              <h3 className="font-bold text-lg mb-2 border-b pb-1">Fase Eliminatoria</h3>
               <p className="text-sm text-gray-600 mb-3 italic">El cuadro eliminatorio se habilitará más adelante, una vez que estén definidos los grupos.</p>
               <ul className="space-y-2">
                 <li className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 p-3 rounded">
                   <span className="text-sm sm:text-base">Por cada acierto en ¿Quién avanza en 16avos?</span>
-                  <span className="font-bold text-green-600 bg-green-100 px-2 py-1 rounded whitespace-nowrap self-start sm:self-auto w-28 text-center shrink-0">+1 Punto</span>
-                </li>
-                <li className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 p-3 rounded">
-                  <span className="text-sm sm:text-base">Por cada acierto en ¿Quién avanza en 8vos?</span>
                   <span className="font-bold text-green-600 bg-green-100 px-2 py-1 rounded whitespace-nowrap self-start sm:self-auto w-28 text-center shrink-0">+2 Puntos</span>
                 </li>
                 <li className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 p-3 rounded">
-                  <span className="text-sm sm:text-base">Por cada acierto en ¿Quién avanza en 4tos?</span>
-                  <span className="font-bold text-green-600 bg-green-100 px-2 py-1 rounded whitespace-nowrap self-start sm:self-auto w-28 text-center shrink-0">+3 Puntos</span>
-                </li>
-                <li className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 p-3 rounded">
-                  <span className="text-sm sm:text-base">Por cada acierto en ¿Quién avanza en semis?</span>
+                  <span className="text-sm sm:text-base">Por cada acierto en ¿Quién avanza en 8vos?</span>
                   <span className="font-bold text-green-600 bg-green-100 px-2 py-1 rounded whitespace-nowrap self-start sm:self-auto w-28 text-center shrink-0">+4 Puntos</span>
                 </li>
                 <li className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 p-3 rounded">
+                  <span className="text-sm sm:text-base">Por cada acierto en ¿Quién avanza en 4tos?</span>
+                  <span className="font-bold text-green-600 bg-green-100 px-2 py-1 rounded whitespace-nowrap self-start sm:self-auto w-28 text-center shrink-0">+6 Puntos</span>
+                </li>
+                <li className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 p-3 rounded">
+                  <span className="text-sm sm:text-base">Por cada acierto en ¿Quién avanza en semis?</span>
+                  <span className="font-bold text-green-600 bg-green-100 px-2 py-1 rounded whitespace-nowrap self-start sm:self-auto w-28 text-center shrink-0">+8 Puntos</span>
+                </li>
+                <li className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 p-3 rounded">
                   <span className="text-sm sm:text-base">Por acertar ¿Quién sale campeón?</span>
-                  <span className="font-bold text-green-600 bg-green-100 px-2 py-1 rounded whitespace-nowrap self-start sm:self-auto w-28 text-center shrink-0">+5 Puntos</span>
+                  <span className="font-bold text-green-600 bg-green-100 px-2 py-1 rounded whitespace-nowrap self-start sm:self-auto w-28 text-center shrink-0">+15 Puntos</span>
                 </li>
               </ul>
             </div>
