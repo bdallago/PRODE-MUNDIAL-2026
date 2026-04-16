@@ -142,7 +142,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
                 const groupStatus = getGroupStatus(groupLetter, teams as string[]);
                 
                 return (
-                  <Card key={groupLetter} className="overflow-hidden border-t-4 border-t-blue-600">
+                  <Card key={groupLetter} className="overflow-hidden border-t-4 border-brand">
                     <CardHeader className="bg-gray-50 py-2 px-4 border-b flex flex-row justify-between items-center">
                       <CardTitle className="text-md">Grupo {groupLetter}</CardTitle>
                       {groupStatus && (
@@ -185,7 +185,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
                           return (
                             <li key={`${groupLetter}-${index}`} className={`p-3 flex items-center justify-between ${bgColor}`}>
                               <div className="flex items-center gap-3">
-                                <span className={`font-bold w-5 text-center shrink-0 ${index < 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                <span className={`font-bold w-5 text-center shrink-0 ${index < 2 ? 'text-brand' : 'text-gray-400'}`}>
                                   {index + 1}
                                 </span>
                                 {TEAM_FLAGS[team] && (

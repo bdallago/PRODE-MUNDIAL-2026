@@ -110,6 +110,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, [pathname, router]);
 
+  useEffect(() => {
+    if (companyDetails?.color) {
+      document.documentElement.style.setProperty('--brand-color', companyDetails.color);
+    } else {
+      document.documentElement.style.setProperty('--brand-color', '#1e3a8a');
+    }
+  }, [companyDetails?.color]);
+
   const value = { user, userData, companyName, companyDetails, loading };
 
   return (

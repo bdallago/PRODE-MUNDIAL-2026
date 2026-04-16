@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+@layer components {
+  .btn-primary {
+    background-color: var(--brand-color, #2563eb);
+    color: white;
+  }
+  .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--brand-color, #2563eb) 80%, black);
+  }
+  .text-brand {
+    color: var(--brand-color, #2563eb);
+  }
+  .bg-brand {
+    background-color: var(--brand-color, #2563eb);
+  }
+  .border-brand {
+    border-color: var(--brand-color, #2563eb);
+  }
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;

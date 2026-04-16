@@ -216,7 +216,7 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
                       {reportFiles.map((file, index) => (
                         <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded border border-gray-200">
                           <div className="flex items-center gap-2 overflow-hidden">
-                            <div className="bg-blue-100 p-1.5 rounded text-blue-600 shrink-0">
+                            <div className="bg-blue-50 p-1.5 rounded text-brand shrink-0">
                               {file.type.startsWith('image/') ? <ImageIcon className="w-4 h-4" /> : 
                                file.type.startsWith('video/') ? <Film className="w-4 h-4" /> : 
                                <FileText className="w-4 h-4" />}
@@ -241,7 +241,7 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
                 </div>
                 
                 <div className="pt-2">
-                  <Button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg">
+                  <Button type="submit" disabled={isSubmitting} className="w-full btn-primary py-6 text-lg">
                     {isSubmitting ? 'Enviando...' : 'Enviar a Beno'}
                   </Button>
                 </div>
@@ -251,7 +251,7 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
             <div className="mt-6 pt-4 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-500">
                 O si preferís, escribime directamente a:<br/>
-                <a href="mailto:benitodallago@gmail.com" className="text-blue-600 font-medium hover:underline">benitodallago@gmail.com</a>
+                <a href="mailto:benitodallago@gmail.com" className="text-brand font-medium hover:underline">benitodallago@gmail.com</a>
               </p>
             </div>
           </div>

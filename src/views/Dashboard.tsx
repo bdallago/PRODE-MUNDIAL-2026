@@ -223,7 +223,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                             </div>
                           )}
                           <span className={isMe ? "text-blue-700 text-base" : "font-semibold text-base"}>{player.displayName}</span>
-                          {isMe && <span className="ml-2 text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold shadow-sm">Tú</span>}
+                          {isMe && <span className="ml-2 text-[10px] bg-brand text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold shadow-sm">Tú</span>}
                         </div>
                       </td>
                       {hasAreas && (

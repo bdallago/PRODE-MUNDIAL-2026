@@ -22,6 +22,7 @@ export default function Predictions({ user }: { user: User }) {
   const [saving, setSaving] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [confirmLock, setConfirmLock] = useState(false);
+  const [activeTab, setActiveTab] = useState<'groups' | 'specials' | 'matches' | 'knockouts'>('groups');
   const [message, setMessage] = useState<{type: 'success'|'error', text: string} | null>(null);
   const [timeLeft, setTimeLeft] = useState(DEADLINE - Date.now());
 
@@ -245,10 +246,10 @@ export default function Predictions({ user }: { user: User }) {
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span className="text-gray-600">Fase de Grupos</span>
-              <span className="font-medium text-blue-600">{groupsFilled} / {totalGroups}</span>
+              <span className="font-medium text-brand">{groupsFilled} / {totalGroups}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-blue-600 h-2 rounded-full transition-all duration-500" style={{ width: `${(groupsFilled / totalGroups) * 100}%` }}></div>
+              <div className="bg-brand h-2 rounded-full transition-all duration-500" style={{ width: `${(groupsFilled / totalGroups) * 100}%` }}></div>
             </div>
           </div>
           
@@ -281,8 +282,45 @@ export default function Predictions({ user }: { user: User }) {
         </div>
       )}
 
+      {/* Tabs Menu */}
+      <div className="flex flex-wrap gap-2 justify-center">
+        <Button 
+          variant={activeTab === 'groups' ? 'default' : 'outline'} 
+          onClick={() => setActiveTab('groups')}
+          className={activeTab === 'groups' ? 'text-white border-transparent' : 'text-gray-700 bg-white'}
+          style={activeTab === 'groups' ? { backgroundColor: 'var(--brand-color, #1e3a8a)' } : {}}
+        >
+          Fase de Grupos
+        </Button>
+        <Button 
+          variant={activeTab === 'specials' ? 'default' : 'outline'} 
+          onClick={() => setActiveTab('specials')}
+          className={activeTab === 'specials' ? 'text-white border-transparent' : 'text-gray-700 bg-white'}
+          style={activeTab === 'specials' ? { backgroundColor: 'var(--brand-color, #1e3a8a)' } : {}}
+        >
+          Preguntas Especiales
+        </Button>
+        <Button 
+          variant={activeTab === 'matches' ? 'default' : 'outline'} 
+          onClick={() => setActiveTab('matches')}
+          className={activeTab === 'matches' ? 'text-white border-transparent' : 'text-gray-700 bg-white'}
+          style={activeTab === 'matches' ? { backgroundColor: 'var(--brand-color, #1e3a8a)' } : {}}
+        >
+          Partidos Individuales
+        </Button>
+        <Button 
+          variant={activeTab === 'knockouts' ? 'default' : 'outline'} 
+          onClick={() => setActiveTab('knockouts')}
+          className={activeTab === 'knockouts' ? 'text-white border-transparent' : 'text-gray-700 bg-white'}
+          style={activeTab === 'knockouts' ? { backgroundColor: 'var(--brand-color, #1e3a8a)' } : {}}
+        >
+          Fase Eliminatoria
+        </Button>
+      </div>
+
+      {activeTab === 'groups' && (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900 border-b pb-2">Fase de Grupos</h2>
+        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Fase de Grupos</h2>
         <p className="text-sm text-gray-600 mb-4 text-justify">Arrastrá los equipos para ordenarlos del 1º al 4º puesto. Los dos primeros y los 8 mejores terceros avanzan a 16avos.</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -313,9 +351,11 @@ export default function Predictions({ user }: { user: User }) {
           ))}
         </div>
       </div>
+      )}
 
-      <div className="space-y-6 pt-8">
-        <h2 className="text-2xl font-bold text-gray-900 border-b pb-2">Preguntas Especiales</h2>
+      {activeTab === 'specials' && (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Preguntas Especiales</h2>
         <p className="text-sm text-gray-600 mb-4 text-justify">Por favor, escribí el nombre completo del jugador o selección elegida para evitar confusiones en la corrección.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {SPECIAL_QUESTIONS.map((q) => (
@@ -337,9 +377,11 @@ export default function Predictions({ user }: { user: User }) {
           ))}
         </div>
       </div>
+      )}
 
-      <div className="space-y-10 pt-8">
-        <h2 className="text-2xl font-bold text-gray-900 border-b pb-2">Resultados por Partido</h2>
+      {activeTab === 'matches' && (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Partidos Individuales</h2>
         <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-blue-800 text-sm mb-8">
           <p className="font-bold mb-1">¿Le tuviste demasiada fe a un equipo en la previa? ¿Una lesión de última hora? ¡No pasa nada!</p>
           <p>Podés hacer tu predicción del resultado final hasta 1 hora antes de cada partido. Si acertás el resultado (quién gana o si empatan) te llevás <strong>1 punto</strong>. Si además lo hacés con el resultado exacto, te llevás <strong>1 punto extra</strong> (Total: 2 puntos).</p>
@@ -444,12 +486,15 @@ export default function Predictions({ user }: { user: User }) {
           ))}
         </div>
       </div>
+      )}
 
-      <div className="space-y-6 pt-8 pb-12">
-        <h2 className="text-2xl font-bold text-gray-900 border-b pb-2">Fase Eliminatoria</h2>
+      {activeTab === 'knockouts' && (
+      <div className="space-y-6 pb-12">
+        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Fase Eliminatoria</h2>
         <p className="text-sm text-gray-600 mb-4 text-justify">El cuadro final se irá armando a medida que avance el torneo. ¡Preparate para los cruces decisivos!</p>
         <Bracket />
       </div>
+      )}
 
       {confirmLock && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
