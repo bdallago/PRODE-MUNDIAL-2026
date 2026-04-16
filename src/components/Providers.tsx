@@ -36,16 +36,29 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       
-      // If we have cached data, we can stop loading immediately
-      if (cachedUserData && cachedCompanyDetails) {
+      if (!currentUser) {
         setLoading(false);
-      } else if (!currentUser) {
+        setUserData(null);
+        setCompanyName("");
+        setCompanyDetails(null);
+        localStorage.removeItem('cachedUserData');
+        localStorage.removeItem('cachedCompanyDetails');
+        if (pathname !== "/login" && pathname !== "/join-company" && pathname !== "/privacy" && pathname !== "/terms") {
+          router.push("/login");
+        }
+        return;
+      }
+
+      // We have a user. If no cache exists, show loading screen while fetching.
+      if (!localStorage.getItem('cachedUserData') || !localStorage.getItem('cachedCompanyDetails')) {
+        setLoading(true);
+      } else {
+        // If we have cache, we can stop loading immediately and let the fetch happen in the background
         setLoading(false);
       }
 
-      if (currentUser) {
-        try {
-          const userRef = doc(db, "users", currentUser.uid);
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
           const userDoc = await getDoc(userRef);
           if (userDoc.exists()) {
             let data = userDoc.data();
@@ -92,16 +105,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         } finally {
           setLoading(false);
         }
-      } else {
-        setUserData(null);
-        setCompanyName("");
-        setCompanyDetails(null);
-        localStorage.removeItem('cachedUserData');
-        localStorage.removeItem('cachedCompanyDetails');
-        if (pathname !== "/login" && pathname !== "/join-company" && pathname !== "/privacy" && pathname !== "/terms") {
-          router.push("/login");
-        }
-      }
     });
 
     return () => unsubscribe();
@@ -111,7 +114,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <AppContext.Provider value={value}>
-      {children}
+      {loading && pathname !== "/login" && pathname !== "/join-company" && pathname !== "/privacy" && pathname !== "/terms" ? (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e3a8a] mb-4"></div>
+          <p className="text-gray-500 font-medium animate-pulse">Cargando tu espacio...</p>
+        </div>
+      ) : (
+        children
+      )}
     </AppContext.Provider>
   );
 }

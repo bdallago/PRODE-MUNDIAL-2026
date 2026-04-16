@@ -67,11 +67,11 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
             <Link href="/instructions" className={getLinkStyle("/instructions")}>
               <BookOpen className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Reglas</span>
             </Link>
-            <Link href="/dashboard" className={getLinkStyle("/dashboard")}>
-              <Trophy className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Ranking</span>
-            </Link>
             <Link href="/predictions" className={getLinkStyle("/predictions")}>
               <PenSquare className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Predicciones</span>
+            </Link>
+            <Link href="/dashboard" className={getLinkStyle("/dashboard")}>
+              <Trophy className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Ranking</span>
             </Link>
             {isAdmin && (
               <Link href="/admin" className={getLinkStyle("/admin")}>
@@ -113,11 +113,11 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
         <Link href="/instructions" className={getMobileLinkStyle("/instructions")}>
           <BookOpen className="h-5 w-5 mb-1" /> Reglas
         </Link>
-        <Link href="/dashboard" className={getMobileLinkStyle("/dashboard")}>
-          <Trophy className="h-5 w-5 mb-1" /> Ranking
-        </Link>
         <Link href="/predictions" className={getMobileLinkStyle("/predictions")}>
           <PenSquare className="h-5 w-5 mb-1" /> Predicciones
+        </Link>
+        <Link href="/dashboard" className={getMobileLinkStyle("/dashboard")}>
+          <Trophy className="h-5 w-5 mb-1" /> Ranking
         </Link>
         {isAdmin && (
           <Link href="/admin" className={getMobileLinkStyle("/admin")}>
