@@ -92,6 +92,7 @@ service cloud.firestore {
              data.groups is map &&
              data.specials is map &&
              data.knockouts is map &&
+             (!('matches' in data) || data.matches is map) &&
              data.isLocked is bool &&
              (!('updatedAt' in data) || data.updatedAt is string);
     }
@@ -181,20 +182,20 @@ service cloud.firestore {
       
       // Create: User can create their own prediction.
       allow create: if isAuthenticated() && isOwner(userId) &&
-                    hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
+                    hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'matches', 'isLocked', 'updatedAt']) &&
                     isValidPrediction(request.resource.data) &&
                     request.resource.data.uid == userId;
                     
       // Update: User can update their own prediction IF it's not locked. Admin can update anything.
       allow update: if isAuthenticated() && (
                       (isOwner(userId) &&
-                       hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
+                       hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'matches', 'isLocked', 'updatedAt']) &&
                        isValidPrediction(request.resource.data) &&
                        request.resource.data.uid == resource.data.uid &&
                        resource.data.isLocked == false)
                       ||
                       (isAdmin() &&
-                       hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'isLocked', 'updatedAt']) &&
+                       hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'matches', 'isLocked', 'updatedAt']) &&
                        isValidPrediction(request.resource.data) &&
                        request.resource.data.uid == resource.data.uid)
                     );
