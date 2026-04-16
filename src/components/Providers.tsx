@@ -77,13 +77,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
             }
 
             if (!hasValidCompany && data.role !== 'admin') {
-              if (pathname !== "/join-company" && pathname !== "/login") {
+              if (pathname !== "/join-company" && pathname !== "/login" && pathname !== "/privacy" && pathname !== "/terms") {
                 router.push("/join-company");
               }
             }
           } else {
             // New user, no document yet
-            if (pathname !== "/join-company" && pathname !== "/login") {
+            if (pathname !== "/join-company" && pathname !== "/login" && pathname !== "/privacy" && pathname !== "/terms") {
               router.push("/join-company");
             }
           }
@@ -98,7 +98,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         setCompanyDetails(null);
         localStorage.removeItem('cachedUserData');
         localStorage.removeItem('cachedCompanyDetails');
-        if (pathname !== "/login" && pathname !== "/join-company") {
+        if (pathname !== "/login" && pathname !== "/join-company" && pathname !== "/privacy" && pathname !== "/terms") {
           router.push("/login");
         }
       }
