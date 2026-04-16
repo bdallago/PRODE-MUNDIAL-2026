@@ -136,12 +136,7 @@ service cloud.firestore {
                       (request.resource.data.role == 'player' && request.resource.data.totalPoints == 0) || 
                       (request.resource.data.role == 'company_admin' && request.resource.data.totalPoints == 0 && 
                        'companyId' in request.resource.data &&
-                       exists(/databases/$(database)/documents/companies/$(request.resource.data.companyId)) &&
-                       'email' in request.auth.token && request.auth.token.email != null &&
-                       (
-                         ('hrEmail' in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data && get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data.hrEmail == request.auth.token.email.lower()) ||
-                         ('hrEmails' in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data && request.auth.token.email.lower() in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data.hrEmails)
-                       )) ||
+                       exists(/databases/$(database)/documents/companies/$(request.resource.data.companyId))) ||
                       isAdmin()
                     );
                     
@@ -158,12 +153,7 @@ service cloud.firestore {
                          request.resource.data.role == 'player' ||
                          (request.resource.data.role == 'company_admin' && 
                           'companyId' in request.resource.data &&
-                          exists(/databases/$(database)/documents/companies/$(request.resource.data.companyId)) &&
-                          'email' in request.auth.token && request.auth.token.email != null &&
-                          (
-                            ('hrEmail' in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data && get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data.hrEmail == request.auth.token.email.lower()) ||
-                            ('hrEmails' in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data && request.auth.token.email.lower() in get(/databases/$(database)/documents/companies/$(request.resource.data.companyId)).data.hrEmails)
-                          ))
+                          exists(/databases/$(database)/documents/companies/$(request.resource.data.companyId)))
                        )
                       )
                       ||

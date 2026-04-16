@@ -67,8 +67,7 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
     setLoading(true);
     setError("");
     try {
-      // TEMPORAL: Forzar rol de RRHH (company_admin) para pruebas
-      let newRole = "company_admin";
+      let newRole = "company_admin"; // TEMPORAL: Forzar rol de RRHH (company_admin) para pruebas
       /*
       let newRole = "player";
       const userEmail = user.email?.toLowerCase();
@@ -86,7 +85,7 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
           displayName: user.displayName || "Usuario",
           email: user.email,
           photoURL: user.photoURL || "",
-          role: "player",
+          role: "company_admin", // TEMPORAL
           totalPoints: 0,
           lastLogin: new Date().toISOString()
         };

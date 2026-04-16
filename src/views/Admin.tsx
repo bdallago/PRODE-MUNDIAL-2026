@@ -55,6 +55,9 @@ export default function Admin() {
   const [newCompanyLogo, setNewCompanyLogo] = useState("");
   const [newCompanyAreas, setNewCompanyAreas] = useState("");
   const [creatingCompany, setCreatingCompany] = useState(false);
+  
+  const [editCompanyModal, setEditCompanyModal] = useState<any | null>(null);
+  const [editCompanyHREmails, setEditCompanyHREmails] = useState("");
 
   const [activeTab, setActiveTab] = useState<'results' | 'users' | 'reports' | 'analytics' | 'companies'>('results');
 
@@ -496,6 +499,36 @@ export default function Admin() {
     }
   };
 
+  const handleUpdateCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editCompanyModal) return;
+    
+    setCreatingCompany(true);
+    try {
+      const hrEmailsArray = editCompanyHREmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e);
+      
+      await setDoc(doc(db, "companies", editCompanyModal.id), {
+        hrEmail: hrEmailsArray[0] || "",
+        hrEmails: hrEmailsArray
+      }, { merge: true });
+      
+      setCompanies(companies.map(c => 
+        c.id === editCompanyModal.id 
+          ? { ...c, hrEmail: hrEmailsArray[0] || "", hrEmails: hrEmailsArray } 
+          : c
+      ));
+      
+      setMessage({ type: 'success', text: 'RRHH de la empresa actualizado correctamente.' });
+      setEditCompanyModal(null);
+    } catch (error) {
+      console.error("Error updating company:", error);
+      setMessage({ type: 'error', text: 'Error al actualizar la empresa.' });
+    } finally {
+      setCreatingCompany(false);
+      setTimeout(() => setMessage(null), 5000);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-10">Cargando panel de administración...</div>;
   }
@@ -744,7 +777,7 @@ export default function Admin() {
                     <p><span className="font-semibold text-gray-600">Admin (RRHH):</span> {company.hrEmails ? company.hrEmails.join(', ') : company.hrEmail}</p>
                     <p><span className="font-semibold text-gray-600">Creada:</span> {new Date(company.createdAt).toLocaleDateString()}</p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -752,6 +785,17 @@ export default function Admin() {
                       onClick={() => setSelectedCompanyId(company.id)}
                     >
                       <Eye className="w-4 h-4" /> Ver Empresa
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center gap-2"
+                      onClick={() => {
+                        setEditCompanyModal(company);
+                        setEditCompanyHREmails(company.hrEmails ? company.hrEmails.join(', ') : company.hrEmail);
+                      }}
+                    >
+                      Editar RRHH
                     </Button>
                     {company.isActive === false ? (
                       <Button 
@@ -1109,6 +1153,40 @@ export default function Admin() {
                  'Sí, eliminar'}
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Edit Company Modal */}
+      {editCompanyModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Editar RRHH de {editCompanyModal.name}</h3>
+            <form onSubmit={handleUpdateCompany} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Correos de Admin (RRHH)
+                </label>
+                <input
+                  type="text"
+                  value={editCompanyHREmails}
+                  onChange={(e) => setEditCompanyHREmails(e.target.value)}
+                  className="w-full p-2 border rounded-md"
+                  placeholder="ejemplo@empresa.com, otro@empresa.com"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Separa los correos con comas si hay más de uno.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <Button type="button" variant="outline" onClick={() => setEditCompanyModal(null)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={creatingCompany} className="bg-blue-600 hover:bg-blue-700">
+                  {creatingCompany ? 'Guardando...' : 'Guardar Cambios'}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

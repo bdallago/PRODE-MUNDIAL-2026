@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -45,20 +45,46 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
       if (currentUser) {
         try {
-          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          const userRef = doc(db, "users", currentUser.uid);
+          const userDoc = await getDoc(userRef);
           if (userDoc.exists()) {
-            const data = userDoc.data();
+            let data = userDoc.data();
+            
+            // TEMPORARY: Force all players to be company_admin for testing
+            if (data.role === 'player') {
+              try {
+                await setDoc(userRef, { role: 'company_admin' }, { merge: true });
+                data.role = 'company_admin';
+              } catch (e) {
+                console.error("Error upgrading user to company_admin:", e);
+              }
+            }
+
             setUserData(data);
             localStorage.setItem('cachedUserData', JSON.stringify(data));
             
+            let hasValidCompany = false;
+
             if (data.companyId) {
               const companyDoc = await getDoc(doc(db, "companies", data.companyId));
-              if (companyDoc.exists()) {
+              if (companyDoc.exists() && companyDoc.data().isActive !== false) {
                 const compData = companyDoc.data();
                 setCompanyName(compData.name);
                 setCompanyDetails(compData);
                 localStorage.setItem('cachedCompanyDetails', JSON.stringify(compData));
+                hasValidCompany = true;
               }
+            }
+
+            if (!hasValidCompany && data.role !== 'admin') {
+              if (pathname !== "/join-company" && pathname !== "/login") {
+                router.push("/join-company");
+              }
+            }
+          } else {
+            // New user, no document yet
+            if (pathname !== "/join-company" && pathname !== "/login") {
+              router.push("/join-company");
             }
           }
         } catch (error) {
