@@ -85,7 +85,7 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
   const isPremium = companyDetails?.plan === 'premium';
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 px-4 sm:px-6 py-6 md:py-8">
       <TutorialModal onComplete={() => {}} user={user} />
       <WorldCupBanner />
       <CountdownBanner />

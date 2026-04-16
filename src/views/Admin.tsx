@@ -535,7 +535,7 @@ export default function Admin() {
 
   if (selectedCompanyId) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 px-4 sm:px-6 py-6 md:py-8">
         <Button onClick={() => setSelectedCompanyId(null)} variant="outline" className="mb-2">
           &larr; Volver al Panel de Administración
         </Button>
@@ -545,7 +545,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 px-4 sm:px-6 py-6 md:py-8">
       <CountdownBanner />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <div>

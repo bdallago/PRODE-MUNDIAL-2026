@@ -276,7 +276,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 px-4 sm:px-6 py-6 md:py-8">
       <CountdownBanner />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

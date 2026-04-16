@@ -68,16 +68,15 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
     setError("");
     try {
       let newRole = "company_admin"; // TEMPORAL: Forzar rol de RRHH (company_admin) para pruebas
-      /*
-      let newRole = "player";
-      const userEmail = user.email?.toLowerCase();
-      if (cData.hrEmail === userEmail || (cData.hrEmails && cData.hrEmails.includes(userEmail))) {
-        newRole = "company_admin";
-      }
-      */
 
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
+
+      const commonData = {
+        companyId: cId,
+        role: newRole,
+        ...(area ? { area } : {})
+      };
 
       if (!userSnap.exists()) {
         const newUserData: any = {
@@ -85,23 +84,14 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
           displayName: user.displayName || "Usuario",
           email: user.email,
           photoURL: user.photoURL || "",
-          role: "company_admin", // TEMPORAL
           totalPoints: 0,
-          lastLogin: new Date().toISOString()
+          lastLogin: new Date().toISOString(),
+          ...commonData
         };
         await setDoc(userRef, newUserData);
+      } else {
+        await updateDoc(userRef, commonData);
       }
-
-      const updates: any = {
-        companyId: cId,
-        role: newRole
-      };
-      
-      if (area) {
-        updates.area = area;
-      }
-
-      await updateDoc(userRef, updates);
 
       onJoined();
     } catch (err: any) {

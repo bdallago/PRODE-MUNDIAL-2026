@@ -4,7 +4,7 @@ import { CountdownBanner } from "../components/CountdownBanner";
 
 export default function Instructions() {
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 px-4 sm:px-6 py-6 md:py-8">
       <CountdownBanner />
       <div className="flex flex-col md:flex-row items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center md:text-left">
         <div className="p-3 rounded-full shrink-0" style={{ backgroundColor: 'color-mix(in srgb, var(--brand-color, #2563eb) 10%, white)' }}>

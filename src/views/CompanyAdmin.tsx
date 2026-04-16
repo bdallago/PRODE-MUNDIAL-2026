@@ -194,7 +194,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
   const chartData = [{ name: 'Participación', value: participationRate, fill: '#8b5cf6' }];
 
   return (
-    <div className={hideBanner ? "space-y-8" : "max-w-4xl mx-auto space-y-8"}>
+    <div className={hideBanner ? "space-y-8" : "max-w-4xl mx-auto space-y-8 px-4 sm:px-6 py-6 md:py-8"}>
       {!hideBanner && <CountdownBanner />}
       
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

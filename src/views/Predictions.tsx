@@ -194,7 +194,7 @@ export default function Predictions({ user }: { user: User }) {
   const totalMatches = MATCHES.length;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 px-4 sm:px-6 py-6 md:py-8">
       <CountdownBanner />
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
