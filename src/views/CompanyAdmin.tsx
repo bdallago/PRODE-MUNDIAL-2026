@@ -17,6 +17,7 @@ interface UserProfile {
   totalPoints: number;
   isBlocked?: boolean;
   hasPredictions?: boolean;
+  predictionStatus?: 'none' | 'incomplete' | 'complete';
 }
 
 export default function CompanyAdmin({ userData, hideBanner = false, companyName }: { userData: any, hideBanner?: boolean, companyName?: string }) {
@@ -65,10 +66,18 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
         const usersWithPreds = await Promise.all(usersData.map(async (u) => {
           const predSnap = await getDoc(doc(db, "predictions", u.uid));
           const hasPreds = predSnap.exists();
+          let status: 'none' | 'incomplete' | 'complete' = 'none';
+
           if (hasPreds) {
             predictionsCount++;
+            const data = predSnap.data();
+            if (data.isLocked) {
+              status = 'complete';
+            } else {
+              status = 'incomplete';
+            }
           }
-          return { ...u, hasPredictions: hasPreds };
+          return { ...u, hasPredictions: hasPreds, predictionStatus: status };
         }));
 
         setUsers(usersWithPreds);
@@ -162,13 +171,13 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
   };
 
   const exportToCSV = () => {
-    const headers = ['Nombre', 'Email', 'Rol', 'Puntos', 'Predicciones Cargadas'];
+    const headers = ['Nombre', 'Email', 'Rol', 'Puntos', 'Estado Predicciones'];
     const csvData = users.map(u => [
       `"${u.displayName || ''}"`,
       `"${u.email || ''}"`,
       `"${u.role === 'company_admin' ? 'RRHH' : 'Jugador'}"`,
       u.totalPoints || 0,
-      u.hasPredictions ? 'Sí' : 'No'
+      `"${u.predictionStatus === 'complete' ? 'Fijo / Completo' : u.predictionStatus === 'incomplete' ? 'Incompleto' : 'Pendiente'}"`
     ].join(';'));
     
     // Add UTF-8 BOM (\uFEFF) to fix Spanish accents in Excel, and use semicolon delimiter
@@ -311,47 +320,44 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                   Copiá y pegá estos mensajes en Slack, Teams o por Mail para fomentar la participación en tu empresa.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-gray-50 p-4 rounded-md border border-gray-200 relative group">
-                    <h4 className="font-bold text-sm text-gray-700 mb-2">Invitación Inicial</h4>
-                    <p className="text-xs text-gray-600 whitespace-pre-wrap">
-                      ¡Llegó el Prode Mundial a {companyName || 'la empresa'}! 🏆⚽{'\n\n'}
-                      Demostrá cuánto sabés de fútbol compitiendo con todos tus compañeros. ¡Hay premios para los mejores!{'\n\n'}
-                      Ingresá acá para registrarte y cargar tus predicciones:{'\n'}
-                      👉 {window.location.origin}{'\n'}
-                      Código de empresa: {company?.code}
-                    </p>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => {
-                        navigator.clipboard.writeText(`¡Llegó el Prode Mundial a ${companyName || 'la empresa'}! 🏆⚽\n\nDemostrá cuánto sabés de fútbol compitiendo con todos tus compañeros. ¡Hay premios para los mejores!\n\nIngresá acá para registrarte y cargar tus predicciones:\n👉 ${window.location.origin}\nCódigo de empresa: ${company?.code}`);
-                        setMessage({ type: 'success', text: 'Mensaje copiado al portapapeles' });
-                      }}
-                    >
-                      <Copy className="w-3 h-3 mr-1" /> Copiar
-                    </Button>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-md border border-gray-200 relative group">
-                    <h4 className="font-bold text-sm text-gray-700 mb-2">Recordatorio a Rezagados</h4>
-                    <p className="text-xs text-gray-600 whitespace-pre-wrap">
-                      ¡Últimos días para cargar tu Prode! ⏰{'\n\n'}
-                      Todavía estás a tiempo de participar y competir por los premios. Tenés tiempo hasta el 7 de Junio para fijar tus predicciones.{'\n\n'}
-                      Entrá ahora y completá tu fixture:{'\n'}
-                      👉 {window.location.origin}
-                    </p>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => {
-                        navigator.clipboard.writeText(`¡Últimos días para cargar tu Prode! ⏰\n\nTodavía estás a tiempo de participar y competir por los premios. Tenés tiempo hasta el 7 de Junio para fijar tus predicciones.\n\nEntrá ahora y completá tu fixture:\n👉 ${window.location.origin}`);
-                        setMessage({ type: 'success', text: 'Mensaje copiado al portapapeles' });
-                      }}
-                    >
-                      <Copy className="w-3 h-3 mr-1" /> Copiar
-                    </Button>
-                  </div>
+                  {[
+                    {
+                      title: "Invitación Inicial",
+                      body: `¡Llegó el Prode Mundial a ${companyName || 'la empresa'}! 🏆⚽\n\nDemostrá cuánto sabés de fútbol compitiendo con todos tus compañeros. ¡Hay premios para los mejores!\n\nIngresá acá para registrarte y cargar tus predicciones:\n👉 ${window.location.origin}\nCódigo de empresa: ${company?.code}`
+                    },
+                    {
+                      title: "Recordatorio a Rezagados",
+                      body: `¡Últimos días para cargar tu Prode! ⏰\n\nTodavía estás a tiempo de participar y competir por los premios. Tenés tiempo hasta el 7 de Junio para fijar tus predicciones antes de que arranque el Mundial.\n\nEntrá ahora y completá tu fixture:\n👉 ${window.location.origin}`
+                    },
+                    {
+                      title: "Mitad de Torneo - Octavos de Final",
+                      body: `¡Terminó la Fase de Grupos en el Prode de ${companyName || 'la empresa'}! 📊\n\nEl torneo se pone picante y empiezan los mata-mata. ¿Ya revisaste en qué posición quedaste en el ranking de áreas? ¡Todavía quedan muchos puntos en juego en los partidos individuales!\n\nRevisá el ranking acá:\n👉 ${window.location.origin}`
+                    },
+                    {
+                      title: "Recta Final - Semis y Final",
+                      body: `¡Llegamos a la definición del Mundial! 🥇\n\nQuedan solo un par de partidos. Es el momento de la verdad para definir quién se lleva los grandes premios en ${companyName || 'la empresa'}. ¡No te olvides de predecir el resultado de la gran Final!\n\nCargá tus resultados acá:\n👉 ${window.location.origin}`
+                    },
+                    {
+                      title: "Anuncio de Ganadores",
+                      body: `¡Tenemos a los campeones del Prode ${companyName || 'la empresa'}! 🥳🏆\n\nGracias a todos por participar. Ha sido un torneo increíble. Felicitaciones especiales a los ganadores del podio que se llevan nuestros premios.\n\nPodés ver el ranking final histórico ingresando acá:\n👉 ${window.location.origin}`
+                    }
+                  ].map((kit, idx) => (
+                    <div key={idx} className="bg-gray-50 p-4 rounded-md border border-gray-200 relative group">
+                      <h4 className="font-bold text-sm text-gray-700 mb-2">{kit.title}</h4>
+                      <p className="text-xs text-gray-600 whitespace-pre-wrap">{kit.body}</p>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white"
+                        onClick={() => {
+                          navigator.clipboard.writeText(kit.body);
+                          setMessage({ type: 'success', text: 'Mensaje copiado al portapapeles' });
+                        }}
+                      >
+                        <Copy className="w-3 h-3 mr-1" /> Copiar
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -455,14 +461,58 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
       <div className="space-y-4">
         <div className="flex items-center justify-between border-b pb-2">
           <h2 className="text-xl font-bold text-gray-900">Lista de Participantes</h2>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={exportToCSV}
-            className="flex items-center gap-2 text-green-700 border-green-200 hover:bg-green-50"
-          >
-            <Download className="w-4 h-4" /> Exportar a Excel
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={users.filter(u => u.predictionStatus !== 'complete').length === 0}
+              onClick={() => {
+                const rezagados = users.filter(u => u.predictionStatus !== 'complete').map(u => u.email).filter(Boolean);
+                if (rezagados.length === 0) {
+                  setMessage({ type: 'success', text: '¡Todos los usuarios ya completaron sus predicciones!' });
+                  window.scrollTo(0, 0);
+                  return;
+                }
+                const subject = encodeURIComponent('¡Recordatorio! Cargá tu Prode Mundial');
+                const body = encodeURIComponent(`Hola,\n\nTodavía no cargaste tus predicciones para el Prode Mundial de ${companyName || 'la empresa'}.\n\nIngresá a ${window.location.origin} para completar tu fixture antes de que empiece el mundial.\n\n¡No te quedes afuera!`);
+                const mailtoUrl = `mailto:?bcc=${rezagados.join(',')}&subject=${subject}&body=${body}`;
+                
+                // Safe clipboard fallback
+                try {
+                  if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(rezagados.join(', ')).then(() => {
+                      setMessage({ type: 'success', text: 'Emails copiados al portapapeles. Intentando abrir cliente de correo...' });
+                      window.scrollTo(0, 0);
+                    }).catch(() => {
+                      setMessage({ type: 'success', text: 'Intentando abrir cliente de correo...' });
+                      window.scrollTo(0, 0);
+                    });
+                  } else {
+                    setMessage({ type: 'success', text: 'Intentando abrir cliente de correo...' });
+                    window.scrollTo(0, 0);
+                  }
+                } catch (e) {
+                  console.error(e);
+                }
+
+                // Intentar abrir el cliente de correo de manera clásica
+                setTimeout(() => {
+                  window.location.href = mailtoUrl;
+                }, 500);
+              }}
+              className="flex items-center gap-2 text-blue-700 border-blue-200 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <MessageSquare className="w-4 h-4" /> Recordar a Rezagados
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={exportToCSV}
+              className="flex items-center gap-2 text-green-700 border-green-200 hover:bg-green-50"
+            >
+              <Download className="w-4 h-4" /> Exportar a Excel
+            </Button>
+          </div>
         </div>
         <Card>
           <CardContent className="p-0">
@@ -497,12 +547,16 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        {u.hasPredictions ? (
-                          <span className="inline-flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full text-xs font-medium">
-                            <CheckCircle2 className="w-3 h-3" /> Guardadas
+                        {u.predictionStatus === 'complete' ? (
+                          <span className="inline-flex items-center gap-1 text-green-700 bg-green-50 px-2 py-1 rounded-full text-xs font-medium border border-green-200">
+                            <CheckCircle2 className="w-3 h-3" /> Fijo
+                          </span>
+                        ) : u.predictionStatus === 'incomplete' ? (
+                          <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-1 rounded-full text-xs font-medium border border-amber-200" title="Prode guardado pero no fijado">
+                            <AlertCircle className="w-3 h-3" /> Borrador
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-gray-500 bg-gray-100 px-2 py-1 rounded-full text-xs font-medium">
+                          <span className="inline-flex items-center gap-1 text-gray-500 bg-gray-100 px-2 py-1 rounded-full text-xs font-medium border border-gray-200">
                             Pendiente
                           </span>
                         )}

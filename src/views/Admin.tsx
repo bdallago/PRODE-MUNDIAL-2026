@@ -213,78 +213,76 @@ export default function Admin() {
       const usersSnapCheck = await getDocs(collection(db, "users"));
       const existingUserIds = new Set(usersSnapCheck.docs.map(d => d.id));
 
-      // 3. Prepare batch update for users
-      const batch = writeBatch(db);
-      
-      for (const pred of predictions) {
-        if (!existingUserIds.has(pred.id)) continue; // Skip if user doc is missing
-        
-        let totalPoints = 0;
-        const pGroups = pred.groups || {};
-        
-        // Sanitize pGroups
-        const sanitizedPGroups: Record<string, string[]> = {};
-        for (const [groupLetter, currentTeams] of Object.entries(GROUPS)) {
-          const savedTeams = pGroups[groupLetter] || [];
-          const validSavedTeams = (savedTeams as string[]).filter(t => currentTeams.includes(t));
-          const missingTeams = currentTeams.filter(t => !validSavedTeams.includes(t));
-          sanitizedPGroups[groupLetter] = [...validSavedTeams, ...missingTeams];
-        }
-
-        const pSpecials = pred.specials || {};
-
-        // Calculate Group Points
-        // +1 Punto por cada acierto en la posición exacta
-        // +2 Puntos por cada grupo perfecto (All 4 in correct order)
-        for (const [groupLetter, actualTeams] of Object.entries(actualG)) {
-          const predictedTeams = sanitizedPGroups[groupLetter];
-          if (!predictedTeams || !Array.isArray(actualTeams)) continue;
-
-          // Check exact matches
-          let exactMatches = 0;
-          for (let i = 0; i < 4; i++) {
-            if (actualTeams[i] && predictedTeams[i] === actualTeams[i]) {
-              exactMatches++;
-              totalPoints += 1;
-            }
-          }
-
-          // Check perfect group
-          if (exactMatches === 4) {
-            totalPoints += 3;
-          }
-        }
-
-        // Calculate Special Points (+10 each)
-        for (const [qId, actualAnswer] of Object.entries(actualS)) {
-          const predictedAnswer = pSpecials[qId];
-          if (predictedAnswer && actualAnswer && typeof actualAnswer === 'string' && typeof predictedAnswer === 'string') {
-            if (predictedAnswer.trim().toLowerCase() === actualAnswer.trim().toLowerCase()) {
-              totalPoints += 10;
-            }
-          }
-        }
-
-        // Calculate Knockout Points
-        const pKnockouts = pred.knockouts || {};
-        for (const stage of KNOCKOUT_STAGES) {
-          const actualTeams = actualK[stage.id] || [];
-          const predictedTeams = pKnockouts[stage.id] || [];
-          
-          const uniquePredicted = Array.from(new Set(predictedTeams.filter(Boolean)));
-          for (const pTeam of uniquePredicted) {
-            if (actualTeams.includes(pTeam)) {
-              totalPoints += stage.points;
-            }
-          }
-        }
-
-        // Update user document
-        const userRef = doc(db, "users", pred.id); // Use pred.id which is guaranteed to be the UID
-        batch.set(userRef, { totalPoints }, { merge: true });
+      // 3. Prepare chunked batch updates for users (max 500 per batch, using 450 to be safe)
+      const chunks = [];
+      for (let i = 0; i < predictions.length; i += 450) {
+        chunks.push(predictions.slice(i, i + 450));
       }
+      
+      for (const chunk of chunks) {
+        const batch = writeBatch(db);
+        for (const pred of chunk) {
+          if (!existingUserIds.has(pred.id)) continue; // Skip if user doc is missing
+          
+          let totalPoints = 0;
+          const pGroups = pred.groups || {};
+          
+          // Sanitize pGroups
+          const sanitizedPGroups: Record<string, string[]> = {};
+          for (const [groupLetter, currentTeams] of Object.entries(GROUPS)) {
+            const savedTeams = pGroups[groupLetter] || [];
+            const validSavedTeams = (savedTeams as string[]).filter(t => currentTeams.includes(t));
+            const missingTeams = currentTeams.filter(t => !validSavedTeams.includes(t));
+            sanitizedPGroups[groupLetter] = [...validSavedTeams, ...missingTeams];
+          }
 
-      await batch.commit();
+          const pSpecials = pred.specials || {};
+
+          // Calculate Group Points
+          for (const [groupLetter, actualTeams] of Object.entries(actualG)) {
+            const predictedTeams = sanitizedPGroups[groupLetter];
+            if (!predictedTeams || !Array.isArray(actualTeams)) continue;
+
+            let exactMatches = 0;
+            for (let i = 0; i < 4; i++) {
+              if (actualTeams[i] && predictedTeams[i] === actualTeams[i]) {
+                exactMatches++;
+                totalPoints += 1;
+              }
+            }
+            if (exactMatches === 4) totalPoints += 3;
+          }
+
+          // Calculate Special Points
+          for (const [qId, actualAnswer] of Object.entries(actualS)) {
+            const predictedAnswer = pSpecials[qId];
+            if (predictedAnswer && actualAnswer && typeof actualAnswer === 'string' && typeof predictedAnswer === 'string') {
+              if (predictedAnswer.trim().toLowerCase() === actualAnswer.trim().toLowerCase()) {
+                totalPoints += 10;
+              }
+            }
+          }
+
+          // Calculate Knockout Points
+          const pKnockouts = pred.knockouts || {};
+          for (const stage of KNOCKOUT_STAGES) {
+            const actualTeams = actualK[stage.id] || [];
+            const predictedTeams = pKnockouts[stage.id] || [];
+            
+            const uniquePredicted = Array.from(new Set(predictedTeams.filter(Boolean)));
+            for (const pTeam of uniquePredicted) {
+              if (actualTeams.includes(pTeam)) {
+                totalPoints += stage.points;
+              }
+            }
+          }
+
+          // Update user document
+          const userRef = doc(db, "users", pred.id);
+          batch.set(userRef, { totalPoints }, { merge: true });
+        }
+        await batch.commit();
+      }
 
       // Re-fetch users to update the UI with new points
       const usersSnap = await getDocs(collection(db, "users"));

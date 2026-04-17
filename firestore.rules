@@ -180,19 +180,21 @@ service cloud.firestore {
       // Anyone authenticated can read predictions (to see what others guessed)
       allow read: if isAuthenticated();
       
-      // Create: User can create their own prediction.
+      // Create: User can create their own prediction. Must be before deadline.
       allow create: if isAuthenticated() && isOwner(userId) &&
                     hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'matches', 'isLocked', 'updatedAt']) &&
                     isValidPrediction(request.resource.data) &&
-                    request.resource.data.uid == userId;
+                    request.resource.data.uid == userId &&
+                    request.time.toMillis() < timestamp("2026-06-08T13:00:00Z").toMillis();
                     
-      // Update: User can update their own prediction IF it's not locked. Admin can update anything.
+      // Update: User can update their own prediction IF it's not locked AND before deadline. Admin can update anything.
       allow update: if isAuthenticated() && (
                       (isOwner(userId) &&
                        hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'matches', 'isLocked', 'updatedAt']) &&
                        isValidPrediction(request.resource.data) &&
                        request.resource.data.uid == resource.data.uid &&
-                       resource.data.isLocked == false)
+                       resource.data.isLocked == false &&
+                       request.time.toMillis() < timestamp("2026-06-08T13:00:00Z").toMillis())
                       ||
                       (isAdmin() &&
                        hasOnlyAllowedFields(['uid', 'groups', 'specials', 'knockouts', 'matches', 'isLocked', 'updatedAt']) &&

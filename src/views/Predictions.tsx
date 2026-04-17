@@ -167,9 +167,13 @@ export default function Predictions({ user }: { user: User }) {
       setHasSavedDoc(true);
       
       setMessage({ type: 'success', text: lock ? 'Predicciones guardadas y fijadas con éxito.' : 'Predicciones guardadas con éxito.' });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving predictions:", error);
-      setMessage({ type: 'error', text: 'Hubo un error al guardar. Intenta de nuevo.' });
+      if (error?.code === 'permission-denied' || error?.message?.includes('permission')) {
+        setMessage({ type: 'error', text: 'El tiempo para enviar predicciones ha terminado.' });
+      } else {
+        setMessage({ type: 'error', text: 'Hubo un error al guardar. Intenta de nuevo.' });
+      }
     } finally {
       setSaving(false);
       setTimeout(() => setMessage(null), 5000);
