@@ -340,9 +340,9 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
         
         {hasAreas && (
           <div className="space-y-6">
-            <Card className="border-t-4 border-t-purple-500">
+            <Card className="border-t-4 border-brand">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center gap-2 text-purple-900">
+                <CardTitle className="text-lg flex items-center gap-2 text-brand">
                   <Building2 className="w-5 h-5" /> Torneo de Áreas
                 </CardTitle>
                 <p className="text-sm text-gray-500 font-normal">Promedio de puntos por sector. ¡Llevá a tu equipo a lo más alto!</p>

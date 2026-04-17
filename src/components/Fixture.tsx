@@ -129,7 +129,7 @@ export function Fixture() {
         {/* Fixture Column */}
         <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-slate-200">
           {/* Header */}
-          <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-4 text-center">
+          <div className="bg-brand text-white p-4 text-center">
             <h2 className="text-lg font-bold tracking-wider mb-4 text-white">FIXTURE MUNDIAL</h2>
             <div className="flex items-center justify-between px-4">
               <button onClick={handlePrev} className="p-1 hover:bg-white/20 rounded-full transition-colors">
@@ -173,7 +173,7 @@ export function Fixture() {
         {/* Standings Column */}
         <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-slate-200">
           {/* Header */}
-          <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-4 text-center">
+          <div className="bg-brand text-white p-4 text-center">
             <h2 className="text-lg font-bold tracking-wider mb-4 text-white">FASE DE GRUPOS</h2>
             <div className="flex items-center justify-center px-4 h-7">
               <span className="font-bold text-base">POSICIONES</span>
@@ -186,7 +186,7 @@ export function Fixture() {
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([groupLetter, teams]) => (
               <div key={groupLetter} className="border-b border-slate-200 last:border-b-0">
-                <div className="bg-slate-800 text-white text-left py-2 px-3 text-sm font-bold tracking-wide flex justify-between">
+                <div className="bg-brand text-white text-left py-2 px-3 text-sm font-bold tracking-wide flex justify-between">
                   <span>GRUPO {groupLetter}</span>
                 </div>
                 <div className="overflow-x-auto">

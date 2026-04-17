@@ -25,6 +25,7 @@ export default function Predictions({ user }: { user: User }) {
   const [activeTab, setActiveTab] = useState<'groups' | 'specials' | 'matches' | 'knockouts'>('groups');
   const [message, setMessage] = useState<{type: 'success'|'error', text: string} | null>(null);
   const [timeLeft, setTimeLeft] = useState(DEADLINE - Date.now());
+  const [hasSavedDoc, setHasSavedDoc] = useState(false);
 
   // State for predictions
   const [groupPredictions, setGroupPredictions] = useState<Record<string, string[]>>(GROUPS);
@@ -56,6 +57,7 @@ export default function Predictions({ user }: { user: User }) {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
+          setHasSavedDoc(true);
           const data = docSnap.data();
           
           // Sanitize groups to ensure they match current GROUPS
@@ -162,6 +164,7 @@ export default function Predictions({ user }: { user: User }) {
       if (lock || effectiveIsLocked) {
         setIsLocked(true);
       }
+      setHasSavedDoc(true);
       
       setMessage({ type: 'success', text: lock ? 'Predicciones guardadas y fijadas con éxito.' : 'Predicciones guardadas con éxito.' });
     } catch (error) {
@@ -185,12 +188,13 @@ export default function Predictions({ user }: { user: User }) {
     return <div className="text-center py-10">Cargando tus predicciones...</div>;
   }
 
+  const totalGroups = Object.keys(GROUPS).length;
+  
   // Calculate progress
-  const groupsFilled = Object.keys(GROUPS).filter(g => JSON.stringify(groupPredictions[g]) !== JSON.stringify(GROUPS[g])).length;
+  const groupsFilled = hasSavedDoc ? totalGroups : Object.keys(GROUPS).filter(g => JSON.stringify(groupPredictions[g]) !== JSON.stringify(GROUPS[g])).length;
   const specialsFilled = Object.values(specialPredictions).filter(v => v && v.trim() !== '').length;
   const matchesFilled = Object.values(matchPredictions).filter(m => m.home !== '' && m.away !== '').length;
 
-  const totalGroups = Object.keys(GROUPS).length;
   const totalSpecials = SPECIAL_QUESTIONS.length;
   const totalMatches = MATCHES.length;
 

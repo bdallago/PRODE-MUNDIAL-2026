@@ -169,9 +169,10 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
       `"${u.role === 'company_admin' ? 'RRHH' : 'Jugador'}"`,
       u.totalPoints || 0,
       u.hasPredictions ? 'Sí' : 'No'
-    ].join(','));
+    ].join(';'));
     
-    const csvContent = [headers.join(','), ...csvData].join('\n');
+    // Add UTF-8 BOM (\uFEFF) to fix Spanish accents in Excel, and use semicolon delimiter
+    const csvContent = '\uFEFF' + [headers.join(';'), ...csvData].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

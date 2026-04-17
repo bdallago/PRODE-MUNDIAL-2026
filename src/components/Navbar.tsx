@@ -57,7 +57,7 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
             ) : (
               <Trophy className="h-6 w-6 text-white" />
             )}
-            <span className="hidden lg:inline">{companyName || 'Prode Mundial'}</span>
+            <span className="inline truncate max-w-[150px] sm:max-w-none">{companyName || 'Prode Mundial'}</span>
           </Link>
           
           <div className="hidden md:flex items-center justify-center gap-1 lg:gap-2 flex-1 overflow-x-auto no-scrollbar">
