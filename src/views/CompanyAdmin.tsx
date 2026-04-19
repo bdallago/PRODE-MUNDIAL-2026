@@ -255,8 +255,8 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <Users className="w-6 h-6 text-blue-600" />
+                <div className="bg-brand/10 p-3 rounded-full">
+                  <Users className="w-6 h-6 text-brand" />
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
@@ -382,19 +382,33 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                 <div className="flex justify-between items-center">
                   {bannerSuccess ? (
                     <span className="text-green-600 text-sm font-medium flex items-center gap-1">
-                      <CheckCircle2 className="w-4 h-4" /> Banner actualizado y visible para todos
+                      <CheckCircle2 className="w-4 h-4" /> Banner actualizado
                     </span>
                   ) : (
                     <span></span>
                   )}
-                  <Button 
-                    onClick={handleSaveBanner} 
-                    disabled={savingBanner}
-                    className="text-white"
-                    style={{ backgroundColor: 'var(--brand-color, #9333ea)' }}
-                  >
-                    {savingBanner ? 'Guardando...' : 'Guardar Banner'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        setBannerMessage('');
+                        if (company?.id) {
+                          setDoc(doc(db, "companies", company.id), { bannerMessage: '' }, { merge: true });
+                        }
+                      }}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      Limpiar Banner
+                    </Button>
+                    <Button 
+                      onClick={handleSaveBanner} 
+                      disabled={savingBanner}
+                      className="text-white"
+                      style={{ backgroundColor: 'var(--brand-color, #9333ea)' }}
+                    >
+                      {savingBanner ? 'Guardando...' : 'Guardar'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -542,7 +556,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                       </td>
                       <td className="px-6 py-4 text-gray-600">{u.email}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${u.role === 'company_admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${u.role === 'company_admin' ? 'bg-brand/10 text-brand border-brand/20' : 'bg-gray-100 text-gray-800 border-gray-200'}`}>
                           {u.role === 'company_admin' ? 'RRHH' : 'Jugador'}
                         </span>
                       </td>

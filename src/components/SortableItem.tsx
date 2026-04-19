@@ -31,7 +31,7 @@ export const SortableItem: React.FC<{ id: string, team: string, index: number, d
       style={style}
       {...(!disabled ? attributes : {})}
       {...(!disabled ? listeners : {})}
-      className={`flex items-center gap-3 p-3 mb-2 rounded-md border ${isDragging ? 'bg-blue-50 border-blue-300 shadow-md' : 'bg-white border-gray-200'} ${disabled ? 'bg-gray-50' : 'cursor-grab active:cursor-grabbing hover:bg-gray-50'} transition-colors touch-none`}
+      className={`flex items-center gap-3 p-3 mb-2 rounded-md border ${isDragging ? 'bg-brand/10 border-brand/30 shadow-md' : 'bg-white border-gray-200'} ${disabled ? 'bg-gray-50' : 'cursor-grab active:cursor-grabbing hover:bg-gray-50'} transition-colors touch-none`}
     >
       {!disabled && (
         <div className="text-gray-400 p-1 shrink-0">

@@ -107,8 +107,8 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
         {step === 1 ? (
           <>
             <div className="flex justify-center mb-6">
-              <div className="bg-blue-100 p-4 rounded-full">
-                <Building2 className="h-12 w-12 text-blue-600" />
+              <div className="bg-brand/10 p-4 rounded-full">
+                <Building2 className="h-12 w-12 text-brand" />
               </div>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Prode Mundial de fútbol 2026</h1>
@@ -124,13 +124,13 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   placeholder="Ej: A1B2C3"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 uppercase"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand uppercase"
                   maxLength={6}
                 />
               </div>
               {error && <p className="text-red-500 text-sm">{error}</p>}
               <div className="pt-2">
-                <Button onClick={handleJoin} disabled={loading || code.length < 4} className="w-full h-12 text-lg flex items-center justify-center gap-2">
+                <Button onClick={handleJoin} disabled={loading || code.length < 4} className="w-full h-12 text-lg flex items-center justify-center gap-2 btn-primary">
                   <LogIn className="w-5 h-5" /> {loading ? "Verificando..." : "Ingresar"}
                 </Button>
               </div>
@@ -142,8 +142,8 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
               {companyData?.logoUrl ? (
                 <img src={companyData.logoUrl} alt={companyData.name} className="h-16 object-contain" />
               ) : (
-                <div className="bg-purple-100 p-4 rounded-full">
-                  <Building2 className="h-12 w-12 text-purple-600" />
+                <div className="bg-brand/10 p-4 rounded-full">
+                  <Building2 className="h-12 w-12 text-brand" />
                 </div>
               )}
             </div>
@@ -156,7 +156,7 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Tu Área / Sucursal</label>
                 <select
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand"
                   value={selectedArea}
                   onChange={(e) => setSelectedArea(e.target.value)}
                 >

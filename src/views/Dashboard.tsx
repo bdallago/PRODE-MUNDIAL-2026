@@ -126,17 +126,17 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
             
             {/* Left side: Icon and Selects */}
             <div className="flex items-center gap-6 w-full md:w-auto flex-1">
-              <div className="hidden md:flex w-20 h-20 bg-blue-50 border-2 border-blue-100 rounded-xl items-center justify-center shadow-sm shrink-0">
-                <Trophy className="w-10 h-10 text-blue-600" style={{ color: 'var(--brand-color, #2563eb)' }} />
+              <div className="hidden md:flex w-20 h-20 bg-brand/10 border-2 border-brand/20 rounded-xl items-center justify-center shadow-sm shrink-0">
+                <Trophy className="w-10 h-10 text-brand" />
               </div>
               
               <div className="flex flex-col gap-3 w-full max-w-sm">
-                <select className="w-full p-2 border border-gray-300 bg-white rounded-md text-sm text-gray-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                <select className="w-full p-2 border border-gray-300 bg-white rounded-md text-sm text-gray-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand shadow-sm">
                   <option>Puntuación total</option>
                 </select>
                 <div className="flex gap-2 w-full">
                   <select 
-                    className="p-2 border border-gray-300 bg-white rounded-md text-sm text-gray-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 shadow-sm"
+                    className="p-2 border border-gray-300 bg-white rounded-md text-sm text-gray-800 font-bold focus:outline-none focus:ring-2 focus:ring-brand flex-1 shadow-sm"
                     value={currentPage}
                     onChange={(e) => setCurrentPage(Number(e.target.value))}
                   >
@@ -192,7 +192,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                   // Row styling
                   let rowClass = "border-b border-gray-200 transition-colors cursor-pointer hover:bg-gray-50";
                   if (isMe) {
-                    rowClass += " bg-blue-50 font-bold"; // Highlight current user
+                    rowClass += " bg-brand/5 font-bold"; // Highlight current user
                   } else if (rank === 1) {
                     rowClass += " bg-yellow-50"; // Gold
                   } else if (rank === 2) {
@@ -222,7 +222,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                               <UserIcon className="h-5 w-5 text-gray-500" />
                             </div>
                           )}
-                          <span className={isMe ? "text-blue-700 text-base" : "font-semibold text-base"}>{player.displayName}</span>
+                          <span className={isMe ? "text-brand text-base font-bold" : "font-semibold text-base"}>{player.displayName}</span>
                           {isMe && <span className="ml-2 text-[10px] bg-brand text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold shadow-sm">Tú</span>}
                         </div>
                       </td>

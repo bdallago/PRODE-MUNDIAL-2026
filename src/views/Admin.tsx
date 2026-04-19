@@ -39,6 +39,7 @@ export default function Admin() {
   const [actualGroups, setActualGroups] = useState<Record<string, string[]>>(GROUPS);
   const [actualSpecials, setActualSpecials] = useState<Record<string, string>>({});
   const [actualKnockouts, setActualKnockouts] = useState<Record<string, string[]>>({});
+  const [actualMatches, setActualMatches] = useState<Record<string, {home: string, away: string}>>({});
   
   // State for users
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -93,6 +94,7 @@ export default function Admin() {
           setActualGroups(sanitizedGroups);
           setActualSpecials(data.specials || {});
           setActualKnockouts(data.knockouts || {});
+          setActualMatches(data.matches || {});
         } else {
           setActualGroups(GROUPS);
         }
@@ -165,6 +167,7 @@ export default function Admin() {
         groups: actualGroups,
         specials: actualSpecials,
         knockouts: actualKnockouts, // Keep this so it passes firestore rules
+        matches: actualMatches,
         updatedAt: new Date().toISOString()
       }, { merge: true });
       
@@ -204,6 +207,7 @@ export default function Admin() {
       const actualG = sanitizedActualG;
       const actualS = actualData.specials || {};
       const actualK = actualData.knockouts || {};
+      const actualM = actualData.matches || {};
 
       // 2. Fetch all predictions
       const predictionsSnap = await getDocs(collection(db, "predictions"));
@@ -273,6 +277,36 @@ export default function Admin() {
             for (const pTeam of uniquePredicted) {
               if (actualTeams.includes(pTeam)) {
                 totalPoints += stage.points;
+              }
+            }
+          }
+
+          // Calculate Match Points
+          const pMatches = pred.matches || {};
+          for (const [matchId, actualMatch] of Object.entries(actualM) as [string, any][]) {
+            const predictedMatch = pMatches[matchId];
+            if (!predictedMatch || !actualMatch) continue;
+            
+            const homeActual = parseInt(actualMatch.home);
+            const awayActual = parseInt(actualMatch.away);
+            const homePredicted = parseInt(predictedMatch.home);
+            const awayPredicted = parseInt(predictedMatch.away);
+
+            if (!isNaN(homeActual) && !isNaN(awayActual) && !isNaN(homePredicted) && !isNaN(awayPredicted)) {
+              // Exact score match
+              if (homeActual === homePredicted && awayActual === awayPredicted) {
+                totalPoints += 2;
+              } else {
+                // Correct winner / draw
+                const actualDiff = homeActual - awayActual;
+                const predictedDiff = homePredicted - awayPredicted;
+                
+                const actualOutcome = actualDiff > 0 ? 'home' : actualDiff < 0 ? 'away' : 'draw';
+                const predictedOutcome = predictedDiff > 0 ? 'home' : predictedDiff < 0 ? 'away' : 'draw';
+                
+                if (actualOutcome === predictedOutcome) {
+                  totalPoints += 1;
+                }
               }
             }
           }

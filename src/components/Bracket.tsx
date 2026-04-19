@@ -107,9 +107,9 @@ export function Bracket() {
 
         {/* Center - Final */}
         <div className="flex flex-col justify-center items-center px-4">
-          <h3 className="font-bold text-lg text-purple-800 mb-4 uppercase tracking-wider">Final</h3>
-          <div className="flex flex-col w-48 bg-white border-2 border-purple-300 rounded-lg shadow-md overflow-hidden text-sm transform scale-110">
-            <div className="bg-purple-100 px-3 py-1.5 text-xs font-bold text-purple-800 border-b border-purple-200 text-center">
+          <h3 className="font-bold text-lg text-brand mb-4 uppercase tracking-wider">Final</h3>
+          <div className="flex flex-col w-48 bg-white border-2 border-brand/30 rounded-lg shadow-md overflow-hidden text-sm transform scale-110">
+            <div className="bg-brand/10 px-3 py-1.5 text-xs font-bold text-brand border-b border-brand/20 text-center">
               Campeón del Mundo
             </div>
             <div className="px-3 py-3 border-b border-gray-100 truncate font-bold text-gray-800 text-center">

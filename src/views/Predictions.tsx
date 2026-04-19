@@ -104,6 +104,23 @@ export default function Predictions({ user }: { user: User }) {
     return () => clearInterval(interval);
   }, [isLocked, loading]);
 
+  const checkMatchLocked = (matchDateStr: string, matchTimeStr: string) => {
+    // Note: This relies on matching browser timezone handling to target time, 
+    // ideally parsing the date explicitly. We parse the '11 de junio' format and current year.
+    // However, given the prompt: "el sistema fija su elección automaticamente cuando falte 1 hora para que se juegue ese partido"
+    // We only enforce this on client side inputs. Match format is e.g. "11 de junio", time "16:00".
+    const monthMap: Record<string, number> = { 'junio': 5, 'julio': 6 };
+    const [dayStr, _, monthStr] = matchDateStr.split(' ');
+    const day = parseInt(dayStr, 10);
+    const month = monthMap[monthStr?.toLowerCase()] || 5; 
+    const [hours, minutes] = matchTimeStr.split(':').map(Number);
+    
+    // Assuming tournament is 2026 UTC-X, but here we just construct a local date for the time.
+    const matchTimestamp = new Date(2026, month, day, hours, minutes).getTime();
+    const oneHourBefore = matchTimestamp - (60 * 60 * 1000);
+    return Date.now() >= oneHourBefore;
+  };
+  
   const isTimeUp = timeLeft <= 0;
   const effectiveIsLocked = isLocked || isTimeUp;
 
@@ -131,23 +148,37 @@ export default function Predictions({ user }: { user: User }) {
     setSpecialPredictions(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleMatchChange = (matchId: string, team: 'home' | 'away', value: string) => {
-    if (effectiveIsLocked) return;
+  const handleMatchChange = (matchId: string, team: 'home' | 'away', value: string, matchDate: string, matchTime: string) => {
+    if (checkMatchLocked(matchDate, matchTime)) {
+      setMessage({ type: 'error', text: 'El tiempo para editar este partido ha expirado (1 hora antes).' });
+      return;
+    }
+    
     const numValue = value === '' ? '' : parseInt(value, 10);
     if (value !== '' && (isNaN(numValue as number) || (numValue as number) < 0)) return;
     
-    setMatchPredictions(prev => ({
-      ...prev,
-      [matchId]: {
-        ...(prev[matchId] || { home: '', away: '' }),
-        [team]: numValue
-      }
-    }));
+    setMatchPredictions(prev => {
+      const newPredictions = {
+        ...prev,
+        [matchId]: {
+          ...(prev[matchId] || { home: '', away: '' }),
+          [team]: numValue
+        }
+      };
+      
+      // Auto-save just matches when editing
+      // Using a timeout allows state to settle if needed, but we pass the new state directly to setDoc
+      setTimeout(() => {
+        savePredictionsState(newPredictions, false, true);
+      }, 500);
+
+      return newPredictions;
+    });
   };
 
-  const savePredictions = async (lock: boolean = false) => {
+  const savePredictionsState = async (matchesToSave: any, lock: boolean = false, matchesOnly: boolean = false) => {
     setSaving(true);
-    setMessage(null);
+    if (!matchesOnly) setMessage(null);
     
     try {
       const docRef = doc(db, "predictions", user.uid);
@@ -156,28 +187,36 @@ export default function Predictions({ user }: { user: User }) {
         groups: groupPredictions,
         specials: specialPredictions,
         knockouts: knockoutPredictions,
-        matches: matchPredictions,
+        matches: matchesToSave || matchPredictions,
         isLocked: lock || effectiveIsLocked,
         updatedAt: new Date().toISOString()
       }, { merge: true });
       
-      if (lock || effectiveIsLocked) {
+      if (lock || (effectiveIsLocked && !matchesOnly)) {
         setIsLocked(true);
       }
       setHasSavedDoc(true);
       
-      setMessage({ type: 'success', text: lock ? 'Predicciones guardadas y fijadas con éxito.' : 'Predicciones guardadas con éxito.' });
+      if (!matchesOnly) {
+        setMessage({ type: 'success', text: lock ? 'Predicciones guardadas y fijadas con éxito.' : 'Predicciones guardadas con éxito.' });
+      }
     } catch (error: any) {
       console.error("Error saving predictions:", error);
-      if (error?.code === 'permission-denied' || error?.message?.includes('permission')) {
-        setMessage({ type: 'error', text: 'El tiempo para enviar predicciones ha terminado.' });
-      } else {
-        setMessage({ type: 'error', text: 'Hubo un error al guardar. Intenta de nuevo.' });
+      if (!matchesOnly) {
+        if (error?.code === 'permission-denied' || error?.message?.includes('permission')) {
+          setMessage({ type: 'error', text: 'El tiempo para enviar predicciones generales ha terminado.' });
+        } else {
+          setMessage({ type: 'error', text: 'Hubo un error al guardar. Intenta de nuevo.' });
+        }
       }
     } finally {
       setSaving(false);
-      setTimeout(() => setMessage(null), 5000);
+      if (!matchesOnly) setTimeout(() => setMessage(null), 5000);
     }
+  };
+
+  const savePredictions = async (lock: boolean = false, matchesOnly: boolean = false) => {
+    return savePredictionsState(matchPredictions, lock, matchesOnly);
   };
 
   const matchesByDate = MATCHES.reduce((acc, match) => {
@@ -264,20 +303,20 @@ export default function Predictions({ user }: { user: User }) {
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span className="text-gray-600">Preguntas Especiales</span>
-              <span className="font-medium text-purple-600">{specialsFilled} / {totalSpecials}</span>
+              <span className="font-medium text-brand">{specialsFilled} / {totalSpecials}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-purple-600 h-2 rounded-full transition-all duration-500" style={{ width: `${(specialsFilled / totalSpecials) * 100}%` }}></div>
+              <div className="bg-brand h-2 rounded-full transition-all duration-500" style={{ width: `${(specialsFilled / totalSpecials) * 100}%` }}></div>
             </div>
           </div>
           
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span className="text-gray-600">Partidos Individuales</span>
-              <span className="font-medium text-green-600">{matchesFilled} / {totalMatches}</span>
+              <span className="font-medium text-brand">{matchesFilled} / {totalMatches}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-green-600 h-2 rounded-full transition-all duration-500" style={{ width: `${(matchesFilled / totalMatches) * 100}%` }}></div>
+              <div className="bg-brand h-2 rounded-full transition-all duration-500" style={{ width: `${(matchesFilled / totalMatches) * 100}%` }}></div>
             </div>
           </div>
         </CardContent>
@@ -390,9 +429,9 @@ export default function Predictions({ user }: { user: User }) {
       {activeTab === 'matches' && (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Partidos Individuales</h2>
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-blue-800 text-sm mb-8">
+        <div className="bg-brand/10 border border-brand/20 p-4 rounded-lg text-brand text-sm mb-8">
           <p className="font-bold mb-1">¿Le tuviste demasiada fe a un equipo en la previa? ¿Una lesión de última hora? ¡No pasa nada!</p>
-          <p>Podés hacer tu predicción del resultado final hasta 1 hora antes de cada partido. Si acertás el resultado (quién gana o si empatan) te llevás <strong>1 punto</strong>. Si además lo hacés con el resultado exacto, te llevás <strong>1 punto extra</strong> (Total: 2 puntos).</p>
+          <p>Podés hacer tu predicción del resultado final hasta 1 hora antes de cada partido. Si acertás el resultado (quién gana o si empatan) te llevás <strong className="text-green-700">1 punto</strong>. Si además lo hacés con el resultado exacto, te llevás <strong className="text-green-700">1 punto extra</strong> (Total: 2 puntos).</p>
         </div>
 
         <div className="space-y-12">
@@ -435,8 +474,8 @@ export default function Predictions({ user }: { user: User }) {
                             min="0" 
                             max="20"
                             value={matchPredictions[match.id]?.home ?? ''}
-                            onChange={(e) => handleMatchChange(match.id, 'home', e.target.value)}
-                            disabled={effectiveIsLocked}
+                            onChange={(e) => handleMatchChange(match.id, 'home', e.target.value, match.date, match.time)}
+                            disabled={checkMatchLocked(match.date, match.time)}
                             className="w-12 h-12 text-center font-bold text-lg bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
                           />
                         </div>
@@ -458,8 +497,8 @@ export default function Predictions({ user }: { user: User }) {
                             min="0" 
                             max="20"
                             value={matchPredictions[match.id]?.away ?? ''}
-                            onChange={(e) => handleMatchChange(match.id, 'away', e.target.value)}
-                            disabled={effectiveIsLocked}
+                            onChange={(e) => handleMatchChange(match.id, 'away', e.target.value, match.date, match.time)}
+                            disabled={checkMatchLocked(match.date, match.time)}
                             className="w-12 h-12 text-center font-bold text-lg bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
                           />
                           <span className="text-gray-300 font-bold hidden md:inline">-</span>

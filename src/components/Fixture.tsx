@@ -208,7 +208,7 @@ export function Fixture() {
                       {(teams as string[]).map((team, index) => (
                         <tr key={`${groupLetter}-${index}`} className="hover:bg-slate-50 transition-colors">
                           <td className="py-2 text-center">
-                            <div className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto flex items-center justify-center rounded text-[10px] sm:text-xs font-bold text-white ${index < 2 ? 'bg-green-500' : index === 2 ? 'bg-blue-500' : 'bg-slate-400'}`}>
+                            <div className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto flex items-center justify-center rounded text-[10px] sm:text-xs font-bold text-white ${index < 2 ? 'bg-green-500' : index === 2 ? 'bg-brand' : 'bg-slate-400'}`}>
                               {index + 1}
                             </div>
                           </td>

@@ -123,7 +123,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
                   <Lock className="w-3 h-3" /> Fijadas
                 </span>
               ) : (
-                <span className="flex items-center gap-1 text-sm text-blue-700 bg-blue-50 px-2 py-1 rounded-md border border-blue-200">
+                <span className="flex items-center gap-1 text-sm text-amber-700 bg-amber-50 px-2 py-1 rounded-md border border-amber-200">
                   <Unlock className="w-3 h-3" /> Borrador
                 </span>
               )}
@@ -134,7 +134,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
 
         <div className="p-6 overflow-y-auto space-y-8">
           <div>
-            <h4 className="text-xl font-bold text-blue-900 mb-4">Fase de Grupos</h4>
+            <h4 className="text-xl font-bold text-brand mb-4">Fase de Grupos</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(groups)
                 .sort(([a], [b]) => a.localeCompare(b))
@@ -220,7 +220,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
           </div>
 
           <div>
-            <h4 className="text-xl font-bold text-blue-900 mb-4">Preguntas Especiales</h4>
+            <h4 className="text-xl font-bold text-brand mb-4">Preguntas Especiales</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {SPECIAL_QUESTIONS.map((q) => {
                 const answer = specials[q.id] || "Sin respuesta";

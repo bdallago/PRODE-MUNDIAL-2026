@@ -70,9 +70,9 @@ export default function Login() {
       </nav>
 
       {/* Hero Section */}
-      <section className="flex-1 flex flex-col items-center justify-center text-center px-4 py-20 bg-gradient-to-b from-blue-50 to-white">
-        <div className="bg-blue-100 p-6 rounded-full mb-8 shadow-sm">
-          <Trophy className="h-16 w-16 text-blue-600" />
+      <section className="flex-1 flex flex-col items-center justify-center text-center px-4 py-20 bg-gradient-to-b from-brand/5 to-white">
+        <div className="bg-brand/10 p-6 rounded-full mb-8 shadow-sm">
+          <Trophy className="h-16 w-16 text-brand" />
         </div>
         <h1 className="text-6xl md:text-7xl font-extrabold text-gray-900 mb-2 tracking-tight">
           PRODER
@@ -91,7 +91,7 @@ export default function Login() {
         )}
 
         <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md justify-center">
-          <Button onClick={handleLogin} disabled={loading} className="w-full flex items-center justify-center gap-2 h-14 text-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all">
+          <Button onClick={handleLogin} disabled={loading} className="w-full flex items-center justify-center gap-2 h-14 text-lg btn-primary shadow-md transition-all">
             <svg className="w-6 h-6 bg-white rounded-full p-1" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -119,8 +119,8 @@ export default function Login() {
           <p className="text-lg text-gray-500 mb-16">Todo lo que necesitás para vivir el Mundial de otra manera en tu empresa.</p>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="bg-blue-50 rounded-2xl p-8 flex flex-col items-center text-center shadow-sm border border-blue-100 transition-transform hover:-translate-y-1">
-              <div className="bg-white p-4 rounded-full shadow-sm mb-6 text-blue-600">
+            <div className="bg-brand/5 rounded-2xl p-8 flex flex-col items-center text-center shadow-sm border border-brand/20 transition-transform hover:-translate-y-1">
+              <div className="bg-white p-4 rounded-full shadow-sm mb-6 text-brand">
                 <PenSquare className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">1. Hacé tus predicciones</h3>
@@ -139,8 +139,8 @@ export default function Login() {
               </p>
             </div>
 
-            <div className="bg-purple-50 rounded-2xl p-8 flex flex-col items-center text-center shadow-sm border border-purple-100 transition-transform hover:-translate-y-1">
-              <div className="bg-white p-4 rounded-full shadow-sm mb-6 text-purple-600">
+            <div className="bg-brand/5 rounded-2xl p-8 flex flex-col items-center text-center shadow-sm border border-brand/20 transition-transform hover:-translate-y-1">
+              <div className="bg-white p-4 rounded-full shadow-sm mb-6 text-brand">
                 <Award className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">3. Sumá puntos</h3>
@@ -156,7 +156,7 @@ export default function Login() {
       <section className="py-20 bg-gray-50 border-t border-gray-100">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">¿Estás listo para jugar?</h2>
-          <Button onClick={handleLogin} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg rounded-full shadow-lg transition-transform hover:scale-105">
+          <Button onClick={handleLogin} disabled={loading} className="btn-primary px-8 py-6 text-lg rounded-full shadow-lg transition-transform hover:scale-105">
             Empezar a participar ahora →
           </Button>
         </div>

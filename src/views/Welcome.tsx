@@ -124,25 +124,25 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
 
       <div className="grid gap-4 md:grid-cols-3">
         <Link href="/instructions" className="block" id="tutorial-reglas">
-          <Card className="hover:shadow-md transition-shadow border-t-4 border-t-blue-500 cursor-pointer h-full flex items-center justify-center p-6">
-            <CardTitle className="text-xl flex items-center gap-2 text-blue-900 m-0">
-              <BookOpen className="w-6 h-6" /> Reglas
+          <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex items-center justify-center p-6 border-t-4 border-t-brand">
+            <CardTitle className="text-xl flex items-center gap-2 text-gray-900 m-0">
+              <BookOpen className="w-6 h-6 text-brand" /> Reglas
             </CardTitle>
           </Card>
         </Link>
 
         <Link href="/predictions" className="block" id="tutorial-predicciones">
-          <Card className="hover:shadow-md transition-shadow border-t-4 border-t-green-500 cursor-pointer h-full flex items-center justify-center p-6">
-            <CardTitle className="text-xl flex items-center gap-2 text-green-900 m-0">
-              <PenSquare className="w-6 h-6" /> Mis Predicciones
+          <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex items-center justify-center p-6 border-t-4 border-t-brand">
+            <CardTitle className="text-xl flex items-center gap-2 text-gray-900 m-0">
+              <PenSquare className="w-6 h-6 text-brand" /> Mis Predicciones
             </CardTitle>
           </Card>
         </Link>
 
         <Link href="/dashboard" className="block" id="tutorial-ranking">
-          <Card className="hover:shadow-md transition-shadow border-t-4 border-t-orange-500 cursor-pointer h-full flex items-center justify-center p-6">
-            <CardTitle className="text-xl flex items-center gap-2 text-orange-900 m-0">
-              <Trophy className="w-6 h-6" /> Ranking
+          <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex items-center justify-center p-6 border-t-4 border-t-brand">
+            <CardTitle className="text-xl flex items-center gap-2 text-gray-900 m-0">
+              <Trophy className="w-6 h-6 text-brand" /> Ranking
             </CardTitle>
           </Card>
         </Link>
@@ -194,7 +194,7 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
                   <textarea 
                     required
                     rows={5}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand resize-none"
                     placeholder="Describí el error o tu sugerencia acá..."
                     value={reportText}
                     onChange={(e) => setReportText(e.target.value)}
@@ -207,7 +207,7 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
                     multiple 
                     accept="image/*,video/*"
                     onChange={handleFileSelect}
-                    className="w-full p-2 border border-gray-300 rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    className="w-full p-2 border border-gray-300 rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand/10 file:text-brand hover:file:bg-brand/20"
                   />
                   <p className="text-xs text-gray-500 mt-1 mb-3">Formatos permitidos: Cualquier formato de imagen o video.</p>
                   
@@ -216,7 +216,7 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
                       {reportFiles.map((file, index) => (
                         <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded border border-gray-200">
                           <div className="flex items-center gap-2 overflow-hidden">
-                            <div className="bg-blue-50 p-1.5 rounded text-brand shrink-0">
+                            <div className="bg-brand/10 p-1.5 rounded text-brand shrink-0">
                               {file.type.startsWith('image/') ? <ImageIcon className="w-4 h-4" /> : 
                                file.type.startsWith('video/') ? <Film className="w-4 h-4" /> : 
                                <FileText className="w-4 h-4" />}
