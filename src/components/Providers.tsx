@@ -63,16 +63,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
           if (userDoc.exists()) {
             let data = userDoc.data();
             
-            // TEMPORARY: Force all players to be company_admin for testing
-            if (data.role === 'player') {
-              try {
-                await setDoc(userRef, { role: 'company_admin' }, { merge: true });
-                data.role = 'company_admin';
-              } catch (e) {
-                console.error("Error upgrading user to company_admin:", e);
-              }
-            }
-
             setUserData(data);
             localStorage.setItem('cachedUserData', JSON.stringify(data));
             
@@ -86,6 +76,32 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 setCompanyDetails(compData);
                 localStorage.setItem('cachedCompanyDetails', JSON.stringify(compData));
                 hasValidCompany = true;
+
+                // CHECK: Sync role based on designated hrEmails
+                const hrEmails = compData.hrEmails || (compData.hrEmail ? [compData.hrEmail] : []);
+                const userEmail = currentUser.email?.toLowerCase();
+                const isDesignatedHR = userEmail && hrEmails.includes(userEmail);
+                
+                if (data.role === 'player' && isDesignatedHR) {
+                  try {
+                    await setDoc(userRef, { role: 'company_admin' }, { merge: true });
+                    const updatedData = { ...data, role: 'company_admin' };
+                    setUserData(updatedData);
+                    localStorage.setItem('cachedUserData', JSON.stringify(updatedData));
+                  } catch (e) {
+                    console.error("Error upgrading user to company_admin:", e);
+                  }
+                } else if (data.role === 'company_admin' && !isDesignatedHR) {
+                  // If they were company_admin but are no longer in the list, downgrade back to player
+                  try {
+                    await setDoc(userRef, { role: 'player' }, { merge: true });
+                    const updatedData = { ...data, role: 'player' };
+                    setUserData(updatedData);
+                    localStorage.setItem('cachedUserData', JSON.stringify(updatedData));
+                  } catch (e) {
+                    console.error("Error resetting user to player:", e);
+                  }
+                }
               }
             }
 

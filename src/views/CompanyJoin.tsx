@@ -67,7 +67,7 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
     setLoading(true);
     setError("");
     try {
-      let newRole = "company_admin"; // TEMPORAL: Forzar rol de RRHH (company_admin) para pruebas
+      let newRole = "player"; // Default role is player
 
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
