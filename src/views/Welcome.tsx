@@ -113,10 +113,20 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
 
       <div className="flex flex-col items-center justify-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
         <div className="w-full">
-          <h1 className="text-4xl font-bold text-gray-900">
+          {/* Mobile view (stacked) */}
+          <div className="md:hidden space-y-1">
+            <h1 className="text-3xl font-bold text-gray-900">Bienvenido</h1>
+            <p className="text-4xl font-extrabold text-brand tracking-tight">{user?.displayName}</p>
+            <p className="text-xl font-semibold text-gray-700">al Prode Mundial 2026</p>
+            <p className="text-2xl font-bold text-brand/90">{companyName}</p>
+          </div>
+          
+          {/* Desktop view (inline) */}
+          <h1 className="hidden md:block text-4xl font-bold text-gray-900">
             Bienvenido {user?.displayName}<br />al Prode Mundial 2026 {companyName}
           </h1>
-          <p className="text-gray-500 mt-4 text-lg text-justify">
+          
+          <p className="text-gray-500 mt-4 text-lg text-justify md:text-center">
             Demostrá tus conocimientos futbolísticos, participá con tus compañeros y convertite en el campeón de los pronósticos.
           </p>
         </div>

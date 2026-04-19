@@ -476,7 +476,6 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
         <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-4 gap-4">
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
             <Button 
-              variant="outline" 
               size="sm" 
               disabled={users.filter(u => u.predictionStatus !== 'complete').length === 0}
               onClick={() => {
@@ -513,15 +512,14 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                   window.location.href = mailtoUrl;
                 }, 500);
               }}
-              className="flex items-center justify-center gap-2 text-blue-700 border-blue-200 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
             >
               <MessageSquare className="w-4 h-4" /> Recordar a Rezagados
             </Button>
             <Button 
-              variant="outline" 
               size="sm" 
               onClick={exportToCSV}
-              className="flex items-center justify-center gap-2 text-green-700 border-green-200 hover:bg-green-50 w-full md:w-auto"
+              className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white border-green-600 w-full md:w-auto"
             >
               <Download className="w-4 h-4" /> Exportar a Excel
             </Button>
