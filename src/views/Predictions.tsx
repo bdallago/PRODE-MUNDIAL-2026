@@ -370,15 +370,15 @@ export default function Predictions({ user }: { user: User }) {
         <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Fase de Grupos</h2>
         <p className="text-sm text-gray-600 mb-4 text-justify">Arrastrá los equipos para ordenarlos del 1º al 4º puesto. Los dos primeros y los 8 mejores terceros avanzan a 16avos.</p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {Object.entries(groupPredictions)
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([groupLetter, teams]) => (
-            <Card key={groupLetter} className="overflow-hidden border-t-4" style={{ borderTopColor: 'var(--brand-color, #2563eb)' }}>
-              <CardHeader className="bg-gray-50 py-3 px-4 border-b">
-                <CardTitle className="text-lg">Grupo {groupLetter}</CardTitle>
+            <Card key={groupLetter} className="overflow-hidden border-t-2 md:border-t-4" style={{ borderTopColor: 'var(--brand-color, #2563eb)' }}>
+              <CardHeader className="bg-gray-50 py-1.5 md:py-3 px-3 md:px-4 border-b">
+                <CardTitle className="text-sm md:text-lg font-bold">Grupo {groupLetter}</CardTitle>
               </CardHeader>
-              <CardContent className="p-4">
+              <CardContent className="p-2 md:p-4">
                 <DndContext 
                   sensors={sensors}
                   collisionDetection={closestCenter}

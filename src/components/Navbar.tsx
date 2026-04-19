@@ -48,88 +48,91 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
   };
 
   return (
-    <nav className="text-white shadow-md sticky top-0 z-50 mb-6" style={{ backgroundColor: brandColor || '#1e3a8a' }}>
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl md:w-auto lg:w-1/4 shrink-0">
-            {logoUrl ? (
-              <img src={logoUrl} alt={companyName} className="h-14 object-contain bg-white p-1.5 rounded-md shadow-sm" />
-            ) : (
-              <Trophy className="h-6 w-6 text-white" />
-            )}
-            <span className="inline truncate max-w-[150px] sm:max-w-none">{companyName || 'Prode Mundial'}</span>
-          </Link>
-          
-          <div className="hidden md:flex items-center justify-center gap-1 lg:gap-2 flex-1 overflow-x-auto no-scrollbar">
-            <Link href="/" className={getLinkStyle("/")}>
-              <Home className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Inicio</span>
-            </Link>
-            <Link href="/instructions" className={getLinkStyle("/instructions")}>
-              <BookOpen className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Reglas</span>
-            </Link>
-            <Link href="/predictions" className={getLinkStyle("/predictions")}>
-              <PenSquare className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Predicciones</span>
-            </Link>
-            <Link href="/dashboard" className={getLinkStyle("/dashboard")}>
-              <Trophy className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Ranking</span>
-            </Link>
-            {isAdmin && (
-              <Link href="/admin" className={getLinkStyle("/admin")}>
-                <Settings className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Admin</span>
-              </Link>
-            )}
-            {userData?.role === 'company_admin' && (
-              <Link href="/company-admin" className={getLinkStyle("/company-admin")}>
-                <Building2 className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Panel {companyName}</span>
-              </Link>
-            )}
-          </div>
-            
-          <div className="flex items-center justify-end gap-3 md:w-auto lg:w-1/4 shrink-0">
-            <div className="flex items-center gap-2">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-white/30" referrerPolicy="no-referrer" />
+    <>
+      <nav className="text-white shadow-md sticky top-0 z-50 mb-4 md:mb-6" style={{ backgroundColor: brandColor || '#1e3a8a' }}>
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-14 md:h-16">
+            <Link href="/" className="flex items-center gap-2 font-bold text-lg md:text-xl md:w-auto lg:w-1/4 shrink-0">
+              {logoUrl ? (
+                <img src={logoUrl} alt={companyName} className="h-10 md:h-14 object-contain bg-white p-1 rounded-md shadow-sm" />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-black/20 flex items-center justify-center border border-white/20">
-                  {user.displayName?.charAt(0) || "U"}
-                </div>
+                <Trophy className="h-5 w-5 md:h-6 md:w-6 text-white" />
               )}
-              <div className="flex flex-col hidden sm:flex">
-                <span className="text-sm font-medium leading-tight">{user.displayName}</span>
-              </div>
+              <span className="inline truncate max-w-[120px] sm:max-w-none">{companyName || 'Prode'}</span>
+            </Link>
+            
+            <div className="hidden md:flex items-center justify-center gap-1 lg:gap-2 flex-1 overflow-x-auto no-scrollbar">
+              <Link href="/" className={getLinkStyle("/")}>
+                <Home className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Inicio</span>
+              </Link>
+              <Link href="/instructions" className={getLinkStyle("/instructions")}>
+                <BookOpen className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Reglas</span>
+              </Link>
+              <Link href="/predictions" className={getLinkStyle("/predictions")}>
+                <PenSquare className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Predicciones</span>
+              </Link>
+              <Link href="/dashboard" className={getLinkStyle("/dashboard")}>
+                <Trophy className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Ranking</span>
+              </Link>
+              {isAdmin && (
+                <Link href="/admin" className={getLinkStyle("/admin")}>
+                  <Settings className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Admin</span>
+                </Link>
+              )}
+              {userData?.role === 'company_admin' && (
+                <Link href="/company-admin" className={getLinkStyle("/company-admin")}>
+                  <Building2 className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Panel</span>
+                </Link>
+              )}
             </div>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-white hover:bg-white/20 hover:text-white px-2">
-              <LogOut className="h-4 w-4" />
-            </Button>
+              
+            <div className="flex items-center justify-end gap-2 md:gap-3 md:w-auto lg:w-1/4 shrink-0">
+              <div className="flex items-center gap-2">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="Profile" className="w-7 h-7 md:w-8 md:h-8 rounded-full border border-white/30" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/20 flex items-center justify-center border border-white/20 text-xs">
+                    {user.displayName?.charAt(0) || "U"}
+                  </div>
+                )}
+                <span className="hidden sm:inline text-xs md:text-sm font-medium truncate max-w-[80px] md:max-w-none">{user.displayName?.split(' ')[0]}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-white hover:bg-white/20 hover:text-white px-1.5 md:px-2 h-8 w-8 md:h-9 md:w-9">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* Mobile nav */}
-      <div className="md:hidden flex justify-around p-2 bg-black/20 border-t border-white/10">
-        <Link href="/" className={getMobileLinkStyle("/")}>
-          <Home className="h-5 w-5 mb-1" /> Inicio
-        </Link>
-        <Link href="/instructions" className={getMobileLinkStyle("/instructions")}>
-          <BookOpen className="h-5 w-5 mb-1" /> Reglas
-        </Link>
-        <Link href="/predictions" className={getMobileLinkStyle("/predictions")}>
-          <PenSquare className="h-5 w-5 mb-1" /> Predicciones
-        </Link>
-        <Link href="/dashboard" className={getMobileLinkStyle("/dashboard")}>
-          <Trophy className="h-5 w-5 mb-1" /> Ranking
-        </Link>
-        {isAdmin && (
-          <Link href="/admin" className={getMobileLinkStyle("/admin")}>
-            <Settings className="h-5 w-5 mb-1" /> Admin
+      </nav>
+
+      {/* Modern Bottom Mobile Nav */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-xl border-t border-white/10 px-2 py-1 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]" style={{ backgroundColor: brandColor ? `${brandColor}CC` : 'rgba(30, 58, 138, 0.8)' }}>
+        <div className="flex items-center justify-around">
+          <Link href="/" className={getMobileLinkStyle("/")}>
+            <Home className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">Inicio</span>
           </Link>
-        )}
-        {userData?.role === 'company_admin' && (
-          <Link href="/company-admin" className={getMobileLinkStyle("/company-admin")}>
-            <Building2 className="h-5 w-5 mb-1" /> Panel
+          <Link href="/instructions" className={getMobileLinkStyle("/instructions")}>
+            <BookOpen className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">Reglas</span>
           </Link>
-        )}
+          <Link href="/predictions" className={getMobileLinkStyle("/predictions")}>
+            <PenSquare className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">Predecir</span>
+          </Link>
+          <Link href="/dashboard" className={getMobileLinkStyle("/dashboard")}>
+            <Trophy className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">Ranking</span>
+          </Link>
+          {(isAdmin || userData?.role === 'company_admin') && (
+            <Link 
+              href={isAdmin ? "/admin" : "/company-admin"} 
+              className={getMobileLinkStyle(isAdmin ? "/admin" : "/company-admin")}
+            >
+              {isAdmin ? <Settings className="h-5 w-5 mb-0.5" /> : <Building2 className="h-5 w-5 mb-0.5" />}
+              <span className="text-[10px]">Panel</span>
+            </Link>
+          )}
+        </div>
       </div>
-    </nav>
+      {/* Spacer for bottom navbar */}
+      <div className="h-16 md:hidden"></div>
+    </>
   );
 }

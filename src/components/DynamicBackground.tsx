@@ -44,8 +44,8 @@ export function DynamicBackground() {
 
   return (
     <div 
-      className="fixed inset-0 -z-10 pointer-events-none overflow-hidden select-none opacity-30"
-      style={{ position: 'fixed', width: '100vw', height: '100dvh', top: 0, left: 0 }}
+      className="fixed inset-0 -z-10 pointer-events-none select-none opacity-30"
+      style={{ position: 'fixed', width: '100dvw', height: '100dvh', top: 0, left: 0, overflow: 'hidden' }}
     >
       {/* Vector A - Top Left */}
       <svg 
