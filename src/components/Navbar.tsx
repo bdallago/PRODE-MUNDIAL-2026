@@ -49,7 +49,7 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
 
   return (
     <>
-      <nav className="text-white shadow-md sticky top-0 z-50 mb-4 md:mb-6" style={{ backgroundColor: brandColor || '#1e3a8a' }}>
+      <nav className="text-white shadow-md sticky top-0 z-50 mb-0 md:mb-6" style={{ backgroundColor: brandColor || '#1e3a8a' }}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-14 md:h-16">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg md:text-xl md:w-auto lg:w-1/4 shrink-0">
@@ -131,8 +131,6 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
           )}
         </div>
       </div>
-      {/* Spacer for bottom navbar */}
-      <div className="h-16 md:hidden"></div>
     </>
   );
 }

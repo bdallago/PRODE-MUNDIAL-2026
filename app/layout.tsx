@@ -25,7 +25,9 @@ export default function RootLayout({
         <Providers>
           <DynamicBackground />
           <ClientNavbar />
-          {children}
+          <main className="pb-20 md:pb-0">
+            {children}
+          </main>
         </Providers>
       </body>
     </html>
