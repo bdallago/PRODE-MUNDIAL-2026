@@ -4,7 +4,7 @@ import { collection, query, where, getDocs, doc, deleteDoc, getDoc, setDoc } fro
 import { db } from "../firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { Users, Trash2, Building2, Calculator, Copy, CheckCircle2, Trophy, AlertCircle, Download, MessageSquare } from "lucide-react";
+import { Users, Trash2, Building2, Calculator, Copy, CheckCircle2, Trophy, AlertCircle, Download, MessageSquare, Lock, Bell } from "lucide-react";
 import { CountdownBanner } from "../components/CountdownBanner";
 // import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 
@@ -209,10 +209,10 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
       
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Building2 className="w-8 h-8" style={{ color: 'var(--brand-color, #9333ea)' }} /> Panel de {company.name}
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <Building2 className="w-8 h-8" style={{ color: 'var(--brand-color, #9333ea)' }} /> Lista de Participantes
           </h1>
-          <p className="text-gray-500 mt-1">Administrá los participantes de {company.name} y compartí el código de acceso.</p>
+          <p className="text-gray-500 mt-1">Administrá los miembros de {company.name} y enviá recordatorios.</p>
         </div>
       </div>
 
@@ -472,10 +472,9 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
         </div>
       )}
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between border-b pb-2">
-          <h2 className="text-xl font-bold text-gray-900">Lista de Participantes</h2>
-          <div className="flex gap-2">
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-4 gap-4">
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
             <Button 
               variant="outline" 
               size="sm" 
@@ -514,7 +513,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                   window.location.href = mailtoUrl;
                 }, 500);
               }}
-              className="flex items-center gap-2 text-blue-700 border-blue-200 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 text-blue-700 border-blue-200 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
             >
               <MessageSquare className="w-4 h-4" /> Recordar a Rezagados
             </Button>
@@ -522,86 +521,93 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
               variant="outline" 
               size="sm" 
               onClick={exportToCSV}
-              className="flex items-center gap-2 text-green-700 border-green-200 hover:bg-green-50"
+              className="flex items-center justify-center gap-2 text-green-700 border-green-200 hover:bg-green-50 w-full md:w-auto"
             >
               <Download className="w-4 h-4" /> Exportar a Excel
             </Button>
           </div>
         </div>
-        <Card>
+        <Card className="border-gray-100 shadow-sm overflow-hidden">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
                   <tr>
-                    <th className="px-6 py-3">Empleado</th>
-                    <th className="px-6 py-3">Email</th>
-                    <th className="px-6 py-3">Rol</th>
-                    <th className="px-6 py-3 text-center">Predicciones</th>
-                    <th className="px-6 py-3 text-right">Acciones</th>
+                    <th className="px-4 py-3 min-w-[150px]">Empleado</th>
+                    <th className="px-4 py-3 hidden md:table-cell">Email</th>
+                    <th className="px-4 py-3 hidden sm:table-cell">Rol</th>
+                    <th className="px-4 py-3 text-center">Prode</th>
+                    <th className="px-4 py-3 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((u) => (
                     <tr key={u.uid} className="bg-white border-b hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
-                        {u.photoURL ? (
-                          <img src={u.photoURL} alt={u.displayName} className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                            {u.displayName?.charAt(0) || "U"}
+                      <td className="px-4 py-4 font-medium text-gray-900">
+                        <div className="flex items-center gap-3">
+                          {u.photoURL ? (
+                            <img src={u.photoURL} alt={u.displayName} className="w-8 h-8 rounded-full shrink-0" referrerPolicy="no-referrer" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                              {u.displayName?.charAt(0) || "U"}
+                            </div>
+                          )}
+                          <div className="flex flex-col">
+                            <span className="truncate max-w-[120px] md:max-w-none">{u.displayName}</span>
+                            <span className="md:hidden text-[10px] text-gray-400 truncate max-w-[120px]">{u.email}</span>
                           </div>
-                        )}
-                        {u.displayName}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-600">{u.email}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${u.role === 'company_admin' ? 'bg-brand/10 text-brand border-brand/20' : 'bg-gray-100 text-gray-800 border-gray-200'}`}>
+                      <td className="px-4 py-4 text-gray-600 hidden md:table-cell">{u.email}</td>
+                      <td className="px-4 py-4 hidden sm:table-cell">
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-medium border ${u.role === 'company_admin' ? 'bg-brand/10 text-brand border-brand/20' : 'bg-gray-100 text-gray-800 border-gray-200'}`}>
                           {u.role === 'company_admin' ? 'RRHH' : 'Jugador'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-4 text-center">
                         {u.predictionStatus === 'complete' ? (
-                          <span className="inline-flex items-center gap-1 text-green-700 bg-green-50 px-2 py-1 rounded-full text-xs font-medium border border-green-200">
-                            <CheckCircle2 className="w-3 h-3" /> Fijo
-                          </span>
+                          <div className="inline-flex items-center gap-1 text-green-700 bg-green-50 p-1.5 rounded-full" title="Fijo / Completo">
+                            <CheckCircle2 className="w-4 h-4" />
+                          </div>
                         ) : u.predictionStatus === 'incomplete' ? (
-                          <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-1 rounded-full text-xs font-medium border border-amber-200" title="Prode guardado pero no fijado">
-                            <AlertCircle className="w-3 h-3" /> Borrador
-                          </span>
+                          <div className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 p-1.5 rounded-full" title="Prode guardado pero no fijado">
+                            <AlertCircle className="w-4 h-4" />
+                          </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-gray-500 bg-gray-100 px-2 py-1 rounded-full text-xs font-medium border border-gray-200">
-                            Pendiente
-                          </span>
+                          <div className="inline-flex items-center gap-1 text-gray-400 bg-gray-100 p-1.5 rounded-full" title="Pendiente">
+                            <Bell className="w-4 h-4" />
+                          </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-right space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => toggleBlockUser(u.uid, !!u.isBlocked, u.displayName)}
-                          disabled={u.role === 'company_admin' && userData.role !== 'admin'}
-                          className={u.isBlocked ? "text-green-600 hover:text-green-700" : "text-orange-500 hover:text-orange-700"}
-                          title={u.isBlocked ? "Desbloquear empleado" : "Bloquear empleado"}
-                        >
-                          {u.isBlocked ? 'Desbloquear' : 'Bloquear'}
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => setUserToDelete({ uid: u.uid, name: u.displayName })}
-                          disabled={u.role === 'company_admin' && userData.role !== 'admin'} // Prevent deleting themselves easily
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          title="Eliminar empleado"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => toggleBlockUser(u.uid, !!u.isBlocked, u.displayName)}
+                            disabled={u.role === 'company_admin' && userData.role !== 'admin'}
+                            className={`h-8 w-8 ${u.isBlocked ? "text-green-600 border-green-200 bg-green-50" : "text-orange-500 border-orange-200 bg-orange-50"}`}
+                            title={u.isBlocked ? "Desbloquear" : "Bloquear"}
+                          >
+                            <Lock className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            onClick={() => setUserToDelete({ uid: u.uid, name: u.displayName })}
+                            disabled={u.role === 'company_admin' && userData.role !== 'admin'}
+                            className="h-8 w-8 text-red-500 border-red-200 bg-red-50 hover:bg-red-100"
+                            title="Eliminar"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                         Aún no hay empleados registrados en tu empresa.
                       </td>
                     </tr>

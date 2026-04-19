@@ -429,107 +429,96 @@ export default function Predictions({ user }: { user: User }) {
       {activeTab === 'matches' && (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Partidos Individuales</h2>
-        <div className="bg-brand/10 border border-brand/20 p-4 rounded-lg text-brand text-sm mb-8">
-          <p className="font-bold mb-1">¿Le tuviste demasiada fe a un equipo en la previa? ¿Una lesión de última hora? ¡No pasa nada!</p>
-          <p>Podés hacer tu predicción del resultado final hasta 1 hora antes de cada partido. Si acertás el resultado (quién gana o si empatan) te llevás <strong className="text-green-700">1 punto</strong>. Si además lo hacés con el resultado exacto, te llevás <strong className="text-green-700">1 punto extra</strong> (Total: 2 puntos).</p>
+        <div className="bg-brand/10 border border-brand/20 p-4 rounded-lg text-brand text-sm mb-4">
+          <p className="font-bold mb-1 italic">¿Le tuviste demasiada fe a un equipo? ¿Lesión de último minuto? ¡No pasa nada!</p>
+          <p>Podés predecir hasta 1 hora antes de cada partido. Acertar ganador/empate = <strong className="text-green-700">1 punto</strong>. Resultado exacto = <strong className="text-green-700">+1 punto extra</strong>.</p>
         </div>
 
-        <div className="space-y-12">
+        <div className="space-y-3">
           {sortedDates.map(date => (
-            <div key={date} className="space-y-4">
-              <div className="text-center flex items-center justify-center gap-2 mb-6">
-                <Calendar className="w-5 h-5 text-yellow-600" />
-                <h3 className="text-lg font-bold text-yellow-600">{date}</h3>
-              </div>
-
-              <div className="space-y-3">
+            <details key={date} className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" open={new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) === date.toLowerCase()}>
+              <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors list-none">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-yellow-50">
+                    <Calendar className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  <h3 className="font-bold text-gray-800">{date}</h3>
+                </div>
+                <div className="text-gray-400 group-open:rotate-180 transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
+              </summary>
+              
+              <div className="p-4 pt-0 space-y-4 border-t border-gray-100">
                 {matchesByDate[date].sort((a, b) => a.time.localeCompare(b.time)).map(match => (
-                  <div key={match.id} className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4">
-                    {/* Time */}
-                    <div className="hidden md:flex w-20 justify-end text-sm text-gray-500 font-bold items-center gap-1">
-                      <Clock className="w-4 h-4" /> {match.time}
-                    </div>
-                    
-                    {/* Pill */}
-                    <div className="w-full md:flex-1 max-w-4xl bg-white rounded-3xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 flex flex-col md:flex-row items-center justify-between p-4 relative">
-                      {/* Mobile Time */}
-                      <div className="md:hidden absolute top-3 left-4 text-xs text-gray-400 font-bold flex items-center gap-1">
+                  <div key={match.id} className="bg-gray-50/50 rounded-xl p-4 border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8">
+                    {/* Time (Desktop) / Label (Mobile) */}
+                    <div className="flex md:flex-col items-center justify-between md:justify-center md:items-start shrink-0 min-w-[60px]">
+                      <div className="flex items-center gap-1 text-[10px] uppercase font-black text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
                         <Clock className="w-3 h-3" /> {match.time}
                       </div>
-
-                      {/* Home Team */}
-                      <div className="flex items-center justify-between w-full md:w-[45%] mt-6 md:mt-0 md:pl-2">
-                        <div className="flex items-center gap-3">
-                          {TEAM_FLAGS[match.home] ? (
-                            <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[match.home]}.png`} alt={match.home} className="w-8 h-auto rounded-sm shadow-sm" />
-                          ) : (
-                            <span className="text-2xl">🏳️</span>
-                          )}
-                          <span className="font-bold text-gray-800 uppercase text-sm md:text-base truncate">{match.home}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-gray-300 font-bold hidden md:inline">-</span>
-                          <input 
-                            type="number" 
-                            min="0" 
-                            max="20"
-                            value={matchPredictions[match.id]?.home ?? ''}
-                            onChange={(e) => handleMatchChange(match.id, 'home', e.target.value, match.date, match.time)}
-                            disabled={checkMatchLocked(match.date, match.time)}
-                            className="w-12 h-12 text-center font-bold text-lg bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Center Divider */}
-                      <div className="hidden md:flex items-center justify-center w-[10%]">
-                        <div className="w-px h-8 border-l-2 border-dashed border-gray-300"></div>
-                      </div>
-                      <div className="md:hidden w-full flex justify-center my-2">
-                         <div className="h-px w-8 border-t-2 border-dashed border-gray-300"></div>
-                      </div>
-
-                      {/* Away Team */}
-                      <div className="flex items-center justify-between w-full md:w-[45%] mb-2 md:mb-0 md:pr-2">
-                        <div className="flex items-center gap-3">
-                          <input 
-                            type="number" 
-                            min="0" 
-                            max="20"
-                            value={matchPredictions[match.id]?.away ?? ''}
-                            onChange={(e) => handleMatchChange(match.id, 'away', e.target.value, match.date, match.time)}
-                            disabled={checkMatchLocked(match.date, match.time)}
-                            className="w-12 h-12 text-center font-bold text-lg bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
-                          />
-                          <span className="text-gray-300 font-bold hidden md:inline">-</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="font-bold text-gray-800 uppercase text-sm md:text-base truncate">{match.away}</span>
-                          {TEAM_FLAGS[match.away] ? (
-                            <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[match.away]}.png`} alt={match.away} className="w-8 h-auto rounded-sm shadow-sm" />
-                          ) : (
-                            <span className="text-2xl">🏳️</span>
-                          )}
-                        </div>
+                      <div className="md:mt-1">
+                        {matchPredictions[match.id]?.home !== undefined && matchPredictions[match.id]?.away !== undefined && matchPredictions[match.id]?.home !== '' && matchPredictions[match.id]?.away !== '' ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-500" title="Guardado" />
+                        ) : (
+                          <Bell className="w-4 h-4 text-blue-400 animate-pulse" title="Pendiente" />
+                        )}
                       </div>
                     </div>
 
-                    {/* Status */}
-                    <div className="hidden md:flex w-32 justify-start">
-                      {matchPredictions[match.id]?.home !== undefined && matchPredictions[match.id]?.away !== undefined && matchPredictions[match.id]?.home !== '' && matchPredictions[match.id]?.away !== '' ? (
-                        <div className="flex items-center gap-1 text-xs font-bold bg-green-100 text-green-700 px-3 py-1.5 rounded-full">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Guardado
+                    {/* Match Grid */}
+                    <div className="flex-1 flex items-center justify-center gap-2 sm:gap-6">
+                      {/* Home */}
+                      <div className="flex flex-col sm:flex-row items-center gap-2 flex-1 justify-end min-w-0">
+                        <span className="font-bold text-gray-800 uppercase text-xs sm:text-sm truncate order-2 sm:order-1">{match.home}</span>
+                        <div className="shrink-0 w-10 h-7 bg-white rounded shadow-sm overflow-hidden flex items-center justify-center border border-gray-100 order-1 sm:order-2">
+                          {TEAM_FLAGS[match.home] ? (
+                            <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[match.home]}.png`} alt={match.home} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-xl">🏳️</span>
+                          )}
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-1 text-xs font-bold bg-red-100 text-red-600 px-3 py-1.5 rounded-full">
-                          <Bell className="w-3.5 h-3.5" /> Predecir
+                      </div>
+
+                      {/* Inputs */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <input 
+                          type="number" 
+                          min="0" 
+                          max="20"
+                          value={matchPredictions[match.id]?.home ?? ''}
+                          onChange={(e) => handleMatchChange(match.id, 'home', e.target.value, match.date, match.time)}
+                          disabled={checkMatchLocked(match.date, match.time)}
+                          className="w-10 sm:w-12 h-10 text-center font-black text-lg bg-white border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 transition-all"
+                        />
+                        <span className="font-bold text-gray-400">-</span>
+                        <input 
+                          type="number" 
+                          min="0" 
+                          max="20"
+                          value={matchPredictions[match.id]?.away ?? ''}
+                          onChange={(e) => handleMatchChange(match.id, 'away', e.target.value, match.date, match.time)}
+                          disabled={checkMatchLocked(match.date, match.time)}
+                          className="w-10 sm:w-12 h-10 text-center font-black text-lg bg-white border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 transition-all"
+                        />
+                      </div>
+
+                      {/* Away */}
+                      <div className="flex flex-col sm:flex-row items-center gap-2 flex-1 justify-start min-w-0">
+                        <div className="shrink-0 w-10 h-7 bg-white rounded shadow-sm overflow-hidden flex items-center justify-center border border-gray-100">
+                          {TEAM_FLAGS[match.away] ? (
+                            <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[match.away]}.png`} alt={match.away} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-xl">🏳️</span>
+                          )}
                         </div>
-                      )}
+                        <span className="font-bold text-gray-800 uppercase text-xs sm:text-sm truncate">{match.away}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </details>
           ))}
         </div>
       </div>
