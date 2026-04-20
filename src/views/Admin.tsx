@@ -5,7 +5,7 @@ import { db, auth } from "../firebase";
 import { GROUPS, SPECIAL_QUESTIONS, KNOCKOUT_STAGES, ALL_TEAMS } from "../data";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Save, Calculator, AlertCircle, CheckCircle2, Trash2, Users, MessageSquareWarning, Paperclip, Unlock, Building2, Eye, Ban } from "lucide-react";
+import { Save, Calculator, AlertCircle, CheckCircle2, Trash2, Users, MessageSquareWarning, Paperclip, Unlock, Building2, Eye, Ban, PenSquare } from "lucide-react";
 import { CountdownBanner } from "../components/CountdownBanner";
 import CompanyAdmin from "./CompanyAdmin";
 
@@ -59,6 +59,8 @@ export default function Admin() {
   
   const [editCompanyModal, setEditCompanyModal] = useState<any | null>(null);
   const [editCompanyHREmails, setEditCompanyHREmails] = useState("");
+  const [editCompanyColor, setEditCompanyColor] = useState("");
+  const [editCompanyLogo, setEditCompanyLogo] = useState("");
 
   const [activeTab, setActiveTab] = useState<'results' | 'users' | 'reports' | 'analytics' | 'companies'>('results');
 
@@ -466,6 +468,44 @@ export default function Admin() {
     }
   };
 
+  const handleEditLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 400;
+          const MAX_HEIGHT = 400;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/png', 0.8);
+          setEditCompanyLogo(dataUrl);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const createCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCompanyName.trim() || !newCompanyHREmail.trim()) {
@@ -539,18 +579,22 @@ export default function Admin() {
     try {
       const hrEmailsArray = editCompanyHREmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e);
       
-      await setDoc(doc(db, "companies", editCompanyModal.id), {
+      const updateData: any = {
         hrEmail: hrEmailsArray[0] || "",
-        hrEmails: hrEmailsArray
-      }, { merge: true });
+        hrEmails: hrEmailsArray,
+        color: editCompanyColor,
+        logoUrl: editCompanyLogo
+      };
+      
+      await setDoc(doc(db, "companies", editCompanyModal.id), updateData, { merge: true });
       
       setCompanies(companies.map(c => 
         c.id === editCompanyModal.id 
-          ? { ...c, hrEmail: hrEmailsArray[0] || "", hrEmails: hrEmailsArray } 
+          ? { ...c, ...updateData } 
           : c
       ));
       
-      setMessage({ type: 'success', text: 'RRHH de la empresa actualizado correctamente.' });
+      setMessage({ type: 'success', text: 'Empresa actualizada correctamente.' });
       setEditCompanyModal(null);
     } catch (error) {
       console.error("Error updating company:", error);
@@ -824,10 +868,12 @@ export default function Admin() {
                       className="flex items-center gap-2"
                       onClick={() => {
                         setEditCompanyModal(company);
-                        setEditCompanyHREmails(company.hrEmails ? company.hrEmails.join(', ') : company.hrEmail);
+                        setEditCompanyHREmails(company.hrEmails ? company.hrEmails.join(', ') : company.hrEmail || "");
+                        setEditCompanyColor(company.color || "#1d4ed8");
+                        setEditCompanyLogo(company.logoUrl || "");
                       }}
                     >
-                      Editar RRHH
+                      <PenSquare className="w-4 h-4" /> Editar
                     </Button>
                     {company.isActive === false ? (
                       <Button 
@@ -1191,8 +1237,14 @@ export default function Admin() {
       {/* Edit Company Modal */}
       {editCompanyModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Editar RRHH de {editCompanyModal.name}</h3>
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Editar Empresa: {editCompanyModal.name}</h3>
+              <button onClick={() => setEditCompanyModal(null)} className="text-gray-400 hover:text-gray-600">
+                <Trash2 className="w-5 h-5 rotate-45" />
+              </button>
+            </div>
+            
             <form onSubmit={handleUpdateCompany} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1210,7 +1262,58 @@ export default function Admin() {
                   Separa los correos con comas si hay más de uno.
                 </p>
               </div>
-              <div className="flex justify-end gap-3 pt-4">
+
+              <div className="border-t pt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2 font-bold">Configuración Visual</label>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Color Corporativo (Hex)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={editCompanyColor}
+                        onChange={(e) => setEditCompanyColor(e.target.value)}
+                        className="h-10 w-10 p-1 border border-gray-300 rounded-md cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={editCompanyColor}
+                        onChange={(e) => setEditCompanyColor(e.target.value)}
+                        className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                        placeholder="#1d4ed8"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Logo de la Empresa</label>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleEditLogoUpload}
+                          className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                      </div>
+                      {editCompanyLogo && (
+                        <div className="relative group">
+                          <img src={editCompanyLogo} alt="Preview" className="h-12 w-12 object-contain border rounded p-1" />
+                          <button 
+                            type="button" 
+                            onClick={() => setEditCompanyLogo("")}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-6 border-t">
                 <Button type="button" variant="outline" onClick={() => setEditCompanyModal(null)}>
                   Cancelar
                 </Button>
