@@ -9,12 +9,13 @@ import { User } from 'firebase/auth';
 interface TutorialModalProps {
   onComplete: () => void;
   user: User | null;
+  userData?: any;
 }
 
 // Global variable to ensure it only runs once per session regardless of localStorage
 let sessionTutorialSeen = false;
 
-export function TutorialModal({ onComplete, user }: TutorialModalProps) {
+export function TutorialModal({ onComplete, user, userData }: TutorialModalProps) {
   const [run, setRun] = useState(false);
 
   useEffect(() => {
@@ -24,22 +25,13 @@ export function TutorialModal({ onComplete, user }: TutorialModalProps) {
 
       // Check local storage first for quick response
       const localStatus = localStorage.getItem(`hasSeenTutorialV7_${user.uid}`);
-      if (localStatus === 'true') {
+      if (localStatus === 'true' || userData?.hasSeenTutorial) {
         sessionTutorialSeen = true;
+        if (!localStatus) localStorage.setItem(`hasSeenTutorialV7_${user.uid}`, 'true');
         return;
       }
 
       try {
-        // Check Firestore
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        
-        if (userSnap.exists() && userSnap.data().hasSeenTutorial) {
-          // Sync local storage
-          localStorage.setItem(`hasSeenTutorialV7_${user.uid}`, 'true');
-          sessionTutorialSeen = true;
-          return;
-        }
 
         // If not seen, show tutorial
         setTimeout(() => {

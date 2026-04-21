@@ -58,29 +58,22 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
         // Fetch users in this company
         const usersQuery = query(collection(db, "users"), where("companyId", "==", userData.companyId));
         const usersSnap = await getDocs(usersQuery);
-        const usersData = usersSnap.docs.map(d => ({ ...d.data(), uid: d.id } as UserProfile));
-        setUsers(usersData);
-
-        // Fetch predictions for these users to calculate stats
+        
         let predictionsCount = 0;
-        const usersWithPreds = await Promise.all(usersData.map(async (u) => {
-          const predSnap = await getDoc(doc(db, "predictions", u.uid));
-          const hasPreds = predSnap.exists();
-          let status: 'none' | 'incomplete' | 'complete' = 'none';
-
-          if (hasPreds) {
+        const usersData = usersSnap.docs.map(d => {
+          const u = d.data();
+          if (u.hasSavedPredictions || u.predictionStatus === 'complete' || u.predictionStatus === 'incomplete') {
             predictionsCount++;
-            const data = predSnap.data();
-            if (data.isLocked) {
-              status = 'complete';
-            } else {
-              status = 'incomplete';
-            }
           }
-          return { ...u, hasPredictions: hasPreds, predictionStatus: status };
-        }));
-
-        setUsers(usersWithPreds);
+          return { 
+            ...u, 
+            uid: d.id,
+            hasPredictions: !!u.hasSavedPredictions,
+            predictionStatus: u.predictionStatus || 'none'
+          } as UserProfile;
+        });
+        
+        setUsers(usersData);
 
         setStats({
           totalUsers: usersData.length,

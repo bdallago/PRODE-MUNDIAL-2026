@@ -217,7 +217,11 @@ export default function Admin() {
 
       // Fetch all users to ensure we only update existing ones
       const usersSnapCheck = await getDocs(collection(db, "users"));
-      const existingUserIds = new Set(usersSnapCheck.docs.map(d => d.id));
+      const existingUserPoints = new Map<string, number>();
+      usersSnapCheck.docs.forEach(d => {
+        const uData = d.data();
+        existingUserPoints.set(d.id, typeof uData.totalPoints === 'number' ? uData.totalPoints : -1);
+      });
 
       // 3. Prepare chunked batch updates for users (max 500 per batch, using 450 to be safe)
       const chunks = [];
@@ -225,10 +229,14 @@ export default function Admin() {
         chunks.push(predictions.slice(i, i + 450));
       }
       
+      let totalWrites = 0;
+      
       for (const chunk of chunks) {
         const batch = writeBatch(db);
+        let batchHasWrites = false;
+        
         for (const pred of chunk) {
-          if (!existingUserIds.has(pred.id)) continue; // Skip if user doc is missing
+          if (!existingUserPoints.has(pred.id)) continue; // Skip if user doc is missing
           
           let totalPoints = 0;
           const pGroups = pred.groups || {};
@@ -313,11 +321,19 @@ export default function Admin() {
             }
           }
 
+          // Check if points changed to avoid ghost writes
+          const currentPoints = existingUserPoints.get(pred.id);
+          if (currentPoints === totalPoints) continue;
+
           // Update user document
           const userRef = doc(db, "users", pred.id);
           batch.set(userRef, { totalPoints }, { merge: true });
+          batchHasWrites = true;
+          totalWrites++;
         }
-        await batch.commit();
+        if (batchHasWrites) {
+          await batch.commit();
+        }
       }
 
       // Re-fetch users to update the UI with new points

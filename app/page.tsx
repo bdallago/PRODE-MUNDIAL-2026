@@ -8,10 +8,10 @@ const Welcome = dynamic(() => import("../src/views/Welcome"), {
 });
 
 export default function Home() {
-  const { user, companyName, companyDetails, loading } = useAppContext();
+  const { user, userData, companyName, companyDetails, loading } = useAppContext();
 
   if (loading) return null;
   if (!user) return null;
 
-  return <Welcome user={user} companyName={companyName} companyDetails={companyDetails} />;
+  return <Welcome user={user} userData={userData} companyName={companyName} companyDetails={companyDetails} />;
 }

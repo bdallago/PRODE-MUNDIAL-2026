@@ -12,17 +12,6 @@ import { Trophy, LogOut, Settings, PenSquare, BookOpen, Users, Home, Building2 }
 export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, brandColor }: { user: User; isAdmin: boolean; userData?: any; companyName: string; logoUrl?: string | null; brandColor?: string }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [companyCode, setCompanyCode] = useState<string>("");
-
-  useEffect(() => {
-    if (userData?.companyId) {
-      getDoc(doc(db, "companies", userData.companyId)).then(snap => {
-        if (snap.exists()) {
-          setCompanyCode(snap.data().code);
-        }
-      });
-    }
-  }, [userData?.companyId]);
 
   const handleLogout = async () => {
     await signOut(auth);

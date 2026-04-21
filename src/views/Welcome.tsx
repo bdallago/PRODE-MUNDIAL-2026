@@ -13,7 +13,7 @@ import { WorldCupBanner } from "../components/WorldCupBanner";
 import { CountdownBanner } from "../components/CountdownBanner";
 import { TutorialModal } from "../components/TutorialModal";
 
-export default function Welcome({ user, companyName, companyDetails }: { user: User | null, companyName: string, companyDetails?: any }) {
+export default function Welcome({ user, userData, companyName, companyDetails }: { user: User | null, userData?: any, companyName: string, companyDetails?: any }) {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportText, setReportText] = useState("");
   const [reportFiles, setReportFiles] = useState<File[]>([]);
@@ -86,7 +86,7 @@ export default function Welcome({ user, companyName, companyDetails }: { user: U
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 px-4 sm:px-6 py-6 md:py-8">
-      <TutorialModal onComplete={() => {}} user={user} />
+      <TutorialModal onComplete={() => {}} user={user} userData={userData} />
       <WorldCupBanner />
       <CountdownBanner />
       

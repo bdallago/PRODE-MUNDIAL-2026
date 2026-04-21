@@ -192,6 +192,14 @@ export default function Predictions({ user }: { user: User }) {
         updatedAt: new Date().toISOString()
       }, { merge: true });
       
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const newStatus = (lock || effectiveIsLocked) ? 'complete' : 'incomplete';
+        await setDoc(userRef, { hasSavedPredictions: true, predictionStatus: newStatus }, { merge: true });
+      } catch (err) {
+        console.error("Error setting hasSavedPredictions flag on user:", err);
+      }
+      
       if (lock || (effectiveIsLocked && !matchesOnly)) {
         setIsLocked(true);
       }

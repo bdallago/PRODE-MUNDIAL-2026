@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { User } from "firebase/auth";
-import { collection, query, where, onSnapshot, doc } from "firebase/firestore";
+import { collection, query, where, getDocs, onSnapshot, doc } from "firebase/firestore";
 import { db } from "../firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Trophy, Medal, User as UserIcon, Gift, Building2 } from "lucide-react";
@@ -35,19 +35,25 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
       return;
     }
 
-    const q = query(collection(db, "users"), where("companyId", "==", userData.companyId));
-    const unsubscribeUsers = onSnapshot(q, (snapshot) => {
-      const playersData = snapshot.docs
-        .map((doc) => ({ ...doc.data(), uid: doc.id } as Player))
-        .filter(p => p.role !== 'admin'); // Hide admins from ranking
-      // Sort client-side to avoid needing a composite index in Firestore
-      playersData.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
-      setPlayers(playersData);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching leaderboard", error);
-      setLoading(false);
-    });
+    const fetchPlayers = async () => {
+      setLoading(true);
+      try {
+        const q = query(collection(db, "users"), where("companyId", "==", userData.companyId));
+        const snapshot = await getDocs(q);
+        const playersData = snapshot.docs
+          .map((doc) => ({ ...doc.data(), uid: doc.id } as Player))
+          .filter(p => p.role !== 'admin');
+        
+        playersData.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+        setPlayers(playersData);
+      } catch (error) {
+        console.error("Error fetching leaderboard", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlayers();
 
     // Listen to company details for real-time banner updates
     const unsubscribeCompany = onSnapshot(doc(db, "companies", userData.companyId), (docSnap) => {
@@ -57,7 +63,6 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
     });
 
     return () => {
-      unsubscribeUsers();
       unsubscribeCompany();
     };
   }, [userData?.companyId]);
