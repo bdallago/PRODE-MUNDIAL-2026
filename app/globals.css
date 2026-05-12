@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+}
+
+@theme {
+  --color-brand: var(--brand-color, #2563eb);
+}
+
+@layer components {
+  .btn-primary {
+    background-color: var(--brand-color, #2563eb);
+    color: white;
+  }
+  .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--brand-color, #2563eb) 80%, black);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}

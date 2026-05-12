@@ -1,0 +1,578 @@
+[
+  {
+    "id": "A-1",
+    "group": "A",
+    "home": "México",
+    "away": "Sudáfrica",
+    "date": "11 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "A-2",
+    "group": "A",
+    "home": "Corea del Sur",
+    "away": "República Checa",
+    "date": "11 de junio",
+    "time": "23:00"
+  },
+  {
+    "id": "B-3",
+    "group": "B",
+    "home": "Canadá",
+    "away": "Bosnia y Herzegovina",
+    "date": "12 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "B-4",
+    "group": "B",
+    "home": "Qatar",
+    "away": "Suiza",
+    "date": "13 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "C-5",
+    "group": "C",
+    "home": "Brasil",
+    "away": "Marruecos",
+    "date": "13 de junio",
+    "time": "19:00"
+  },
+  {
+    "id": "C-6",
+    "group": "C",
+    "home": "Haití",
+    "away": "Escocia",
+    "date": "13 de junio",
+    "time": "22:00"
+  },
+  {
+    "id": "D-7",
+    "group": "D",
+    "home": "Estados Unidos",
+    "away": "Paraguay",
+    "date": "12 de junio",
+    "time": "22:00"
+  },
+  {
+    "id": "D-8",
+    "group": "D",
+    "home": "Australia",
+    "away": "Turquía",
+    "date": "13 de junio",
+    "time": "01:00"
+  },
+  {
+    "id": "E-9",
+    "group": "E",
+    "home": "Alemania",
+    "away": "Curazao",
+    "date": "14 de junio",
+    "time": "14:00"
+  },
+  {
+    "id": "E-10",
+    "group": "E",
+    "home": "Costa de Marfil",
+    "away": "Ecuador",
+    "date": "14 de junio",
+    "time": "20:00"
+  },
+  {
+    "id": "F-11",
+    "group": "F",
+    "home": "Países Bajos",
+    "away": "Japón",
+    "date": "14 de junio",
+    "time": "17:00"
+  },
+  {
+    "id": "F-12",
+    "group": "F",
+    "home": "Suecia",
+    "away": "Túnez",
+    "date": "14 de junio",
+    "time": "23:00"
+  },
+  {
+    "id": "G-13",
+    "group": "G",
+    "home": "Bélgica",
+    "away": "Egipto",
+    "date": "15 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "G-14",
+    "group": "G",
+    "home": "Irán",
+    "away": "Nueva Zelanda",
+    "date": "15 de junio",
+    "time": "22:00"
+  },
+  {
+    "id": "H-15",
+    "group": "H",
+    "home": "España",
+    "away": "Cabo Verde",
+    "date": "15 de junio",
+    "time": "13:00"
+  },
+  {
+    "id": "H-16",
+    "group": "H",
+    "home": "Arabia Saudita",
+    "away": "Uruguay",
+    "date": "15 de junio",
+    "time": "19:00"
+  },
+  {
+    "id": "I-17",
+    "group": "I",
+    "home": "Francia",
+    "away": "Senegal",
+    "date": "16 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "I-18",
+    "group": "I",
+    "home": "Irak",
+    "away": "Noruega",
+    "date": "16 de junio",
+    "time": "19:00"
+  },
+  {
+    "id": "J-19",
+    "group": "J",
+    "home": "Austria",
+    "away": "Jordania",
+    "date": "16 de junio",
+    "time": "01:00"
+  },
+  {
+    "id": "J-20",
+    "group": "J",
+    "home": "Argentina",
+    "away": "Argelia",
+    "date": "16 de junio",
+    "time": "22:00"
+  },
+  {
+    "id": "K-21",
+    "group": "K",
+    "home": "Portugal",
+    "away": "Rep. Dem. Congo",
+    "date": "17 de junio",
+    "time": "14:00"
+  },
+  {
+    "id": "K-22",
+    "group": "K",
+    "home": "Uzbekistán",
+    "away": "Colombia",
+    "date": "17 de junio",
+    "time": "23:00"
+  },
+  {
+    "id": "L-23",
+    "group": "L",
+    "home": "Inglaterra",
+    "away": "Croacia",
+    "date": "17 de junio",
+    "time": "17:00"
+  },
+  {
+    "id": "L-24",
+    "group": "L",
+    "home": "Ghana",
+    "away": "Panamá",
+    "date": "17 de junio",
+    "time": "20:00"
+  },
+  {
+    "id": "A-25",
+    "group": "A",
+    "home": "República Checa",
+    "away": "Sudáfrica",
+    "date": "18 de junio",
+    "time": "13:00"
+  },
+  {
+    "id": "A-26",
+    "group": "A",
+    "home": "México",
+    "away": "Corea del Sur",
+    "date": "18 de junio",
+    "time": "22:00"
+  },
+  {
+    "id": "B-27",
+    "group": "B",
+    "home": "Suiza",
+    "away": "Bosnia y Herzegovina",
+    "date": "18 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "B-28",
+    "group": "B",
+    "home": "Canadá",
+    "away": "Qatar",
+    "date": "18 de junio",
+    "time": "19:00"
+  },
+  {
+    "id": "C-29",
+    "group": "C",
+    "home": "Escocia",
+    "away": "Marruecos",
+    "date": "19 de junio",
+    "time": "19:00"
+  },
+  {
+    "id": "C-30",
+    "group": "C",
+    "home": "Brasil",
+    "away": "Haití",
+    "date": "19 de junio",
+    "time": "22:00"
+  },
+  {
+    "id": "D-31",
+    "group": "D",
+    "home": "Turquía",
+    "away": "Paraguay",
+    "date": "19 de junio",
+    "time": "01:00"
+  },
+  {
+    "id": "D-32",
+    "group": "D",
+    "home": "Estados Unidos",
+    "away": "Australia",
+    "date": "19 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "E-33",
+    "group": "E",
+    "home": "Alemania",
+    "away": "Costa de Marfil",
+    "date": "20 de junio",
+    "time": "17:00"
+  },
+  {
+    "id": "E-34",
+    "group": "E",
+    "home": "Curazao",
+    "away": "Ecuador",
+    "date": "20 de junio",
+    "time": "21:00"
+  },
+  {
+    "id": "F-35",
+    "group": "F",
+    "home": "Japón",
+    "away": "Túnez",
+    "date": "20 de junio",
+    "time": "01:00"
+  },
+  {
+    "id": "F-36",
+    "group": "F",
+    "home": "Países Bajos",
+    "away": "Suecia",
+    "date": "20 de junio",
+    "time": "14:00"
+  },
+  {
+    "id": "G-37",
+    "group": "G",
+    "home": "Bélgica",
+    "away": "Irán",
+    "date": "21 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "G-38",
+    "group": "G",
+    "home": "Egipto",
+    "away": "Nueva Zelanda",
+    "date": "21 de junio",
+    "time": "22:00"
+  },
+  {
+    "id": "H-39",
+    "group": "H",
+    "home": "España",
+    "away": "Arabia Saudita",
+    "date": "21 de junio",
+    "time": "13:00"
+  },
+  {
+    "id": "H-40",
+    "group": "H",
+    "home": "Cabo Verde",
+    "away": "Uruguay",
+    "date": "21 de junio",
+    "time": "19:00"
+  },
+  {
+    "id": "I-41",
+    "group": "I",
+    "home": "Francia",
+    "away": "Irak",
+    "date": "22 de junio",
+    "time": "18:00"
+  },
+  {
+    "id": "I-42",
+    "group": "I",
+    "home": "Noruega",
+    "away": "Senegal",
+    "date": "22 de junio",
+    "time": "21:00"
+  },
+  {
+    "id": "J-43",
+    "group": "J",
+    "home": "Argentina",
+    "away": "Austria",
+    "date": "22 de junio",
+    "time": "14:00"
+  },
+  {
+    "id": "J-44",
+    "group": "J",
+    "home": "Jordania",
+    "away": "Argelia",
+    "date": "23 de junio",
+    "time": "00:00"
+  },
+  {
+    "id": "K-45",
+    "group": "K",
+    "home": "Portugal",
+    "away": "Uzbekistán",
+    "date": "23 de junio",
+    "time": "14:00"
+  },
+  {
+    "id": "K-46",
+    "group": "K",
+    "home": "Rep. Dem. Congo",
+    "away": "Colombia",
+    "date": "23 de junio",
+    "time": "23:00"
+  },
+  {
+    "id": "L-47",
+    "group": "L",
+    "home": "Inglaterra",
+    "away": "Ghana",
+    "date": "23 de junio",
+    "time": "17:00"
+  },
+  {
+    "id": "L-48",
+    "group": "L",
+    "home": "Croacia",
+    "away": "Panamá",
+    "date": "23 de junio",
+    "time": "20:00"
+  },
+  {
+    "id": "A-49",
+    "group": "A",
+    "home": "República Checa",
+    "away": "México",
+    "date": "24 de junio",
+    "time": "22:00"
+  },
+  {
+    "id": "A-50",
+    "group": "A",
+    "home": "Sudáfrica",
+    "away": "Corea del Sur",
+    "date": "24 de junio",
+    "time": "22:00"
+  },
+  {
+    "id": "B-51",
+    "group": "B",
+    "home": "Suiza",
+    "away": "Canadá",
+    "date": "24 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "B-52",
+    "group": "B",
+    "home": "Bosnia y Herzegovina",
+    "away": "Qatar",
+    "date": "24 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "C-53",
+    "group": "C",
+    "home": "Escocia",
+    "away": "Brasil",
+    "date": "24 de junio",
+    "time": "19:00"
+  },
+  {
+    "id": "C-54",
+    "group": "C",
+    "home": "Marruecos",
+    "away": "Haití",
+    "date": "24 de junio",
+    "time": "19:00"
+  },
+  {
+    "id": "D-55",
+    "group": "D",
+    "home": "Turquía",
+    "away": "Estados Unidos",
+    "date": "25 de junio",
+    "time": "23:00"
+  },
+  {
+    "id": "D-56",
+    "group": "D",
+    "home": "Paraguay",
+    "away": "Australia",
+    "date": "25 de junio",
+    "time": "23:00"
+  },
+  {
+    "id": "E-57",
+    "group": "E",
+    "home": "Ecuador",
+    "away": "Alemania",
+    "date": "25 de junio",
+    "time": "17:00"
+  },
+  {
+    "id": "E-58",
+    "group": "E",
+    "home": "Curazao",
+    "away": "Costa de Marfil",
+    "date": "25 de junio",
+    "time": "17:00"
+  },
+  {
+    "id": "F-59",
+    "group": "F",
+    "home": "Túnez",
+    "away": "Países Bajos",
+    "date": "25 de junio",
+    "time": "20:00"
+  },
+  {
+    "id": "F-60",
+    "group": "F",
+    "home": "Japón",
+    "away": "Suecia",
+    "date": "25 de junio",
+    "time": "20:00"
+  },
+  {
+    "id": "G-61",
+    "group": "G",
+    "home": "Nueva Zelanda",
+    "away": "Bélgica",
+    "date": "27 de junio",
+    "time": "00:00"
+  },
+  {
+    "id": "G-62",
+    "group": "G",
+    "home": "Egipto",
+    "away": "Irán",
+    "date": "27 de junio",
+    "time": "00:00"
+  },
+  {
+    "id": "H-63",
+    "group": "H",
+    "home": "Uruguay",
+    "away": "España",
+    "date": "26 de junio",
+    "time": "21:00"
+  },
+  {
+    "id": "H-64",
+    "group": "H",
+    "home": "Cabo Verde",
+    "away": "Arabia Saudita",
+    "date": "26 de junio",
+    "time": "21:00"
+  },
+  {
+    "id": "I-65",
+    "group": "I",
+    "home": "Noruega",
+    "away": "Francia",
+    "date": "26 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "I-66",
+    "group": "I",
+    "home": "Senegal",
+    "away": "Irak",
+    "date": "26 de junio",
+    "time": "16:00"
+  },
+  {
+    "id": "J-67",
+    "group": "J",
+    "home": "Jordania",
+    "away": "Argentina",
+    "date": "27 de junio",
+    "time": "23:00"
+  },
+  {
+    "id": "J-68",
+    "group": "J",
+    "home": "Argelia",
+    "away": "Austria",
+    "date": "27 de junio",
+    "time": "23:00"
+  },
+  {
+    "id": "K-69",
+    "group": "K",
+    "home": "Colombia",
+    "away": "Portugal",
+    "date": "27 de junio",
+    "time": "20:30"
+  },
+  {
+    "id": "K-70",
+    "group": "K",
+    "home": "Rep. Dem. Congo",
+    "away": "Uzbekistán",
+    "date": "27 de junio",
+    "time": "20:30"
+  },
+  {
+    "id": "L-71",
+    "group": "L",
+    "home": "Panamá",
+    "away": "Inglaterra",
+    "date": "27 de junio",
+    "time": "18:00"
+  },
+  {
+    "id": "L-72",
+    "group": "L",
+    "home": "Croacia",
+    "away": "Ghana",
+    "date": "27 de junio",
+    "time": "18:00"
+  }
+]

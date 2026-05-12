@@ -1,0 +1,240 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default Deny Network
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // -------------------------------------------------------------
+    // Global Primitives
+    // -------------------------------------------------------------
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        ('email' in request.auth.token && request.auth.token.email != null && request.auth.token.email.lower() == "benitodallago@gmail.com" && request.auth.token.email_verified == true) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
+      );
+    }
+    
+    function isCompanyAdmin(companyId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'company_admin' &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId == companyId;
+    }
+
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isBeforeTournamentDeadline() {
+      let configPath = /databases/$(database)/documents/config/tournament;
+      return !exists(configPath) || 
+             !('deadline' in get(configPath).data) || 
+             request.time.toMillis() < get(configPath).data.deadline;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // -------------------------------------------------------------
+    // Schemas (Anti-Update-Gap / Blueprints)
+    // -------------------------------------------------------------
+    function isValidCompany(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.code is string && data.code.size() > 0 && data.code.size() < 50 &&
+             data.createdBy is string && data.createdBy.size() <= 128 &&
+             data.createdAt is string &&
+             (!('hrEmail' in data) || (data.hrEmail is string && data.hrEmail.size() < 100)) &&
+             (!('hrEmails' in data) || (data.hrEmails is list && data.hrEmails.size() <= 10)) &&
+             (!('plan' in data) || (data.plan is string && data.plan in ['base', 'premium'])) &&
+             (!('color' in data) || (data.color is string && data.color.size() < 20)) &&
+             (!('logoUrl' in data) || (data.logoUrl is string && data.logoUrl.size() < 800000)) &&
+             (!('areas' in data) || (data.areas is list && data.areas.size() <= 50)) &&
+             (!('isActive' in data) || data.isActive is bool) &&
+             (!('prizes' in data) || data.prizes is map) &&
+             (!('bannerMessage' in data) || (data.bannerMessage is string && data.bannerMessage.size() < 1000)) &&
+             (!('singleTournament' in data) || data.singleTournament is bool);
+    }
+
+    function isValidUser(data) {
+      return data.uid is string && data.uid.size() > 0 && data.uid.size() < 128 &&
+             data.displayName is string && data.displayName.size() > 0 && data.displayName.size() < 100 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.role in ['admin', 'player', 'company_admin'] &&
+             data.totalPoints is number && data.totalPoints >= 0 &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() < 2000)) &&
+             (!('lastLogin' in data) || data.lastLogin is string) &&
+             (!('companyId' in data) || (data.companyId is string && data.companyId.size() > 0)) &&
+             (!('area' in data) || (data.area is string && data.area.size() < 100)) &&
+             (!('isBlocked' in data) || data.isBlocked is bool) &&
+             (!('hasSeenTutorial' in data) || data.hasSeenTutorial is bool) &&
+             (!('hasSavedPredictions' in data) || data.hasSavedPredictions is bool) &&
+             (!('predictionStatus' in data) || data.predictionStatus in ['complete', 'incomplete']);
+    }
+
+    function isValidPrediction(data) {
+      return data.uid is string && data.uid.size() > 0 && data.uid.size() < 128 &&
+             data.groups is map &&
+             data.specials is map &&
+             data.knockouts is map &&
+             data.isLocked is bool &&
+             (!('matches' in data) || data.matches is map) &&
+             (!('confirmedGroups' in data) || data.confirmedGroups is list) &&
+             (!('updatedAt' in data) || data.updatedAt is string);
+    }
+    
+    function isValidResult(data) {
+      return data.groups is map &&
+             data.specials is map &&
+             data.knockouts is map &&
+             (!('matches' in data) || data.matches is map) &&
+             (!('updatedAt' in data) || data.updatedAt is string);
+    }
+    
+    // -------------------------------------------------------------
+    // Fortress Rules
+    // -------------------------------------------------------------
+    match /companies/{companyId} {
+      allow get: if isAuthenticated() && isValidId(companyId);
+      allow list: if isAuthenticated();
+      
+      allow create: if isAuthenticated() &&
+                    isValidCompany(incoming()) &&
+                    incoming().keys().hasAll(['name', 'code', 'createdBy', 'createdAt']) &&
+                    incoming().createdBy == request.auth.uid;
+                    
+      allow update: if isAuthenticated() && isValidCompany(incoming()) && (
+                      isAdmin() || 
+                      (isCompanyAdmin(companyId) && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'code', 'hrEmail', 'hrEmails', 'plan', 'color', 'logoUrl', 'areas', 'isActive', 'bannerMessage', 'prizes', 'areaStats', 'statsUpdatedAt']))
+                    );
+                    
+      allow delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow get: if isAuthenticated() && isValidId(userId);
+      // Ensure users can only list users inside their own company (preventing global scrape attack).
+      allow list: if isAuthenticated() && (
+                    isAdmin() || 
+                    resource.data.companyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId
+                  );
+      
+      allow create: if isAuthenticated() && isValidId(userId) && request.auth.uid == userId &&
+                    isValidUser(incoming()) &&
+                    incoming().keys().hasAll(['uid', 'displayName', 'email', 'role', 'totalPoints']) &&
+                    incoming().uid == userId &&
+                    (
+                      (incoming().role == 'player' && incoming().totalPoints == 0) || 
+                      (incoming().role == 'company_admin' && incoming().totalPoints == 0 && 
+                       'companyId' in incoming() &&
+                       exists(/databases/$(database)/documents/companies/$(incoming().companyId))) ||
+                      isAdmin()
+                    );
+                    
+      allow update: if isAuthenticated() && isValidId(userId) && isValidUser(incoming()) && (
+                      isAdmin() ||
+                      (request.auth.uid == userId &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'lastLogin', 'area', 'hasSeenTutorial', 'isBlocked', 'role', 'companyId', 'hasSavedPredictions', 'predictionStatus']) &&
+                       incoming().uid == existing().uid &&
+                       (!('isBlocked' in incoming()) || incoming().isBlocked == false) &&
+                       (incoming().role == existing().role || incoming().role == 'player' || 
+                        (incoming().role == 'company_admin' && 'companyId' in incoming() && exists(/databases/$(database)/documents/companies/$(incoming().companyId)))
+                       )
+                      ) ||
+                      (isCompanyAdmin(existing().companyId) &&
+                       incoming().uid == existing().uid &&
+                       incoming().companyId == existing().companyId &&
+                       incoming().role == existing().role)
+                    );
+                    
+      allow delete: if isAdmin() || (isAuthenticated() && isCompanyAdmin(existing().companyId));
+    }
+
+    match /predictions/{userId} {
+      allow get: if isAuthenticated() && isValidId(userId);
+      allow list: if isAdmin(); // Strictly block massive prediction scraping! Only admins can list all predictions for batch sync. Company admins use get() in loops.
+      
+      allow create: if isAuthenticated() && isValidId(userId) && request.auth.uid == userId &&
+                    isValidPrediction(incoming()) &&
+                    incoming().keys().hasAll(['uid', 'groups', 'specials', 'knockouts', 'isLocked']) &&
+                    incoming().uid == userId &&
+                    isBeforeTournamentDeadline(); // Must be before deadline
+                    
+      allow update: if isAuthenticated() && isValidId(userId) && isValidPrediction(incoming()) && (
+                      isAdmin() ||
+                      (request.auth.uid == userId &&
+                       incoming().uid == existing().uid &&
+                       (
+                         // If not locked, must be before tournament general deadline
+                         (existing().isLocked == false && isBeforeTournamentDeadline()) ||
+                         // If locked, can only update matches
+                         (existing().isLocked == true && incoming().diff(existing()).affectedKeys().hasOnly(['matches', 'updatedAt']))
+                       )
+                      )
+                    )
+;
+                    
+      allow delete: if isAdmin() || (
+        isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        isCompanyAdmin(get(/databases/$(database)/documents/users/$(userId)).data.companyId)
+      );
+    }
+
+    match /results/{docId} {
+      allow get: if isAuthenticated();
+      allow list: if isAuthenticated();
+      
+      allow write: if isAdmin() && docId == 'actual' &&
+                   isValidResult(incoming());
+    }
+
+    match /config/{docId} {
+      allow get: if isAuthenticated();
+      allow list: if isAdmin();
+      
+      allow write: if isAdmin();
+    }
+
+    match /leagues/{leagueId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isAuthenticated() && isValidId(leagueId) &&
+                    incoming().keys().hasAll(['name', 'createdBy', 'members', 'createdAt', 'isPublic']) &&
+                    incoming().name is string && incoming().name.size() > 0 && incoming().name.size() < 50 &&
+                    incoming().createdBy is string && incoming().createdBy == request.auth.uid &&
+                    incoming().members is list && incoming().members.size() > 0 && incoming().members.size() <= 1000 && incoming().members[0] == request.auth.uid &&
+                    incoming().createdAt is string &&
+                    incoming().isPublic is bool;
+                    
+      allow update: if isAuthenticated() && isValidId(leagueId) &&
+                    incoming().name is string && incoming().name.size() > 0 && incoming().name.size() < 50 &&
+                    incoming().name == existing().name &&
+                    incoming().createdBy == existing().createdBy &&
+                    incoming().createdAt == existing().createdAt &&
+                    (!('isPublic' in incoming()) || incoming().isPublic == existing().isPublic) &&
+                    incoming().members is list && incoming().members.size() <= 1000;
+                    
+      allow delete: if isAdmin() || (isAuthenticated() && existing().members.size() == 1 && existing().members[0] == request.auth.uid);
+    }
+
+    match /reports/{reportId} {
+      allow create: if isAuthenticated() && isValidId(reportId) &&
+                    incoming().keys().hasAll(['message', 'createdAt']) &&
+                    incoming().message is string && incoming().message.size() > 0 && incoming().message.size() < 5000 &&
+                    (!('userEmail' in incoming()) || (incoming().userEmail is string && incoming().userEmail.size() < 200)) &&
+                    (!('userName' in incoming()) || (incoming().userName is string && incoming().userName.size() < 100)) &&
+                    incoming().createdAt is string;
+                    
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
