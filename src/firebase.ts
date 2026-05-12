@@ -1,29 +1,20 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, OAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import firebaseConfig from "../firebase-applet-config.json";
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
-
-const app = initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
-export const db = getFirestore(app, process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
-// Initialize storage and set a short max retry time so it doesn't hang forever on permission errors
 export const storage = getStorage(app);
-storage.maxUploadRetryTime = 10000; // 10 seconds max retry
+storage.maxUploadRetryTime = 10000;
 
 export const googleProvider = new GoogleAuthProvider();
 
-export const microsoftProvider = new OAuthProvider('microsoft.com');
+export const microsoftProvider = new OAuthProvider("microsoft.com");
 microsoftProvider.setCustomParameters({
-  prompt: 'select_account',
-  tenant: 'common'
+  prompt: "select_account",
+  tenant: "common",
 });
