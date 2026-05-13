@@ -140,7 +140,7 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
           <>
             <div className="flex justify-center mb-6">
               {companyData?.logoUrl ? (
-                <img src={companyData.logoUrl} alt={companyData.name} className="h-16 object-contain" />
+                <img src={companyData.logoUrl} alt={companyData.name} className="h-16 max-w-[200px] object-contain" />
               ) : (
                 <div className="bg-brand/10 p-4 rounded-full">
                   <Building2 className="h-12 w-12 text-brand" />
