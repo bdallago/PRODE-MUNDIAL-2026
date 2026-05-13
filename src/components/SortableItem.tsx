@@ -35,7 +35,7 @@ export const SortableItem: React.FC<{ id: string, team: string, index: number, d
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? 'none' : transition,
     zIndex: isDragging ? 10 : 1,
     opacity: isDragging ? 0.85 : (disabled ? 0.6 : 1),
   };
@@ -109,12 +109,7 @@ export const SortableItem: React.FC<{ id: string, team: string, index: number, d
 
       <span className="font-medium truncate flex-1">{team}</span>
 
-      {/* "Mantené" hint — visible only while pressing */}
-      {isPressing && !isDragging && (
-        <span className="text-[10px] font-semibold text-brand/70 shrink-0 animate-pulse">
-          Mantené…
-        </span>
-      )}
+
     </div>
   );
 }
