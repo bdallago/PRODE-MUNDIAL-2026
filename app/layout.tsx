@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "../src/components/Providers";
 import ClientNavbar from "../src/components/ClientNavbar";
 import { DynamicBackground } from "../src/components/DynamicBackground";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Prode Mundial 2026",
