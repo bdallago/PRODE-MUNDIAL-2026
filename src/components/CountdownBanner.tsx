@@ -2,22 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { Clock, Lock } from "lucide-react";
-import { useAppContext } from "./Providers";
 
-const DEFAULT_DEADLINE = new Date('2026-06-08T00:00:00').getTime();
+const DEADLINE = new Date('2026-06-11T00:00:00').getTime();
 
 export function CountdownBanner() {
-  const { deadline: contextDeadline } = useAppContext() || {};
-  const deadline = contextDeadline ?? DEFAULT_DEADLINE;
-  const [timeLeft, setTimeLeft] = useState(deadline - Date.now());
+  const [timeLeft, setTimeLeft] = useState(DEADLINE - Date.now());
 
   useEffect(() => {
-    setTimeLeft(deadline - Date.now());
+    setTimeLeft(DEADLINE - Date.now());
     const interval = setInterval(() => {
-      setTimeLeft(deadline - Date.now());
+      setTimeLeft(DEADLINE - Date.now());
     }, 1000);
     return () => clearInterval(interval);
-  }, [deadline]);
+  }, []);
 
   const isTimeUp = timeLeft <= 0;
 
@@ -33,10 +30,10 @@ export function CountdownBanner() {
   if (isTimeUp) {
     return (
       <div className="bg-red-50 text-red-900 p-4 rounded-lg shadow-sm flex items-center gap-3 border border-red-200 mb-6">
-        <Lock className="w-6 h-6 text-red-600" />
+        <Lock className="w-6 h-6 text-red-600 shrink-0" />
         <div>
           <h3 className="font-bold">¡Tiempo Agotado!</h3>
-          <p className="text-sm">La fecha límite ha pasado. Todas las predicciones han sido fijadas automáticamente.</p>
+          <p className="text-sm">El Mundial ha comenzado. Fase de grupos y preguntas especiales bloqueadas. Seguí prediciendo los partidos individuales hasta 1 hora antes de cada uno.</p>
         </div>
       </div>
     );
@@ -48,13 +45,13 @@ export function CountdownBanner() {
       style={{ backgroundColor: 'var(--brand-color, #1e3a8a)', borderColor: 'rgba(255,255,255,0.3)' }}
     >
       <div className="flex items-center gap-3">
-        <Clock className="w-6 h-6 text-white/80" />
+        <Clock className="w-6 h-6 text-white/80 shrink-0" />
         <div>
-          <h3 className="font-bold text-lg">Tiempo restante para fijar predicciones</h3>
-          <p className="text-white/70 text-sm">El 7 de Junio de 2026 es el último día para fijar elecciones.</p>
+          <h3 className="font-bold text-lg">Tiempo restante para el Mundial</h3>
+          <p className="text-white/70 text-sm">Tenés hasta el <strong className="text-white">10 de junio inclusive</strong> para hacer tus predicciones.</p>
         </div>
       </div>
-      <div suppressHydrationWarning className="text-2xl font-mono font-bold bg-black/20 px-4 py-2 rounded-md border border-white/10 text-center">
+      <div suppressHydrationWarning className="text-2xl font-mono font-bold bg-black/20 px-4 py-2 rounded-md border border-white/10 text-center shrink-0">
         {formatTime(timeLeft)}
       </div>
     </div>

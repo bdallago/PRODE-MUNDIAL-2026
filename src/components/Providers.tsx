@@ -6,7 +6,7 @@ import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { useRouter, usePathname } from "next/navigation";
 
-const DEFAULT_DEADLINE = new Date('2026-06-08T00:00:00').getTime();
+const DEFAULT_DEADLINE = new Date('2026-06-11T00:00:00').getTime();
 
 const PUBLIC_PATHS = ["/login", "/join-company", "/privacy", "/terms"];
 

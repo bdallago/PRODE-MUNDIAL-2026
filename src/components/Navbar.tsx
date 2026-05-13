@@ -45,9 +45,11 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
               {logoUrl ? (
                 <img src={logoUrl} alt={companyName} className="h-10 md:h-14 object-contain bg-white p-1 rounded-md shadow-sm" />
               ) : (
-                <Trophy className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                <>
+                  <Trophy className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                  <span className="inline truncate max-w-[120px] sm:max-w-none">{companyName || 'Prode'}</span>
+                </>
               )}
-              <span className="inline truncate max-w-[120px] sm:max-w-none">{companyName || 'Prode'}</span>
             </Link>
             
             <div className="hidden md:flex items-center justify-center gap-1 lg:gap-2 flex-1 overflow-x-auto no-scrollbar">

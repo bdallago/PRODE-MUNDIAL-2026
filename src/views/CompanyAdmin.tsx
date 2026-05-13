@@ -338,10 +338,10 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                     <div key={idx} className="bg-gray-50 p-4 rounded-md border border-gray-200 relative group">
                       <h4 className="font-bold text-sm text-gray-700 mb-2">{kit.title}</h4>
                       <p className="text-xs text-gray-600 whitespace-pre-wrap">{kit.body}</p>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white"
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="absolute top-2 right-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-white"
                         onClick={() => {
                           navigator.clipboard.writeText(kit.body);
                           setMessage({ type: 'success', text: 'Mensaje copiado al portapapeles' });

@@ -64,9 +64,12 @@ export default function Instructions() {
 
       <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl flex gap-3 items-start">
         <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
-        <div className="text-sm text-yellow-800">
-          <p className="font-bold">Importante:</p>
-          <p>Podés editar el marcador de los partidos individuales hasta <strong>1 hora antes</strong> del inicio de cada encuentro.</p>
+        <div className="text-sm text-yellow-800 space-y-2">
+          <p className="font-bold">Fechas límite para predicciones:</p>
+          <div className="flex flex-col gap-1">
+            <p>🗓️ <strong>Fase de Grupos y Preguntas Especiales:</strong> hasta el <strong>10 de junio inclusive</strong> (se bloquean a las 00:00 del 11 de junio, cuando arranca el Mundial).</p>
+            <p>⏱️ <strong>Partidos Individuales:</strong> podés editarlos hasta <strong>1 hora antes</strong> del inicio de cada encuentro.</p>
+          </div>
         </div>
       </div>
     </div>

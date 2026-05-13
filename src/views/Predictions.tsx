@@ -15,7 +15,7 @@ import { Fixture } from "../components/Fixture";
 import { Bracket } from "../components/Bracket";
 import { GROUPS, SPECIAL_QUESTIONS, KNOCKOUT_STAGES, ALL_TEAMS, MATCHES, TEAM_FLAGS } from "../data";
 
-const DEFAULT_DEADLINE = new Date('2026-06-08T00:00:00').getTime();
+const DEFAULT_DEADLINE = new Date('2026-06-11T00:00:00').getTime();
 
 export default function Predictions({ user }: { user: User }) {
   const [loading, setLoading] = useState(true);
@@ -173,7 +173,7 @@ export default function Predictions({ user }: { user: User }) {
 
   const handleMatchScoreIncrement = (matchId: string, team: 'home' | 'away', delta: number, matchDate: string, matchTime: string) => {
     const current = matchPredictions[matchId]?.[team];
-    let newVal = typeof current === 'number' ? current + delta : (delta > 0 ? 0 : 0);
+    let newVal = typeof current === 'number' ? current + delta : (delta > 0 ? 1 : 0);
     if (newVal < 0) newVal = 0;
     if (newVal > 20) newVal = 20;
     handleMatchChange(matchId, team, newVal.toString(), matchDate, matchTime);
@@ -189,15 +189,16 @@ export default function Predictions({ user }: { user: User }) {
     if (value !== '' && (isNaN(numValue as number) || (numValue as number) < 0)) return;
     
     setMatchPredictions(prev => {
-      const newPredictions = {
+      const existing = prev[matchId] || { home: '', away: '' };
+      const otherTeam = team === 'home' ? 'away' : 'home';
+      return {
         ...prev,
         [matchId]: {
-          ...(prev[matchId] || { home: '', away: '' }),
-          [team]: numValue
+          ...existing,
+          [team]: numValue,
+          [otherTeam]: existing[otherTeam] === '' || existing[otherTeam] === undefined ? 0 : existing[otherTeam],
         }
       };
-      
-      return newPredictions;
     });
   };
 
@@ -521,21 +522,33 @@ export default function Predictions({ user }: { user: User }) {
         </div>
 
         <div className="space-y-3">
-          {sortedDates.map(date => (
-            <details key={date} className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" open={new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) === date.toLowerCase()}>
-              <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors list-none">
+          {sortedDates.map(date => {
+            const dateMatches = matchesByDate[date];
+            const savedCount = dateMatches.filter(m => matchPredictions[m.id]?.home !== undefined && matchPredictions[m.id]?.away !== undefined && matchPredictions[m.id]?.home !== '' && matchPredictions[m.id]?.away !== '').length;
+            const isToday = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) === date.toLowerCase();
+            return (
+            <details key={date} className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" open={isToday}>
+              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none hover:bg-gray-50/80 transition-colors" style={{ background: isToday ? 'color-mix(in srgb, var(--brand-color, #1e3a8a) 6%, white)' : undefined }}>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-yellow-50">
-                    <Calendar className="w-5 h-5 text-yellow-600" />
+                  <div className="p-2 rounded-lg shrink-0" style={{ backgroundColor: 'color-mix(in srgb, var(--brand-color, #1e3a8a) 12%, white)' }}>
+                    <Calendar className="w-4 h-4" style={{ color: 'var(--brand-color, #1e3a8a)' }} />
                   </div>
-                  <h3 className="font-bold text-gray-800">{date}</h3>
+                  <div>
+                    <h3 className="font-bold text-gray-800 capitalize">{date}</h3>
+                    <p className="text-xs text-gray-400">{savedCount}/{dateMatches.length} predicciones guardadas</p>
+                  </div>
                 </div>
-                <div className="text-gray-400 group-open:rotate-180 transition-transform">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                <div className="flex items-center gap-2">
+                  {savedCount === dateMatches.length && dateMatches.length > 0 && (
+                    <span className="hidden sm:inline text-xs font-semibold text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">Completo</span>
+                  )}
+                  <div className="text-gray-400 group-open:rotate-180 transition-transform duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </div>
                 </div>
               </summary>
-              
-              <div className="p-4 pt-0 space-y-4 border-t border-gray-100">
+
+              <div className="p-4 pt-3 space-y-3 border-t border-gray-100">
                 {matchesByDate[date].sort((a, b) => a.time.localeCompare(b.time)).map(match => (
                   <div key={match.id} className="bg-gray-50/50 rounded-xl p-4 border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8">
                     {/* Time (Desktop) / Label (Mobile) */}
@@ -566,7 +579,7 @@ export default function Predictions({ user }: { user: User }) {
                         
                         <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-0.5 sm:p-1 border border-gray-200 shrink-0">
                           <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'home', -1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600 hover:text-black hover:bg-gray-200"><Minus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
-                          <div className="w-5 sm:w-8 text-center font-black text-sm sm:text-lg">{matchPredictions[match.id]?.home ?? '-'}</div>
+                          <div className="w-5 sm:w-8 text-center font-black text-sm sm:text-lg">{matchPredictions[match.id]?.home || 0}</div>
                           <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'home', 1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600 hover:text-black hover:bg-gray-200"><Plus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
                         </div>
                       </div>
@@ -585,7 +598,7 @@ export default function Predictions({ user }: { user: User }) {
 
                         <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-0.5 sm:p-1 border border-gray-200 shrink-0">
                           <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'away', -1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600 hover:text-black hover:bg-gray-200"><Minus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
-                          <div className="w-5 sm:w-8 text-center font-black text-sm sm:text-lg">{matchPredictions[match.id]?.away ?? '-'}</div>
+                          <div className="w-5 sm:w-8 text-center font-black text-sm sm:text-lg">{matchPredictions[match.id]?.away || 0}</div>
                           <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'away', 1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600 hover:text-black hover:bg-gray-200"><Plus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
                         </div>
                       </div>
@@ -594,7 +607,8 @@ export default function Predictions({ user }: { user: User }) {
                 ))}
               </div>
             </details>
-          ))}
+          );
+          })}
         </div>
       </div>
       )}

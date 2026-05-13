@@ -9,7 +9,6 @@ import { Button } from "../components/ui/button";
 import { addDoc, collection } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, auth, storage } from "../firebase";
-import { WorldCupBanner } from "../components/WorldCupBanner";
 import { CountdownBanner } from "../components/CountdownBanner";
 import { TutorialModal } from "../components/TutorialModal";
 
@@ -87,7 +86,6 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
   return (
     <div className="max-w-4xl mx-auto space-y-8 px-4 sm:px-6 py-6 md:py-8">
       <TutorialModal onComplete={() => {}} user={user} userData={userData} />
-      <WorldCupBanner />
       <CountdownBanner />
       
       {isPremium && companyDetails?.bannerMessage && (
