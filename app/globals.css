@@ -27,3 +27,8 @@ html {
     scrollbar-width: none;  /* Firefox */
   }
 }
+
+@keyframes press-progress {
+  from { transform: scaleX(0); opacity: 1; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
