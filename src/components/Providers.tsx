@@ -185,6 +185,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Navigation guard — re-checks auth/company on every route change
+  useEffect(() => {
+    if (loading) return;
+    if (PUBLIC_PATHS.includes(pathname)) return;
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    if (userData && !companyDetails && userData.role !== 'admin') {
+      router.push("/join-company");
+    }
+  }, [pathname, loading, user, userData, companyDetails, router]);
+
   // Centralized deadline listener — only starts when authenticated
   useEffect(() => {
     if (!user) return;
