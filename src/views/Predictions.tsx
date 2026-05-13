@@ -8,6 +8,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { SortableItem } from "../components/SortableItem";
 import { DndContext, closestCenter, KeyboardSensor, TouchSensor, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Save, Lock, AlertCircle, CheckCircle2, Calendar, Clock, Bell, Plus, Minus } from "lucide-react";
 import { CountdownBanner } from "../components/CountdownBanner";
@@ -466,9 +467,10 @@ export default function Predictions({ user }: { user: User }) {
                 )}
               </CardHeader>
               <CardContent className="p-4">
-                <DndContext 
+                <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
+                  modifiers={[restrictToParentElement, restrictToVerticalAxis]}
                   onDragEnd={(e) => handleDragEnd(e, groupLetter)}
                 >
                   <SortableContext 
