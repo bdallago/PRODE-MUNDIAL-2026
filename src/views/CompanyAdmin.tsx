@@ -320,11 +320,11 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                     },
                     {
                       title: "Recordatorio a Rezagados",
-                      body: `¡Últimos días para cargar tu Prode! ⏰\n\nTodavía estás a tiempo de participar y competir por los premios. Tenés tiempo hasta el 7 de Junio para fijar tus predicciones antes de que arranque el Mundial.\n\nEntrá ahora y completá tu fixture:\n👉 ${window.location.origin}`
+                      body: `¡Últimos días para cargar tu Prode! ⏰\n\nTodavía estás a tiempo de participar y competir por los premios. Tenés tiempo hasta el 11 de Junio para fijar tus predicciones antes de que arranque el Mundial.\n\nEntrá ahora y completá tu fixture:\n👉 ${window.location.origin}`
                     },
                     {
                       title: "Mitad de Torneo - Octavos de Final",
-                      body: `¡Terminó la Fase de Grupos en el Prode de ${companyName || 'la empresa'}! 📊\n\nEl torneo se pone picante y empiezan los mata-mata. ¿Ya revisaste en qué posición quedaste en el ranking de áreas? ¡Todavía quedan muchos puntos en juego en los partidos individuales!\n\nRevisá el ranking acá:\n👉 ${window.location.origin}`
+                      body: `¡Terminó la Fase de Grupos en el Prode de ${companyName || 'la empresa'}! 📊\n\nEl torneo se pone picante y empiezan los mata-mata. ¿Ya revisaste en qué posición quedaste en el ranking? ¡Todavía quedan muchos puntos en juego en los partidos individuales!\n\nRevisá el ranking acá:\n👉 ${window.location.origin}`
                     },
                     {
                       title: "Recta Final - Semis y Final",
