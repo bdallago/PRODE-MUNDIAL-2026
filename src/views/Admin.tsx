@@ -49,6 +49,8 @@ export default function Admin() {
   
   // State for users
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [editingUser, setEditingUser] = useState<{uid: string, currentName: string, newName: string} | null>(null);
+  const [savingName, setSavingName] = useState(false);
   
   // State for reports
   const [reports, setReports] = useState<Report[]>([]);
@@ -433,6 +435,23 @@ export default function Admin() {
       console.error("Error deleting user:", error);
       setMessage({ type: 'error', text: 'Error al eliminar usuario. Verifica los permisos.' });
     } finally {
+      setTimeout(() => setMessage(null), 5000);
+    }
+  };
+
+  const handleRenameUser = async () => {
+    if (!editingUser || !editingUser.newName.trim()) return;
+    setSavingName(true);
+    try {
+      await setDoc(doc(db, "users", editingUser.uid), { displayName: editingUser.newName.trim() }, { merge: true });
+      setUsers(users.map(u => u.uid === editingUser.uid ? { ...u, displayName: editingUser.newName.trim() } : u));
+      setMessage({ type: 'success', text: `Nombre de usuario actualizado correctamente.` });
+      setEditingUser(null);
+    } catch (error: any) {
+      console.error("Error renaming user:", error);
+      setMessage({ type: 'error', text: 'Error al cambiar el nombre: ' + (error.message || '') });
+    } finally {
+      setSavingName(false);
       setTimeout(() => setMessage(null), 5000);
     }
   };
@@ -1109,8 +1128,18 @@ export default function Admin() {
                         </span>
                       </td>
                       <td className="px-6 py-4 font-bold">{u.totalPoints}</td>
-                      <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
-                        <Button
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingUser({ uid: u.uid, currentName: u.displayName, newName: u.displayName })}
+                            className="flex items-center gap-1 text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                            title="Editar nombre"
+                          >
+                            <PenSquare className="w-4 h-4" /> Renombrar
+                          </Button>
+                          <Button
                             variant="outline"
                             size="sm"
                             onClick={() => unfixPredictions(u.uid, u.displayName)}
@@ -1119,15 +1148,16 @@ export default function Admin() {
                           >
                             <Unlock className="w-4 h-4" /> Desfijar
                           </Button>
-                        <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          onClick={() => setConfirmAction({ type: 'delete', uid: u.uid, name: u.displayName })}
-                          disabled={u.role === 'admin'} // Prevent deleting other admins or self easily
-                          className="flex items-center gap-1"
-                        >
-                          <Trash2 className="w-4 h-4" /> Eliminar
-                        </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setConfirmAction({ type: 'delete', uid: u.uid, name: u.displayName })}
+                            disabled={u.role === 'admin'}
+                            className="flex items-center gap-1"
+                          >
+                            <Trash2 className="w-4 h-4" /> Eliminar
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1385,6 +1415,46 @@ export default function Admin() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-1">Editar nombre de usuario</h3>
+            <p className="text-gray-500 text-sm mb-5">
+              Cambiá el nombre visible en el ranking. El email y el rol no se modifican.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nombre actual</label>
+                <p className="text-gray-800 font-medium">{editingUser.currentName}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nuevo nombre</label>
+                <input
+                  type="text"
+                  value={editingUser.newName}
+                  onChange={(e) => setEditingUser({ ...editingUser, newName: e.target.value })}
+                  onKeyDown={(e) => e.key === 'Enter' && handleRenameUser()}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  maxLength={50}
+                  placeholder="Nombre y apellido..."
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <Button variant="outline" onClick={() => setEditingUser(null)}>Cancelar</Button>
+              <Button
+                onClick={handleRenameUser}
+                disabled={savingName || !editingUser.newName.trim() || editingUser.newName.trim() === editingUser.currentName}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                {savingName ? 'Guardando...' : 'Guardar nombre'}
+              </Button>
+            </div>
           </div>
         </div>
       )}

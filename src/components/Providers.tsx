@@ -162,10 +162,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   console.error("Error resetting user to player:", e);
                 }
               }
+            } else {
+              // Company was deleted or deactivated — clear stale cached company data
+              setCompanyDetails(null);
+              setCompanyName("");
+              localStorage.removeItem('cachedCompanyDetails');
             }
           }
 
           if (!hasValidCompany && data.role !== 'admin') {
+            // Always clear stale company details so the nav guard can redirect correctly
+            setCompanyDetails(null);
+            setCompanyName("");
+            localStorage.removeItem('cachedCompanyDetails');
             if (!PUBLIC_PATHS.includes(pathnameRef.current)) {
               router.push("/join-company");
             }
@@ -177,6 +186,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+        // On any Firestore error, clear company data so stale cache can't grant access
+        setCompanyDetails(null);
+        setCompanyName("");
+        localStorage.removeItem('cachedCompanyDetails');
+        if (!PUBLIC_PATHS.includes(pathnameRef.current)) {
+          router.push("/join-company");
+        }
       } finally {
         setLoading(false);
       }
@@ -195,7 +211,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (userData && !companyDetails && userData.role !== 'admin') {
+    if (userData && (!companyDetails || !userData.companyId) && userData.role !== 'admin') {
       router.push("/join-company");
     }
   }, [pathname, loading, user, userData, companyDetails, router]);

@@ -4,7 +4,7 @@ import { collection, query, where, getDocs, doc, deleteDoc, getDoc, setDoc } fro
 import { db } from "../firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { Users, Trash2, Building2, Calculator, Copy, CheckCircle2, Trophy, AlertCircle, Download, MessageSquare, Lock, Bell } from "lucide-react";
+import { Users, Trash2, Building2, Calculator, Copy, CheckCircle2, Trophy, AlertCircle, Download, MessageSquare, Lock, Bell, PenSquare } from "lucide-react";
 import { CountdownBanner } from "../components/CountdownBanner";
 // import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 
@@ -30,6 +30,8 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
     predictionsMade: 0
   });
   const [userToDelete, setUserToDelete] = useState<{uid: string, name: string} | null>(null);
+  const [editingUser, setEditingUser] = useState<{uid: string, currentName: string, newName: string} | null>(null);
+  const [savingName, setSavingName] = useState(false);
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
   const [bannerMessage, setBannerMessage] = useState("");
   const [savingBanner, setSavingBanner] = useState(false);
@@ -144,6 +146,23 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
       setMessage({ type: 'error', text: 'Error al guardar el banner: ' + (error.message || '') });
     } finally {
       setSavingBanner(false);
+    }
+  };
+
+  const handleRenameUser = async () => {
+    if (!editingUser || !editingUser.newName.trim()) return;
+    setSavingName(true);
+    try {
+      await setDoc(doc(db, "users", editingUser.uid), { displayName: editingUser.newName.trim() }, { merge: true });
+      setUsers(users.map(u => u.uid === editingUser.uid ? { ...u, displayName: editingUser.newName.trim() } : u));
+      setMessage({ type: 'success', text: `Nombre actualizado correctamente.` });
+      setEditingUser(null);
+    } catch (error: any) {
+      console.error("Error renaming user:", error);
+      setMessage({ type: 'error', text: 'Error al cambiar el nombre: ' + (error.message || '') });
+    } finally {
+      setSavingName(false);
+      setTimeout(() => setMessage(null), 5000);
     }
   };
 
@@ -572,6 +591,15 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                           <Button
                             variant="outline"
                             size="icon"
+                            onClick={() => setEditingUser({ uid: u.uid, currentName: u.displayName, newName: u.displayName })}
+                            className="h-8 w-8 text-blue-500 border-blue-200 bg-blue-50 hover:bg-blue-100"
+                            title="Editar nombre"
+                          >
+                            <PenSquare className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
                             onClick={() => toggleBlockUser(u.uid, !!u.isBlocked, u.displayName)}
                             disabled={u.role === 'company_admin' && userData.role !== 'admin'}
                             className={`h-8 w-8 ${u.isBlocked ? "text-green-600 border-green-200 bg-green-50" : "text-orange-500 border-orange-200 bg-orange-50"}`}
@@ -579,9 +607,9 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                           >
                             <Lock className="w-3.5 h-3.5" />
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
+                          <Button
+                            variant="outline"
+                            size="icon"
                             onClick={() => setUserToDelete({ uid: u.uid, name: u.displayName })}
                             disabled={u.role === 'company_admin' && userData.role !== 'admin'}
                             className="h-8 w-8 text-red-500 border-red-200 bg-red-50 hover:bg-red-100"
@@ -606,6 +634,47 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
           </CardContent>
         </Card>
       </div>
+
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-1">Editar nombre de usuario</h3>
+            <p className="text-gray-500 text-sm mb-5">
+              Cambiá el nombre que aparece en el ranking y el panel. El email no se modifica.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nombre actual</label>
+                <p className="text-gray-800 font-medium">{editingUser.currentName}</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nuevo nombre</label>
+                <input
+                  type="text"
+                  value={editingUser.newName}
+                  onChange={(e) => setEditingUser({ ...editingUser, newName: e.target.value })}
+                  onKeyDown={(e) => e.key === 'Enter' && handleRenameUser()}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand"
+                  maxLength={50}
+                  placeholder="Nombre y apellido..."
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <Button variant="outline" onClick={() => setEditingUser(null)}>Cancelar</Button>
+              <Button
+                onClick={handleRenameUser}
+                disabled={savingName || !editingUser.newName.trim() || editingUser.newName.trim() === editingUser.currentName}
+                className="text-white"
+                style={{ backgroundColor: 'var(--brand-color, #9333ea)' }}
+              >
+                {savingName ? 'Guardando...' : 'Guardar nombre'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {userToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
