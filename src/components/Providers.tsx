@@ -139,6 +139,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
               localStorage.setItem('cachedCompanyDetails', JSON.stringify(compData));
               hasValidCompany = true;
 
+              // If company has areas and user hasn't selected one, redirect to area selection
+              if (
+                compData.plan === 'premium' &&
+                compData.areas?.length > 0 &&
+                !data.area &&
+                data.role !== 'admin'
+              ) {
+                if (pathnameRef.current !== '/join-company') {
+                  router.push("/join-company");
+                }
+                setLoading(false);
+                return;
+              }
+
               const hrEmails = compData.hrEmails || (compData.hrEmail ? [compData.hrEmail] : []);
               const userEmail = currentUser.email?.toLowerCase();
               const isDesignatedHR = userEmail && hrEmails.includes(userEmail);
@@ -212,6 +226,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
 
     if (userData && (!companyDetails || !userData.companyId) && userData.role !== 'admin') {
+      router.push("/join-company");
+      return;
+    }
+
+    if (
+      userData &&
+      companyDetails &&
+      userData.companyId &&
+      !userData.area &&
+      companyDetails.plan === 'premium' &&
+      companyDetails.areas?.length > 0 &&
+      userData.role !== 'admin'
+    ) {
       router.push("/join-company");
     }
   }, [pathname, loading, user, userData, companyDetails, router]);

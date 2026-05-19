@@ -1,13 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User } from "firebase/auth";
 import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { Button } from "../components/ui/button";
 import { Building2, LogIn } from "lucide-react";
 
-export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: () => void }) {
+export default function CompanyJoin({
+  user,
+  onJoined,
+  preloadedCompanyId,
+  preloadedCompanyData,
+}: {
+  user: User;
+  onJoined: () => void;
+  preloadedCompanyId?: string;
+  preloadedCompanyData?: any;
+}) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -15,6 +25,14 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
   const [companyData, setCompanyData] = useState<any>(null);
   const [companyId, setCompanyId] = useState<string>("");
   const [selectedArea, setSelectedArea] = useState<string>("");
+
+  useEffect(() => {
+    if (preloadedCompanyId && preloadedCompanyData?.areas?.length > 0) {
+      setCompanyId(preloadedCompanyId);
+      setCompanyData(preloadedCompanyData);
+      setStep(2);
+    }
+  }, [preloadedCompanyId, preloadedCompanyData]);
 
   const handleJoin = async () => {
     if (!code.trim()) {
@@ -188,12 +206,14 @@ export default function CompanyJoin({ user, onJoined }: { user: User, onJoined: 
                 {loading ? "Guardando..." : "Comenzar a jugar"}
               </Button>
               
-              <button 
-                onClick={() => setStep(1)}
-                className="w-full text-sm text-gray-500 hover:text-gray-700 mt-4"
-              >
-                Volver atrás
-              </button>
+              {!preloadedCompanyId && (
+                <button
+                  onClick={() => setStep(1)}
+                  className="w-full text-sm text-gray-500 hover:text-gray-700 mt-4"
+                >
+                  Volver atrás
+                </button>
+              )}
             </div>
           </>
         )}

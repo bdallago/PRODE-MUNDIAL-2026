@@ -10,7 +10,7 @@ const CompanyJoin = dynamic(() => import("../../src/views/CompanyJoin"), {
 
 export default function JoinCompanyPage() {
   const router = useRouter();
-  const { user, loading, refreshUserData } = useAppContext();
+  const { user, userData, companyDetails, loading, refreshUserData } = useAppContext();
 
   if (loading) return null;
   if (!user) return null;
@@ -18,6 +18,8 @@ export default function JoinCompanyPage() {
   return (
     <CompanyJoin
       user={user}
+      preloadedCompanyId={userData?.companyId}
+      preloadedCompanyData={companyDetails}
       onJoined={async () => {
         await refreshUserData();
         router.push("/");

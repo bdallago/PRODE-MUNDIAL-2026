@@ -30,6 +30,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
     predictionsMade: 0
   });
   const [userToDelete, setUserToDelete] = useState<{uid: string, name: string} | null>(null);
+  const [userToBlock, setUserToBlock] = useState<{uid: string, name: string, isBlocked: boolean} | null>(null);
   const [editingUser, setEditingUser] = useState<{uid: string, currentName: string, newName: string} | null>(null);
   const [savingName, setSavingName] = useState(false);
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
@@ -131,6 +132,12 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
     } finally {
       setTimeout(() => setMessage(null), 5000);
     }
+  };
+
+  const confirmToggleBlockUser = async () => {
+    if (!userToBlock) return;
+    await toggleBlockUser(userToBlock.uid, userToBlock.isBlocked, userToBlock.name);
+    setUserToBlock(null);
   };
 
   const handleSaveBanner = async () => {
@@ -600,10 +607,10 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => toggleBlockUser(u.uid, !!u.isBlocked, u.displayName)}
+                            onClick={() => setUserToBlock({ uid: u.uid, name: u.displayName, isBlocked: !!u.isBlocked })}
                             disabled={u.role === 'company_admin' && userData.role !== 'admin'}
                             className={`h-8 w-8 ${u.isBlocked ? "text-green-600 border-green-200 bg-green-50" : "text-orange-500 border-orange-200 bg-orange-50"}`}
-                            title={u.isBlocked ? "Desbloquear" : "Bloquear"}
+                            title={u.role === 'company_admin' && userData.role !== 'admin' ? 'No podés modificar a otro admin' : u.isBlocked ? "Desbloquear" : "Bloquear"}
                           >
                             <Lock className="w-3.5 h-3.5" />
                           </Button>
@@ -613,7 +620,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                             onClick={() => setUserToDelete({ uid: u.uid, name: u.displayName })}
                             disabled={u.role === 'company_admin' && userData.role !== 'admin'}
                             className="h-8 w-8 text-red-500 border-red-200 bg-red-50 hover:bg-red-100"
-                            title="Eliminar"
+                            title={u.role === 'company_admin' && userData.role !== 'admin' ? 'No podés modificar a otro admin' : 'Eliminar'}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
@@ -670,6 +677,30 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                 style={{ backgroundColor: 'var(--brand-color, #9333ea)' }}
               >
                 {savingName ? 'Guardando...' : 'Guardar nombre'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {userToBlock && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              {userToBlock.isBlocked ? 'Desbloquear usuario' : 'Bloquear usuario'}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              ¿Estás seguro de {userToBlock.isBlocked ? 'desbloquear' : 'bloquear'} a{' '}
+              <span className="font-semibold">{userToBlock.name}</span>?
+              {!userToBlock.isBlocked && ' No podrá acceder al prode hasta que lo desbloquees.'}
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setUserToBlock(null)}>Cancelar</Button>
+              <Button
+                onClick={confirmToggleBlockUser}
+                className={`text-white ${userToBlock.isBlocked ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-500 hover:bg-orange-600'}`}
+              >
+                {userToBlock.isBlocked ? 'Desbloquear' : 'Bloquear'}
               </Button>
             </div>
           </div>
