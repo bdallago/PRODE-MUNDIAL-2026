@@ -5,6 +5,7 @@ import { User, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { useRouter, usePathname } from "next/navigation";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const DEFAULT_DEADLINE = new Date('2026-06-11T00:00:00').getTime();
 
@@ -13,6 +14,7 @@ const PUBLIC_PATHS = ["/login", "/join-company", "/privacy", "/terms"];
 export const AppContext = createContext<any>(null);
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const { t } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<any | null>(null);
   const [companyName, setCompanyName] = useState("");
@@ -299,14 +301,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
               <img src={previewCompanyDetails.logoUrl} alt="" className="h-5 w-5 object-contain flex-shrink-0" />
             )}
             <span className="font-bold text-sm truncate">
-              Vista preview: <span className="underline">{previewCompanyDetails.name}</span>
+              {t.providers.previewLabel} <span className="underline">{previewCompanyDetails.name}</span>
             </span>
           </div>
           <button
             onClick={exitPreview}
             className="flex-shrink-0 ml-4 bg-amber-900 text-white px-3 py-1 rounded-full text-xs font-bold hover:bg-amber-950 transition-colors"
           >
-            ✕ Salir del preview
+            {t.providers.exitPreview}
           </button>
         </div>
       )}
@@ -314,7 +316,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       {loading && !PUBLIC_PATHS.includes(pathname) ? (
         <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e3a8a] mb-4"></div>
-          <p className="text-gray-500 font-medium animate-pulse">Cargando tu espacio...</p>
+          <p className="text-gray-500 font-medium animate-pulse">{t.providers.loading}</p>
         </div>
       ) : (
         <div className={previewCompanyId && previewCompanyDetails ? "pt-10" : ""}>

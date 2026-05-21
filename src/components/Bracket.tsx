@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface MatchProps {
   matchNumber: number;
@@ -8,19 +9,23 @@ interface MatchProps {
   team2?: string;
 }
 
-const MatchBox = ({ matchNumber, team1 = "Por definir", team2 = "Por definir" }: MatchProps) => (
-  <div className="flex flex-col w-40 bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden text-xs">
-    <div className="bg-gray-100 px-2 py-1 text-[10px] font-bold text-gray-500 border-b border-gray-200">
-      Partido {matchNumber}
+const MatchBox = ({ matchNumber, team1, team2 }: MatchProps) => {
+  const { t } = useLanguage();
+  const tbd = t.bracket.tbd;
+  return (
+    <div className="flex flex-col w-40 bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden text-xs">
+      <div className="bg-gray-100 px-2 py-1 text-[10px] font-bold text-gray-500 border-b border-gray-200">
+        {t.bracket.match} {matchNumber}
+      </div>
+      <div className="px-2 py-1.5 border-b border-gray-100 truncate font-medium text-gray-700">
+        {team1 ?? tbd}
+      </div>
+      <div className="px-2 py-1.5 truncate font-medium text-gray-700">
+        {team2 ?? tbd}
+      </div>
     </div>
-    <div className="px-2 py-1.5 border-b border-gray-100 truncate font-medium text-gray-700">
-      {team1}
-    </div>
-    <div className="px-2 py-1.5 truncate font-medium text-gray-700">
-      {team2}
-    </div>
-  </div>
-);
+  );
+};
 
 const RoundColumn = ({ title, matches, align = 'left' }: { title: string, matches: number[], align?: 'left' | 'right' | 'center' }) => (
   <div className="flex flex-col gap-4">
@@ -36,6 +41,7 @@ const RoundColumn = ({ title, matches, align = 'left' }: { title: string, matche
 );
 
 export function Bracket() {
+  const { t } = useLanguage();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -99,34 +105,34 @@ export function Bracket() {
         
         {/* Left Bracket */}
         <div className="flex gap-6 flex-1">
-          <RoundColumn title="16avos" matches={[1, 2, 3, 4, 5, 6, 7, 8]} />
-          <RoundColumn title="Octavos" matches={[17, 18, 19, 20]} />
-          <RoundColumn title="Cuartos" matches={[25, 26]} />
-          <RoundColumn title="Semifinal" matches={[29]} />
+          <RoundColumn title={t.bracket.roundOf32} matches={[1, 2, 3, 4, 5, 6, 7, 8]} />
+          <RoundColumn title={t.bracket.roundOf16} matches={[17, 18, 19, 20]} />
+          <RoundColumn title={t.bracket.quarterfinals} matches={[25, 26]} />
+          <RoundColumn title={t.bracket.semifinals} matches={[29]} />
         </div>
 
         {/* Center - Final */}
         <div className="flex flex-col justify-center items-center px-4">
-          <h3 className="font-bold text-lg text-brand mb-4 uppercase tracking-wider">Final</h3>
+          <h3 className="font-bold text-lg text-brand mb-4 uppercase tracking-wider">{t.bracket.final}</h3>
           <div className="flex flex-col w-48 bg-white border-2 border-brand/30 rounded-lg shadow-md overflow-hidden text-sm transform scale-110">
             <div className="bg-brand/10 px-3 py-1.5 text-xs font-bold text-brand border-b border-brand/20 text-center">
-              Campeón del Mundo
+              {t.bracket.champion}
             </div>
             <div className="px-3 py-3 border-b border-gray-100 truncate font-bold text-gray-800 text-center">
-              Por definir
+              {t.bracket.tbd}
             </div>
             <div className="px-3 py-3 truncate font-bold text-gray-800 text-center">
-              Por definir
+              {t.bracket.tbd}
             </div>
           </div>
         </div>
 
         {/* Right Bracket */}
         <div className="flex gap-6 flex-1 flex-row-reverse">
-          <RoundColumn title="16avos" matches={[9, 10, 11, 12, 13, 14, 15, 16]} align="right" />
-          <RoundColumn title="Octavos" matches={[21, 22, 23, 24]} align="right" />
-          <RoundColumn title="Cuartos" matches={[27, 28]} align="right" />
-          <RoundColumn title="Semifinal" matches={[30]} align="right" />
+          <RoundColumn title={t.bracket.roundOf32} matches={[9, 10, 11, 12, 13, 14, 15, 16]} align="right" />
+          <RoundColumn title={t.bracket.roundOf16} matches={[21, 22, 23, 24]} align="right" />
+          <RoundColumn title={t.bracket.quarterfinals} matches={[27, 28]} align="right" />
+          <RoundColumn title={t.bracket.semifinals} matches={[30]} align="right" />
         </div>
 
       </div>

@@ -9,6 +9,7 @@ import { Button } from "../components/ui/button";
 import { Trophy, Medal, User as UserIcon, Gift, Building2, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { CountdownBanner } from "../components/CountdownBanner";
 import { UserPredictionsModal } from "../components/UserPredictionsModal";
+import { useLanguage } from "../i18n/LanguageContext";
 
 interface Player {
   uid: string;
@@ -20,6 +21,7 @@ interface Player {
 }
 
 export default function Dashboard({ user, userData, companyName, companyDetails }: { user: User, userData: any, companyName: string, companyDetails?: any }) {
+  const { t } = useLanguage();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -269,7 +271,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
   }, [localCompanyDetails?.areaStats]);
 
   if (initialLoading) {
-    return <div className="text-center py-10">Cargando clasificación...</div>;
+    return <div className="text-center py-10">{t.dashboard.loading}</div>;
   }
 
   const totalPages = Math.ceil(totalUsers / playersPerPage) || 1;
@@ -288,7 +290,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
             <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center backdrop-blur-[1px]">
               <div className="flex flex-col items-center gap-2">
                 <div className="w-8 h-8 border-4 border-brand/20 border-t-brand rounded-full animate-spin"></div>
-                <p className="text-xs font-bold text-brand uppercase tracking-widest">Actualizando...</p>
+                <p className="text-xs font-bold text-brand uppercase tracking-widest">{t.dashboard.updating}</p>
               </div>
             </div>
           )}
@@ -311,12 +313,12 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                     disabled={currentPage === 1 || searchActive}
                     className="flex-1 h-9 bg-white border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 font-semibold"
                   >
-                    <ChevronLeft className="w-4 h-4 mr-1" /> Ant.
+                    <ChevronLeft className="w-4 h-4 mr-1" /> {t.dashboard.prev}
                   </Button>
                   <div className="text-xs font-bold text-gray-400 min-w-[70px] text-center uppercase tracking-tighter">
-                    {searchActive ? 'Resultados' : `Pág. ${currentPage}`}
+                    {searchActive ? t.dashboard.results : `${t.dashboard.page} ${currentPage}`}
                   </div>
-                  <Button 
+                  <Button
                     type="button"
                     variant="outline"
                     size="sm"
@@ -324,7 +326,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                     disabled={!hasMore || searchActive}
                     className="flex-1 h-9 bg-white border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50 font-semibold"
                   >
-                    Sig. <ChevronRight className="w-4 h-4 ml-1" />
+                    {t.dashboard.next} <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 </div>
               </div>
@@ -333,13 +335,13 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
             {/* Right side: Search */}
             <div className="flex flex-col gap-1.5 w-full md:w-80 shrink-0 mt-4 md:mt-0">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                <Search className="w-3 h-3" /> Buscar Jugador
+                <Search className="w-3 h-3" /> {t.dashboard.searchPlayer}
               </label>
               <div className="flex gap-2" onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}>
                 <div className="relative flex-1 group">
                   <input 
                     type="text"
-                    placeholder="Nombre..."
+                    placeholder={t.dashboard.namePlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyDown={(e) => {
@@ -367,7 +369,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                   disabled={leaderboardLoading || !searchTerm.trim()}
                   className="bg-brand hover:bg-brand/90 font-bold px-4 transition-all"
                 >
-                  Buscar
+                  {t.dashboard.searchBtn}
                 </Button>
                 {searchActive && (
                   <Button 
@@ -385,19 +387,19 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                 )}
               </div>
               {searchTerm && !debouncedSearchTerm && !searchActive && (
-                <p className="text-[10px] text-gray-400 italic animate-pulse">Esperando para buscar...</p>
+                <p className="text-[10px] text-gray-400 italic animate-pulse">{t.dashboard.waiting}</p>
               )}
               {searchActive && (
                 <p className="text-[10px] text-brand font-bold uppercase flex items-center gap-1">
-                  <span className="w-1 h-1 bg-brand rounded-full"></span> Filtro activo
+                  <span className="w-1 h-1 bg-brand rounded-full"></span> {t.dashboard.filterActive}
                 </p>
               )}
             </div>
 
             {/* Instructions */}
             <div className="flex flex-col gap-1 w-full md:w-auto text-center md:text-right">
-              <p className="text-xs font-bold text-brand uppercase tracking-wider">Comparar Jugadores</p>
-              <p className="text-[10px] text-gray-500 italic">Clickeá en un jugador para ver sus predicciones</p>
+              <p className="text-xs font-bold text-brand uppercase tracking-wider">{t.dashboard.compareTitle}</p>
+              <p className="text-[10px] text-gray-500 italic">{t.dashboard.compareHint}</p>
             </div>
           </div>
 
@@ -406,10 +408,10 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-100 text-gray-700 text-sm border-b-2 border-gray-300">
-                  <th className="p-2 sm:p-3 text-center w-12 sm:w-20 font-bold uppercase tracking-wider text-xs">#</th>
-                  <th className="p-2 sm:p-3 font-bold uppercase tracking-wider text-xs">Jugador</th>
-                  {hasAreas && <th className="p-2 sm:p-3 font-bold uppercase tracking-wider text-xs hidden md:table-cell">Área</th>}
-                  <th className="p-2 sm:p-3 text-right font-bold uppercase tracking-wider text-xs pr-4 sm:pr-6">Pts</th>
+                  <th className="p-2 sm:p-3 text-center w-12 sm:w-20 font-bold uppercase tracking-wider text-xs">{t.dashboard.colRank}</th>
+                  <th className="p-2 sm:p-3 font-bold uppercase tracking-wider text-xs">{t.dashboard.colPlayer}</th>
+                  {hasAreas && <th className="p-2 sm:p-3 font-bold uppercase tracking-wider text-xs hidden md:table-cell">{t.dashboard.colArea}</th>}
+                  <th className="p-2 sm:p-3 text-right font-bold uppercase tracking-wider text-xs pr-4 sm:pr-6">{t.dashboard.colPts}</th>
                 </tr>
               </thead>
               <tbody>
@@ -455,7 +457,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                           )}
                           <div className="flex flex-col sm:flex-row sm:items-center min-w-0">
                             <span className={`block truncate max-w-[120px] sm:max-w-none ${isMe ? "text-[var(--brand-color,#2563eb)] text-sm sm:text-base font-bold" : "font-semibold text-sm sm:text-base"}`}>{player.displayName}</span>
-                            {isMe && <span className="mt-0.5 sm:mt-0 sm:ml-2 text-[8px] sm:text-[10px] bg-[var(--brand-color,#2563eb)] text-white px-1.5 sm:px-2 py-0.5 rounded-full uppercase tracking-wider font-bold shadow-sm w-fit">Tú</span>}
+                            {isMe && <span className="mt-0.5 sm:mt-0 sm:ml-2 text-[8px] sm:text-[10px] bg-[var(--brand-color,#2563eb)] text-white px-1.5 sm:px-2 py-0.5 rounded-full uppercase tracking-wider font-bold shadow-sm w-fit">{t.dashboard.you}</span>}
                           </div>
                         </div>
                       </td>
@@ -473,7 +475,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                 {playersList.length === 0 && (
                   <tr>
                     <td colSpan={hasAreas ? 4 : 3} className="p-12 text-center text-gray-500 font-medium">
-                      No se encontraron jugadores.
+                      {t.dashboard.noPlayers}
                     </td>
                   </tr>
                 )}
@@ -485,7 +487,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
           {totalPages > 1 && !searchActive && (
             <div className="p-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center sm:px-6">
               <div className="flex gap-1">
-                <Button 
+                <Button
                   type="button"
                   variant="outline"
                   size="sm"
@@ -493,9 +495,9 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                   disabled={currentPage === 1}
                   className="h-8 px-2 sm:px-3 text-xs"
                 >
-                  &laquo; Ant.
+                  &laquo; {t.dashboard.prev}
                 </Button>
-                <Button 
+                <Button
                   type="button"
                   variant="outline"
                   size="sm"
@@ -503,16 +505,16 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                   disabled={currentPage === totalPages}
                   className="h-8 px-2 sm:px-3 text-xs"
                 >
-                  Sig. &raquo;
+                  {t.dashboard.next} &raquo;
                 </Button>
               </div>
               
               <div className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Página <span className="text-gray-900 font-bold">{currentPage}</span> / {totalPages}
+                {t.dashboard.pageLabel} <span className="text-gray-900 font-bold">{currentPage}</span> {t.dashboard.of} {totalPages}
               </div>
-              
+
               <div className="text-[9px] sm:text-[10px] text-gray-400 hidden xs:block">
-                {totalUsers} usuarios
+                {totalUsers} {t.dashboard.usersLabel}
               </div>
             </div>
           )}
@@ -529,9 +531,9 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
         <Card className="text-white border-none" style={{ backgroundColor: 'var(--brand-color, #2563eb)' }}>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="font-medium mb-1 text-white/80">Mis Puntos</p>
+              <p className="font-medium mb-1 text-white/80">{t.dashboard.myPoints}</p>
               <h2 className="text-5xl font-bold">{myPoints}</h2>
-              <p className="text-xs mt-2 text-white/70">Los puntos se calculan automáticamente según tus aciertos.</p>
+              <p className="text-xs mt-2 text-white/70">{t.dashboard.myPointsHint}</p>
             </div>
             <div className="bg-white/20 p-4 rounded-full">
               <Trophy className="h-10 w-10 text-white" />
@@ -542,7 +544,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
         <Card className="text-white border-none" style={{ backgroundColor: 'color-mix(in srgb, var(--brand-color, #4f46e5) 80%, black)' }}>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="font-medium mb-1 text-white/80">Mi Posición en {companyName}</p>
+              <p className="font-medium mb-1 text-white/80">{t.dashboard.myPosition} {companyName}</p>
               <h2 className="text-5xl font-bold">#{myRank || "-"}</h2>
             </div>
             <div className="bg-white/20 p-4 rounded-full">
@@ -555,25 +557,25 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
       {companyDetails?.prizes && (companyDetails.prizes.first || companyDetails.prizes.second || companyDetails.prizes.third) && (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Gift className="w-5 h-5 text-purple-600" style={{ color: 'var(--brand-color, #9333ea)' }} /> Premios en Juego
+            <Gift className="w-5 h-5 text-purple-600" style={{ color: 'var(--brand-color, #9333ea)' }} /> {t.dashboard.prizes}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {companyDetails.prizes.first && (
               <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200 flex items-center gap-3">
                 <div className="bg-yellow-100 p-2 rounded-full"><Trophy className="w-5 h-5 text-yellow-600" /></div>
-                <div><p className="text-xs text-yellow-800 font-bold uppercase">1º Puesto</p><p className="text-sm font-medium text-gray-900">{companyDetails.prizes.first}</p></div>
+                <div><p className="text-xs text-yellow-800 font-bold uppercase">{t.dashboard.rank1}</p><p className="text-sm font-medium text-gray-900">{companyDetails.prizes.first}</p></div>
               </div>
             )}
             {companyDetails.prizes.second && (
               <div className="bg-gray-50 p-4 rounded-md border border-gray-200 flex items-center gap-3">
                 <div className="bg-gray-200 p-2 rounded-full"><Medal className="w-5 h-5 text-gray-600" /></div>
-                <div><p className="text-xs text-gray-600 font-bold uppercase">2º Puesto</p><p className="text-sm font-medium text-gray-900">{companyDetails.prizes.second}</p></div>
+                <div><p className="text-xs text-gray-600 font-bold uppercase">{t.dashboard.rank2}</p><p className="text-sm font-medium text-gray-900">{companyDetails.prizes.second}</p></div>
               </div>
             )}
             {companyDetails.prizes.third && (
               <div className="bg-orange-50 p-4 rounded-md border border-orange-200 flex items-center gap-3">
                 <div className="bg-orange-100 p-2 rounded-full"><Medal className="w-5 h-5 text-orange-600" /></div>
-                <div><p className="text-xs text-orange-800 font-bold uppercase">3º Puesto</p><p className="text-sm font-medium text-gray-900">{companyDetails.prizes.third}</p></div>
+                <div><p className="text-xs text-orange-800 font-bold uppercase">{t.dashboard.rank3}</p><p className="text-sm font-medium text-gray-900">{companyDetails.prizes.third}</p></div>
               </div>
             )}
           </div>
@@ -581,17 +583,17 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
       )}
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900">Ranking de {companyName}</h2>
-        <p className="text-sm text-gray-800">Competí contra todos los compañeros de tu empresa. Acá vas a ver la posición de cada jugador dentro de tu organización.</p>
+        <h2 className="text-2xl font-bold text-gray-900">{t.dashboard.rankingOf} {companyName}</h2>
+        <p className="text-sm text-gray-800">{t.dashboard.rankingDesc}</p>
         
         {hasAreas && (
           <div className="space-y-6">
             <Card className="border-t-4 border-brand">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2 text-brand">
-                  <Building2 className="w-5 h-5" /> Torneo de Áreas
+                  <Building2 className="w-5 h-5" /> {t.dashboard.areaTitle}
                 </CardTitle>
-                <p className="text-sm text-gray-800 font-normal">Promedio de puntos por sector. ¡Llevá a tu equipo a lo más alto!</p>
+                <p className="text-sm text-gray-800 font-normal">{t.dashboard.areaDesc}</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -607,28 +609,28 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
                           {index + 1}
                         </div>
                         <span className="font-bold text-gray-800">{stat.name}</span>
-                        <span className="text-xs text-gray-700">({stat.count} jugadores)</span>
+                        <span className="text-xs text-gray-700">({stat.count} {t.dashboard.playersLabel})</span>
                       </div>
                       <div className="font-mono font-bold text-purple-700">
-                        {stat.average} pts
+                        {stat.average} {t.dashboard.ptsLabel}
                       </div>
                     </div>
                   ))}
                   {areaStats.length === 0 && (
-                    <p className="text-center text-gray-700 py-4 text-sm">Aún no hay suficientes datos para el torneo de áreas.</p>
+                    <p className="text-center text-gray-700 py-4 text-sm">{t.dashboard.noAreaData}</p>
                   )}
                 </div>
               </CardContent>
             </Card>
 
             <div className="bg-white p-4 rounded-lg shadow-sm border flex flex-col sm:flex-row items-center gap-4">
-              <label className="font-medium text-gray-700 whitespace-nowrap">Filtrar ranking individual por área:</label>
+              <label className="font-medium text-gray-700 whitespace-nowrap">{t.dashboard.filterArea}</label>
               <select 
                 className="flex-1 w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                 value={selectedAreaFilter}
                 onChange={(e) => setSelectedAreaFilter(e.target.value)}
               >
-                <option value="all">Todas las áreas (Ranking General)</option>
+                <option value="all">{t.dashboard.allAreas}</option>
                 {companyDetails.areas.map((area: string) => (
                   <option key={area} value={area}>{area}</option>
                 ))}
@@ -637,7 +639,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
           </div>
         )}
 
-        {renderLeaderboard(selectedAreaFilter === 'all' ? `Tabla de Posiciones de ${companyName}` : `Clasificación: ${selectedAreaFilter}`, filteredPlayers)}
+        {renderLeaderboard(selectedAreaFilter === 'all' ? `${t.dashboard.tableOf} ${companyName}` : `${t.dashboard.classif} ${selectedAreaFilter}`, filteredPlayers)}
       </div>
 
       {selectedUser && (

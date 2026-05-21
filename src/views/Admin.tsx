@@ -10,6 +10,7 @@ import { CountdownBanner } from "../components/CountdownBanner";
 import CompanyAdmin from "./CompanyAdmin";
 import { useAppContext } from "../components/Providers";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "../i18n/LanguageContext";
 
 interface UserProfile {
   uid: string;
@@ -30,6 +31,7 @@ interface Report {
 }
 
 export default function Admin() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [calculating, setCalculating] = useState(false);
@@ -239,7 +241,7 @@ export default function Admin() {
       const resultsRef = doc(db, "results", "actual");
       const resultsSnap = await getDoc(resultsRef);
       if (!resultsSnap.exists()) {
-        throw new Error("No hay resultados oficiales guardados. Primero debes hacer clic en 'Guardar Resultados'.");
+        throw new Error(t.admin.noResultsSaved);
       }
       const actualData = resultsSnap.data();
       
@@ -634,14 +636,14 @@ export default function Admin() {
   };
 
   if (loading) {
-    return <div className="text-center py-10">Cargando panel de administración...</div>;
+    return <div className="text-center py-10">{t.admin.loading}</div>;
   }
 
   if (selectedCompanyId) {
     return (
       <div className="space-y-4 px-4 sm:px-6 py-6 md:py-8">
         <Button onClick={() => setSelectedCompanyId(null)} variant="outline" className="mb-2">
-          &larr; Volver al Panel de Administración
+          {t.admin.backToAdmin}
         </Button>
         <CompanyAdmin userData={{ role: 'admin', companyId: selectedCompanyId }} hideBanner={true} />
       </div>
@@ -653,45 +655,45 @@ export default function Admin() {
       <CountdownBanner />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Panel de Administración</h1>
-          <p className="text-gray-500 mt-1">Gestioná resultados, usuarios y reportes.</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t.admin.title}</h1>
+          <p className="text-gray-500 mt-1">{t.admin.subtitle}</p>
         </div>
         
         <div className="flex gap-2 w-full md:w-auto flex-wrap">
-          <Button 
-            variant={activeTab === 'results' ? 'default' : 'outline'} 
+          <Button
+            variant={activeTab === 'results' ? 'default' : 'outline'}
             onClick={() => setActiveTab('results')}
             className={activeTab === 'results' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            Resultados
+            {t.admin.tabResults}
           </Button>
-          <Button 
-            variant={activeTab === 'users' ? 'default' : 'outline'} 
+          <Button
+            variant={activeTab === 'users' ? 'default' : 'outline'}
             onClick={() => setActiveTab('users')}
             className={activeTab === 'users' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            Usuarios
+            {t.admin.tabUsers}
           </Button>
-          <Button 
-            variant={activeTab === 'reports' ? 'default' : 'outline'} 
+          <Button
+            variant={activeTab === 'reports' ? 'default' : 'outline'}
             onClick={() => setActiveTab('reports')}
             className={activeTab === 'reports' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            Reportes
+            {t.admin.tabReports}
           </Button>
-          <Button 
-            variant={activeTab === 'companies' ? 'default' : 'outline'} 
+          <Button
+            variant={activeTab === 'companies' ? 'default' : 'outline'}
             onClick={() => setActiveTab('companies')}
             className={activeTab === 'companies' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            Empresas
+            {t.admin.tabCompanies}
           </Button>
-          <Button 
-            variant={activeTab === 'analytics' ? 'default' : 'outline'} 
+          <Button
+            variant={activeTab === 'analytics' ? 'default' : 'outline'}
             onClick={() => setActiveTab('analytics')}
             className={activeTab === 'analytics' ? 'bg-blue-600 hover:bg-blue-700' : ''}
           >
-            Estadísticas
+            {t.admin.tabAnalytics}
           </Button>
         </div>
       </div>
@@ -706,14 +708,14 @@ export default function Admin() {
       {activeTab === 'analytics' && (
         <div className="space-y-6 pt-4 pb-12">
           <h2 className="text-2xl font-bold text-indigo-700 border-b border-indigo-200 pb-2 flex items-center gap-2">
-            <Calculator className="w-6 h-6" /> Estadísticas del Sitio
+            <Calculator className="w-6 h-6" /> {t.admin.analyticsTitle}
           </h2>
-          <p className="text-sm text-gray-600 mb-4">Resumen rápido de la actividad en El Prode de Beno.</p>
-          
+          <p className="text-sm text-gray-600 mb-4">{t.admin.analyticsSubtitle}</p>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">Usuarios Registrados</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-500">{t.admin.statUsers}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-gray-900">{analytics.totalUsers}</div>
@@ -721,16 +723,16 @@ export default function Admin() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">Usuarios Activos Hoy</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-500">{t.admin.statActiveToday}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-blue-600">{analytics.activeToday}</div>
-                <p className="text-xs text-gray-500 mt-1">Iniciaron sesión hoy</p>
+                <p className="text-xs text-gray-500 mt-1">{t.admin.statActiveSubtitle}</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">Predicciones Guardadas</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-500">{t.admin.statPredictions}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-green-600">{analytics.totalPredictions}</div>
@@ -738,13 +740,13 @@ export default function Admin() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">Tasa de Participación</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-500">{t.admin.statRate}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-purple-600">
                   {analytics.totalUsers > 0 ? Math.round((analytics.usersWithPredictions / analytics.totalUsers) * 100) : 0}%
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Usuarios con predicciones</p>
+                <p className="text-xs text-gray-500 mt-1">{t.admin.statRateSubtitle}</p>
               </CardContent>
             </Card>
           </div>
@@ -754,19 +756,19 @@ export default function Admin() {
       {activeTab === 'companies' && (
         <div className="space-y-6 pt-4 pb-12">
           <h2 className="text-2xl font-bold text-blue-900 border-b border-blue-200 pb-2 flex items-center gap-2">
-            <Building2 className="w-6 h-6" /> Gestión de Empresas
+            <Building2 className="w-6 h-6" /> {t.admin.companiesTitle}
           </h2>
-          <p className="text-sm text-gray-600 mb-4">Creá nuevas empresas y asigná a los administradores de RRHH. Solo vos podés dar de alta nuevas empresas.</p>
-          
+          <p className="text-sm text-gray-600 mb-4">{t.admin.companiesSubtitle}</p>
+
           <Card className="mb-8">
             <CardHeader className="bg-blue-50 border-b">
-              <CardTitle className="text-lg text-blue-900">Dar de alta nueva empresa</CardTitle>
+              <CardTitle className="text-lg text-blue-900">{t.admin.newCompanyTitle}</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <form onSubmit={createCompany} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nombre de la empresa</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.admin.fieldCompanyName}</label>
                     <input
                       type="text"
                       required
@@ -777,7 +779,7 @@ export default function Admin() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Emails de Administradores (RRHH)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.admin.fieldHREmails}</label>
                     <input
                       type="text"
                       required
@@ -786,21 +788,21 @@ export default function Admin() {
                       placeholder="rrhh1@empresa.com, rrhh2@empresa.com"
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Separados por coma si son varios</p>
+                    <p className="text-xs text-gray-500 mt-1">{t.admin.fieldHREmailsHint}</p>
                   </div>
-                  
+
                   <div className="md:col-span-2 border-t pt-4 mt-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Plan de la Empresa</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t.admin.planTitle}</label>
                     <div className="flex gap-4">
                       <label className={`flex-1 border rounded-lg p-4 cursor-pointer transition-colors ${newCompanyPlan === 'base' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
                         <input type="radio" name="plan" value="base" checked={newCompanyPlan === 'base'} onChange={() => setNewCompanyPlan('base')} className="sr-only" />
-                        <div className="font-bold text-gray-900">Plan Base</div>
-                        <div className="text-sm text-gray-500">Ranking general, logo estándar.</div>
+                        <div className="font-bold text-gray-900">{t.admin.planBase}</div>
+                        <div className="text-sm text-gray-500">{t.admin.planBaseDesc}</div>
                       </label>
                       <label className={`flex-1 border rounded-lg p-4 cursor-pointer transition-colors ${newCompanyPlan === 'premium' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:bg-gray-50'}`}>
                         <input type="radio" name="plan" value="premium" checked={newCompanyPlan === 'premium'} onChange={() => setNewCompanyPlan('premium')} className="sr-only" />
-                        <div className="font-bold text-purple-900 flex items-center gap-2">Plan Premium <span className="bg-purple-200 text-purple-800 text-xs px-2 py-0.5 rounded-full">Recomendado</span></div>
-                        <div className="text-sm text-purple-700/80">Branding, áreas, métricas y más.</div>
+                        <div className="font-bold text-purple-900 flex items-center gap-2">{t.admin.planPremium} <span className="bg-purple-200 text-purple-800 text-xs px-2 py-0.5 rounded-full">{t.admin.planPremiumBadge}</span></div>
+                        <div className="text-sm text-purple-700/80">{t.admin.planPremiumDesc}</div>
                       </label>
                     </div>
                   </div>
@@ -808,7 +810,7 @@ export default function Admin() {
                   {newCompanyPlan === 'premium' && (
                     <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-purple-50/50 p-4 rounded-lg border border-purple-100">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Color Corporativo (Hex)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t.admin.colorLabel}</label>
                         <div className="flex gap-2">
                           <input
                             type="color"
@@ -825,7 +827,7 @@ export default function Admin() {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Logo de la Empresa (Opcional)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t.admin.logoLabel}</label>
                         <div className="flex items-center gap-4">
                           <input
                             type="file"
@@ -839,15 +841,15 @@ export default function Admin() {
                         </div>
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Áreas / Sucursales (Opcional)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t.admin.areasLabel}</label>
                         <input
                           type="text"
                           value={newCompanyAreas}
                           onChange={(e) => setNewCompanyAreas(e.target.value)}
-                          placeholder="Ventas, IT, Logística, Sucursal Centro"
+                          placeholder={t.admin.areasPlaceholder}
                           className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Separadas por coma. Los usuarios elegirán una al registrarse.</p>
+                        <p className="text-xs text-gray-500 mt-1">{t.admin.areasHint}</p>
                       </div>
                       <div className="md:col-span-2 border-t pt-3">
                         <label className="flex items-center gap-2 cursor-pointer">
@@ -857,21 +859,21 @@ export default function Admin() {
                             onChange={(e) => setNewCompanySingleTournament(e.target.checked)}
                             className="w-4 h-4 rounded border-gray-300"
                           />
-                          <span className="text-sm font-medium text-gray-700">Torneo unificado (sin competencia por sectores)</span>
+                          <span className="text-sm font-medium text-gray-700">{t.admin.singleTournament}</span>
                         </label>
-                        <p className="text-xs text-gray-500 mt-1 ml-6">Todos los empleados compiten en un ranking único, sin distinción de área.</p>
+                        <p className="text-xs text-gray-500 mt-1 ml-6">{t.admin.singleTournamentHint}</p>
                       </div>
                     </div>
                   )}
                 </div>
                 <Button type="submit" disabled={creatingCompany} className={newCompanyPlan === 'premium' ? 'bg-purple-600 hover:bg-purple-700 w-full' : 'bg-blue-600 hover:bg-blue-700 w-full'}>
-                  {creatingCompany ? 'Creando...' : 'Crear Empresa y Generar Código'}
+                  {creatingCompany ? t.admin.creating : t.admin.createBtn}
                 </Button>
               </form>
             </CardContent>
           </Card>
 
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Empresas Registradas</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">{t.admin.registeredCompanies}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {companies.map(company => (
               <Card key={company.id} className="overflow-hidden">
@@ -880,18 +882,18 @@ export default function Admin() {
                     <div className="flex items-center gap-2">
                       <span className={company.isActive === false ? 'text-red-700 line-through opacity-70' : ''}>{company.name}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${company.plan === 'premium' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {company.plan === 'premium' ? 'Premium' : 'Común'}
+                        {company.plan === 'premium' ? 'Premium' : t.admin.common}
                       </span>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded font-mono border ${company.isActive === false ? 'bg-red-100 text-red-800 border-red-200' : 'bg-blue-100 text-blue-800 border-blue-200'}`}>
-                      Código: {company.code}
+                      {t.admin.code} {company.code}
                     </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 text-sm space-y-4">
                   <div className="space-y-2">
-                    <p><span className="font-semibold text-gray-600">Admin (RRHH):</span> {company.hrEmails ? company.hrEmails.join(', ') : company.hrEmail}</p>
-                    <p><span className="font-semibold text-gray-600">Creada:</span> {new Date(company.createdAt).toLocaleDateString()}</p>
+                    <p><span className="font-semibold text-gray-600">{t.admin.fieldHRAdmin}</span> {company.hrEmails ? company.hrEmails.join(', ') : company.hrEmail}</p>
+                    <p><span className="font-semibold text-gray-600">{t.admin.fieldCreated}</span> {new Date(company.createdAt).toLocaleDateString()}</p>
                   </div>
                   <div className="flex gap-2 flex-wrap">
                     <Button
@@ -900,7 +902,7 @@ export default function Admin() {
                       className="flex-1 flex items-center gap-2"
                       onClick={() => setSelectedCompanyId(company.id)}
                     >
-                      <Eye className="w-4 h-4" /> Panel RRHH
+                      <Eye className="w-4 h-4" /> {t.admin.btnHRPanel}
                     </Button>
                     <Button
                       variant="outline"
@@ -911,11 +913,11 @@ export default function Admin() {
                         router.push("/dashboard");
                       }}
                     >
-                      <Eye className="w-4 h-4" /> Vista jugador
+                      <Eye className="w-4 h-4" /> {t.admin.btnPlayerView}
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="flex items-center gap-2"
                       onClick={() => {
                         setEditCompanyModal(company);
@@ -925,16 +927,16 @@ export default function Admin() {
                         setEditCompanySingleTournament(company.singleTournament || false);
                       }}
                     >
-                      <PenSquare className="w-4 h-4" /> Editar
+                      <PenSquare className="w-4 h-4" /> {t.admin.btnEdit}
                     </Button>
                     {company.isActive === false ? (
-                      <Button 
-                        variant="default" 
-                        size="sm" 
+                      <Button
+                        variant="default"
+                        size="sm"
                         className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                         onClick={() => setConfirmAction({ type: 'restoreCompany', companyId: company.id, name: company.name })}
                       >
-                        Restaurar
+                        {t.admin.btnRestore}
                       </Button>
                     ) : (
                       <Button 
@@ -962,7 +964,7 @@ export default function Admin() {
             ))}
             {companies.length === 0 && (
               <p className="text-gray-500 col-span-2 text-center py-8 bg-gray-50 rounded-lg border border-dashed">
-                No hay empresas registradas aún.
+                {t.admin.noCompanies}
               </p>
             )}
           </div>
@@ -975,9 +977,9 @@ export default function Admin() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
               <div>
                 <h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
-                  <Calendar className="w-6 h-6" /> Configuración y Resultados
+                  <Calendar className="w-6 h-6" /> {t.admin.resultsTitle}
                 </h2>
-                <p className="text-sm text-gray-600">Gestioná el cierre del torneo y cargá los resultados oficiales.</p>
+                <p className="text-sm text-gray-600">{t.admin.resultsSubtitle}</p>
               </div>
             </div>
 
@@ -988,37 +990,37 @@ export default function Admin() {
                 disabled={saving}
                 className="flex-1 md:flex-none flex items-center justify-center gap-2"
               >
-                <Save className="w-4 h-4" /> Guardar Resultados
+                <Save className="w-4 h-4" /> {t.admin.saveResults}
               </Button>
-              <Button 
+              <Button
                 onClick={() => setConfirmAction({ type: 'calc' })}
                 disabled={calculating}
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 font-bold"
               >
-                <Calculator className="w-4 h-4" /> Calcular Puntos Global
+                <Calculator className="w-4 h-4" /> {t.admin.calculatePoints}
               </Button>
-              <Button 
+              <Button
                 onClick={refreshAreaStats}
                 disabled={calculating}
                 variant="outline"
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 font-bold"
               >
-                <Building2 className="w-4 h-4" /> Actualizar Estadísticas Áreas
+                <Building2 className="w-4 h-4" /> {t.admin.updateAreaStats}
               </Button>
-              <Button 
+              <Button
                 variant="destructive"
                 onClick={() => setConfirmAction({ type: 'reset' })}
                 disabled={calculating}
                 className="flex-1 md:flex-none flex items-center justify-center gap-2"
               >
-                <AlertCircle className="w-4 h-4" /> Reset total a 0
+                <AlertCircle className="w-4 h-4" /> {t.admin.resetAll}
               </Button>
             </div>
           </div>
 
           <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">Resultados Fase de Grupos</h2>
-        <p className="text-sm text-gray-600 mb-4">Seleccioná el orden final real de cada grupo.</p>
+        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">{t.admin.groupResultsTitle}</h2>
+        <p className="text-sm text-gray-600 mb-4">{t.admin.groupResultsDesc}</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Object.entries(actualGroups)
@@ -1026,7 +1028,7 @@ export default function Admin() {
             .map(([groupLetter, teams]) => (
             <Card key={groupLetter} className="overflow-hidden border-t-4 border-t-indigo-600">
               <CardHeader className="bg-gray-50 py-3 px-4 border-b">
-                <CardTitle className="text-lg">Grupo {groupLetter}</CardTitle>
+                <CardTitle className="text-lg">{t.admin.group} {groupLetter}</CardTitle>
               </CardHeader>
               <CardContent className="p-4 space-y-3">
                 {[0, 1, 2, 3].map((index) => (
@@ -1043,7 +1045,7 @@ export default function Admin() {
                       value={teams[index] || ""}
                       onChange={(e) => handleGroupChange(groupLetter, index, e.target.value)}
                     >
-                      <option value="">Seleccionar equipo...</option>
+                      <option value="">{t.admin.selectTeam}</option>
                       {GROUPS[groupLetter as keyof typeof GROUPS].map(team => (
                         <option key={team} value={team}>{team}</option>
                       ))}
@@ -1057,18 +1059,18 @@ export default function Admin() {
       </div>
 
       <div className="space-y-6 pt-8 pb-12">
-        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">Resultados Preguntas Especiales</h2>
+        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">{t.admin.specialResultsTitle}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {SPECIAL_QUESTIONS.map((q) => (
             <Card key={q.id}>
               <CardContent className="p-5">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {q.label}
+                  {(t.specialQuestions as Record<string, string>)[q.id] || q.label}
                 </label>
                 <input
                   type="text"
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                  placeholder="Respuesta oficial..."
+                  placeholder={t.admin.officialAnswer}
                   value={actualSpecials[q.id] || ""}
                   onChange={(e) => handleSpecialChange(q.id, e.target.value)}
                 />
@@ -1079,10 +1081,10 @@ export default function Admin() {
       </div>
 
       <div className="space-y-6 pt-8 pb-12 border-t border-gray-200 opacity-50">
-        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">Resultados Fase Eliminatoria</h2>
+        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">{t.admin.knockoutResultsTitle}</h2>
         <div className="bg-gray-100 p-8 rounded-lg text-center border-2 border-dashed border-gray-300">
-          <p className="text-gray-600 font-medium">Cuadro por definir</p>
-          <p className="text-sm text-gray-500 mt-2">Esta sección se habilitará una vez finalizada la fase de grupos.</p>
+          <p className="text-gray-600 font-medium">{t.admin.tbdBracket}</p>
+          <p className="text-sm text-gray-500 mt-2">{t.admin.tbdBracketDesc}</p>
         </div>
       </div>
       </>
@@ -1091,9 +1093,9 @@ export default function Admin() {
       {activeTab === 'users' && (
       <div className="space-y-6 pt-4 pb-12">
         <h2 className="text-2xl font-bold text-red-700 border-b border-red-200 pb-2 flex items-center gap-2">
-          <Users className="w-6 h-6" /> Gestión de Usuarios
+          <Users className="w-6 h-6" /> {t.admin.usersTitle}
         </h2>
-        <p className="text-sm text-gray-600 mb-4">Administrá los participantes del Prode. Podés eliminar cuentas si alguien se arrepiente de jugar.</p>
+        <p className="text-sm text-gray-600 mb-4">{t.admin.usersSubtitle}</p>
         
         <Card>
           <CardContent className="p-0">
@@ -1101,11 +1103,11 @@ export default function Admin() {
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
                   <tr>
-                    <th className="px-6 py-3">Usuario</th>
-                    <th className="px-6 py-3">Email</th>
-                    <th className="px-6 py-3">Rol</th>
-                    <th className="px-6 py-3">Puntos</th>
-                    <th className="px-6 py-3 text-right">Acciones</th>
+                    <th className="px-6 py-3">{t.admin.colUser}</th>
+                    <th className="px-6 py-3">{t.admin.colEmail}</th>
+                    <th className="px-6 py-3">{t.admin.colRole}</th>
+                    <th className="px-6 py-3">{t.admin.colPoints}</th>
+                    <th className="px-6 py-3 text-right">{t.admin.colActions}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1137,7 +1139,7 @@ export default function Admin() {
                             className="flex items-center gap-1 text-indigo-600 border-indigo-200 hover:bg-indigo-50"
                             title="Editar nombre"
                           >
-                            <PenSquare className="w-4 h-4" /> Renombrar
+                            <PenSquare className="w-4 h-4" /> {t.admin.rename}
                           </Button>
                           <Button
                             variant="outline"
@@ -1146,7 +1148,7 @@ export default function Admin() {
                             className="flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50"
                             title="Permitir al usuario volver a editar sus predicciones"
                           >
-                            <Unlock className="w-4 h-4" /> Desfijar
+                            <Unlock className="w-4 h-4" /> {t.admin.unfix}
                           </Button>
                           <Button
                             variant="destructive"
@@ -1155,7 +1157,7 @@ export default function Admin() {
                             disabled={u.role === 'admin'}
                             className="flex items-center gap-1"
                           >
-                            <Trash2 className="w-4 h-4" /> Eliminar
+                            <Trash2 className="w-4 h-4" /> {t.admin.delete}
                           </Button>
                         </div>
                       </td>
@@ -1164,7 +1166,7 @@ export default function Admin() {
                   {users.length === 0 && (
                     <tr>
                       <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                        No hay usuarios registrados.
+                        {t.admin.noUsers}
                       </td>
                     </tr>
                   )}
@@ -1179,22 +1181,22 @@ export default function Admin() {
       {activeTab === 'reports' && (
       <div className="space-y-6 pt-4 pb-12">
         <h2 className="text-2xl font-bold text-orange-700 border-b border-orange-200 pb-2 flex items-center gap-2">
-          <MessageSquareWarning className="w-6 h-6" /> Reportes y Sugerencias
+          <MessageSquareWarning className="w-6 h-6" /> {t.admin.reportsTitle}
         </h2>
-        <p className="text-sm text-gray-600 mb-4">Revisá los reportes enviados por los usuarios. Podés ver los archivos adjuntos haciendo clic en los enlaces.</p>
-        
+        <p className="text-sm text-gray-600 mb-4">{t.admin.reportsSubtitle}</p>
+
         <div className="space-y-4">
           {reports.length === 0 ? (
             <div className="bg-gray-50 p-8 rounded-lg text-center border border-gray-200">
-              <p className="text-gray-500">No hay reportes nuevos.</p>
+              <p className="text-gray-500">{t.admin.noReports}</p>
             </div>
           ) : (
             reports.map((report) => (
               <Card key={report.id} className="overflow-hidden border-l-4 border-l-orange-500">
                 <CardHeader className="bg-gray-50 py-3 px-4 border-b flex flex-row justify-between items-start">
                   <div>
-                    <CardTitle className="text-base font-bold text-gray-900">{report.userName || "Usuario Anónimo"}</CardTitle>
-                    <p className="text-xs text-gray-500">{report.userEmail || "Sin email"} • {new Date(report.createdAt).toLocaleString()}</p>
+                    <CardTitle className="text-base font-bold text-gray-900">{report.userName || t.admin.anonUser}</CardTitle>
+                    <p className="text-xs text-gray-500">{report.userEmail || t.admin.noEmail} • {new Date(report.createdAt).toLocaleString()}</p>
                   </div>
                   <Button 
                     variant="ghost" 
@@ -1213,7 +1215,7 @@ export default function Admin() {
                   {report.attachments && report.attachments.length > 0 && (
                     <div className="pt-3 border-t border-gray-100">
                       <p className="text-xs font-semibold text-gray-500 mb-2 flex items-center gap-1">
-                        <Paperclip className="w-3 h-3" /> Archivos adjuntos ({report.attachments.length})
+                        <Paperclip className="w-3 h-3" /> {t.admin.attachments} ({report.attachments.length})
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {report.attachments.map((url, i) => (
@@ -1224,7 +1226,7 @@ export default function Admin() {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-colors"
                           >
-                            Ver archivo {i + 1}
+                            {t.admin.viewFile} {i + 1}
                           </a>
                         ))}
                       </div>
@@ -1242,17 +1244,17 @@ export default function Admin() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              {confirmAction.type === 'calc' ? '¿Recalcular puntos?' : 
-               confirmAction.type === 'reset' ? '¿Resetear todos los puntos a 0?' : 
-               confirmAction.type === 'deleteCompany' ? '¿Eliminar empresa?' :
-               confirmAction.type === 'restoreCompany' ? '¿Restaurar empresa?' :
-               '¿Eliminar usuario?'}
+              {confirmAction.type === 'calc' ? t.admin.confirmCalcTitle :
+               confirmAction.type === 'reset' ? t.admin.confirmResetTitle :
+               confirmAction.type === 'deleteCompany' ? t.admin.confirmDeleteCompanyTitle :
+               confirmAction.type === 'restoreCompany' ? t.admin.confirmRestoreCompanyTitle :
+               t.admin.confirmDeleteUserTitle}
             </h3>
             <p className="text-gray-600 mb-6">
-              {confirmAction.type === 'calc' 
-                ? 'Esto va a recalcular los puntos de todos los usuarios basándose en los resultados oficiales guardados. Puede tomar unos segundos.' 
+              {confirmAction.type === 'calc'
+                ? t.admin.confirmCalcDesc
                 : confirmAction.type === 'reset'
-                ? 'Esto va a poner los puntos de TODOS los usuarios en 0. Usá esta opción solo si estás probando o antes de que comience el torneo real. No se puede deshacer.'
+                ? t.admin.confirmResetDesc
                 : confirmAction.type === 'deleteCompany'
                 ? `¿Estás seguro de suspender la empresa ${confirmAction.name}? Los usuarios vinculados perderán el acceso hasta que ingresen un nuevo código, pero sus datos se conservarán.`
                 : confirmAction.type === 'restoreCompany'
@@ -1262,7 +1264,7 @@ export default function Admin() {
                 : `¿Estás seguro de eliminar al usuario ${confirmAction.name}? Esta acción va a borrar su perfil y todas sus predicciones. No se puede deshacer.`}
             </p>
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setConfirmAction(null)}>Cancelar</Button>
+              <Button variant="outline" onClick={() => setConfirmAction(null)}>{t.admin.cancel}</Button>
               <Button 
                 variant={confirmAction.type === 'delete' || confirmAction.type === 'reset' || confirmAction.type === 'deleteCompany' ? 'destructive' : 'default'}
                 className={confirmAction.type === 'calc' ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : ''}
@@ -1303,12 +1305,12 @@ export default function Admin() {
                   setConfirmAction(null); 
                 }}
               >
-                {confirmAction.type === 'calc' ? 'Sí, recalcular' : 
-                 confirmAction.type === 'reset' ? 'Sí, resetear a 0' : 
-                 confirmAction.type === 'deleteCompany' ? 'Sí, suspender' :
-                 confirmAction.type === 'restoreCompany' ? 'Sí, restaurar' :
-                 confirmAction.type === 'permanentDeleteCompany' ? 'Sí, eliminar permanentemente' :
-                 'Sí, eliminar'}
+                {confirmAction.type === 'calc' ? t.admin.yesCalc :
+                 confirmAction.type === 'reset' ? t.admin.yesReset :
+                 confirmAction.type === 'deleteCompany' ? t.admin.yesSuspend :
+                 confirmAction.type === 'restoreCompany' ? t.admin.yesRestore :
+                 confirmAction.type === 'permanentDeleteCompany' ? t.admin.yesPermanentDelete :
+                 t.admin.yesDelete}
               </Button>
             </div>
           </div>
@@ -1319,7 +1321,7 @@ export default function Admin() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Editar Empresa: {editCompanyModal.name}</h3>
+              <h3 className="text-xl font-bold text-gray-900">{t.admin.editCompanyTitle} {editCompanyModal.name}</h3>
               <button onClick={() => setEditCompanyModal(null)} className="text-gray-400 hover:text-gray-600">
                 <Trash2 className="w-5 h-5 rotate-45" />
               </button>
@@ -1328,7 +1330,7 @@ export default function Admin() {
             <form onSubmit={handleUpdateCompany} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Correos de Admin (RRHH)
+                  {t.admin.editHREmails}
                 </label>
                 <input
                   type="text"
@@ -1339,15 +1341,15 @@ export default function Admin() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Separa los correos con comas si hay más de uno.
+                  {t.admin.editHREmailsHint}
                 </p>
               </div>
 
               <div className="border-t pt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2 font-bold">Configuración Visual</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2 font-bold">{t.admin.visualConfig}</label>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Color Corporativo (Hex)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.admin.colorLabel}</label>
                     <div className="flex gap-2">
                       <input
                         type="color"
@@ -1366,7 +1368,7 @@ export default function Admin() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Logo de la Empresa</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.admin.logoLabel}</label>
                     <div className="flex items-center gap-4">
                       <div className="flex-1">
                         <input
@@ -1401,17 +1403,17 @@ export default function Admin() {
                     onChange={(e) => setEditCompanySingleTournament(e.target.checked)}
                     className="w-4 h-4 rounded border-gray-300"
                   />
-                  <span className="text-sm font-medium text-gray-700">Torneo unificado (sin competencia por sectores)</span>
+                  <span className="text-sm font-medium text-gray-700">{t.admin.singleTournament}</span>
                 </label>
-                <p className="text-xs text-gray-500 mt-1 ml-6">Todos los empleados compiten en un ranking único, sin distinción de área.</p>
+                <p className="text-xs text-gray-500 mt-1 ml-6">{t.admin.singleTournamentHint}</p>
               </div>
 
               <div className="flex justify-end gap-3 pt-6 border-t">
                 <Button type="button" variant="outline" onClick={() => setEditCompanyModal(null)}>
-                  Cancelar
+                  {t.admin.cancel}
                 </Button>
                 <Button type="submit" disabled={creatingCompany} className="bg-blue-600 hover:bg-blue-700">
-                  {creatingCompany ? 'Guardando...' : 'Guardar Cambios'}
+                  {creatingCompany ? t.admin.saving : t.admin.saveChanges}
                 </Button>
               </div>
             </form>
@@ -1422,17 +1424,17 @@ export default function Admin() {
       {editingUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-1">Editar nombre de usuario</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-1">{t.admin.editUserTitle}</h3>
             <p className="text-gray-500 text-sm mb-5">
-              Cambiá el nombre visible en el ranking. El email y el rol no se modifican.
+              {t.admin.editUserDesc}
             </p>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nombre actual</label>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t.admin.currentName}</label>
                 <p className="text-gray-800 font-medium">{editingUser.currentName}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nuevo nombre</label>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t.admin.newName}</label>
                 <input
                   type="text"
                   value={editingUser.newName}
@@ -1440,19 +1442,19 @@ export default function Admin() {
                   onKeyDown={(e) => e.key === 'Enter' && handleRenameUser()}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   maxLength={50}
-                  placeholder="Nombre y apellido..."
+                  placeholder={t.admin.namePlaceholder}
                   autoFocus
                 />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <Button variant="outline" onClick={() => setEditingUser(null)}>Cancelar</Button>
+              <Button variant="outline" onClick={() => setEditingUser(null)}>{t.admin.cancel}</Button>
               <Button
                 onClick={handleRenameUser}
                 disabled={savingName || !editingUser.newName.trim() || editingUser.newName.trim() === editingUser.currentName}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white"
               >
-                {savingName ? 'Guardando...' : 'Guardar nombre'}
+                {savingName ? t.admin.saving : t.admin.saveName}
               </Button>
             </div>
           </div>

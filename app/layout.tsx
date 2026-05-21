@@ -4,6 +4,7 @@ import { Providers } from "../src/components/Providers";
 import ClientNavbar from "../src/components/ClientNavbar";
 import { DynamicBackground } from "../src/components/DynamicBackground";
 import { Analytics } from "@vercel/analytics/react";
+import { LanguageProvider } from "../src/i18n/LanguageContext";
 
 export const metadata: Metadata = {
   title: "Prode Mundial 2026",
@@ -23,13 +24,15 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body>
-        <Providers>
-          <DynamicBackground />
-          <ClientNavbar />
-          <main className="pb-20 md:pb-0">
-            {children}
-          </main>
-        </Providers>
+        <LanguageProvider>
+          <Providers>
+            <DynamicBackground />
+            <ClientNavbar />
+            <main className="pb-20 md:pb-0">
+              {children}
+            </main>
+          </Providers>
+        </LanguageProvider>
         <Analytics />
       </body>
     </html>

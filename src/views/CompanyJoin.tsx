@@ -6,6 +6,7 @@ import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc } fro
 import { db } from "../firebase";
 import { Button } from "../components/ui/button";
 import { Building2, LogIn } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function CompanyJoin({
   user,
@@ -18,6 +19,7 @@ export default function CompanyJoin({
   preloadedCompanyId?: string;
   preloadedCompanyData?: any;
 }) {
+  const { t } = useLanguage();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,7 +38,7 @@ export default function CompanyJoin({
 
   const handleJoin = async () => {
     if (!code.trim()) {
-      setError("Por favor ingresa un código válido.");
+      setError(t.join.errEmpty);
       return;
     }
     setLoading(true);
@@ -47,7 +49,7 @@ export default function CompanyJoin({
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        setError("No se encontró ninguna empresa con ese código.");
+        setError(t.join.errNotFound);
         setLoading(false);
         return;
       }
@@ -57,7 +59,7 @@ export default function CompanyJoin({
       const cData = cDoc.data();
 
       if (cData.isActive === false) {
-        setError("Este código pertenece a una empresa que ha sido dada de baja.");
+        setError(t.join.errInactive);
         setLoading(false);
         return;
       }
@@ -76,7 +78,7 @@ export default function CompanyJoin({
       await finalizeJoin(cId, cData, "");
     } catch (err: any) {
       console.error("Error in handleJoin:", err);
-      setError("Error: " + (err.message || "Hubo un error al verificar el código."));
+      setError("Error: " + (err.message || t.join.errGeneric));
       setLoading(false);
     }
   };
@@ -85,7 +87,7 @@ export default function CompanyJoin({
     setLoading(true);
     setError("");
     try {
-      let newRole = "player"; // Default role is player
+      const newRole = "player";
 
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
@@ -114,7 +116,7 @@ export default function CompanyJoin({
       onJoined();
     } catch (err: any) {
       console.error("Error in finalizeJoin:", err);
-      setError("Error: " + (err.message || "Hubo un error al unirse a la empresa."));
+      setError("Error: " + (err.message || t.join.errJoin));
       setLoading(false);
     }
   };
@@ -129,19 +131,17 @@ export default function CompanyJoin({
                 <Building2 className="h-12 w-12 text-brand" />
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Prode Mundial de fútbol 2026</h1>
-            <p className="text-gray-500 mb-8">
-              Para participar, necesitas ingresar el código de invitación de tu empresa.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t.join.title}</h1>
+            <p className="text-gray-500 mb-8">{t.join.subtitle}</p>
 
             <div className="space-y-4 text-left">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Código de la empresa</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t.join.codeLabel}</label>
                 <input
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="Ej: A1B2C3"
+                  placeholder={t.join.codePlaceholder}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand uppercase"
                   maxLength={6}
                 />
@@ -149,7 +149,7 @@ export default function CompanyJoin({
               {error && <p className="text-red-500 text-sm">{error}</p>}
               <div className="pt-2">
                 <Button onClick={handleJoin} disabled={loading || code.length < 4} className="w-full h-12 text-lg flex items-center justify-center gap-2 btn-primary">
-                  <LogIn className="w-5 h-5" /> {loading ? "Verificando..." : "Ingresar"}
+                  <LogIn className="w-5 h-5" /> {loading ? t.join.verifying : t.join.enter}
                 </Button>
               </div>
             </div>
@@ -165,20 +165,18 @@ export default function CompanyJoin({
                 </div>
               )}
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">¡Hola, equipo de {companyData?.name}!</h1>
-            <p className="text-gray-500 mb-6">
-              Antes de empezar, por favor selecciona a qué área o sucursal perteneces.
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{t.join.helloTeam} {companyData?.name}!</h1>
+            <p className="text-gray-500 mb-6">{t.join.selectAreaTitle}</p>
 
             <div className="space-y-4 text-left">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tu Área / Sucursal</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t.join.areaLabel}</label>
                 <select
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand"
                   value={selectedArea}
                   onChange={(e) => setSelectedArea(e.target.value)}
                 >
-                  <option value="">Selecciona una opción...</option>
+                  <option value="">{t.join.areaPlaceholder}</option>
                   {companyData?.areas?.map((area: string) => (
                     <option key={area} value={area}>{area}</option>
                   ))}
@@ -191,27 +189,27 @@ export default function CompanyJoin({
                 </div>
               )}
 
-              <Button 
+              <Button
                 onClick={() => {
                   if (!selectedArea) {
-                    setError("Por favor selecciona un área.");
+                    setError(t.join.errNoArea);
                     return;
                   }
                   finalizeJoin(companyId, companyData, selectedArea);
-                }} 
+                }}
                 disabled={loading || !selectedArea}
                 className="w-full py-6 text-lg font-semibold"
                 style={{ backgroundColor: companyData?.color || '#1d4ed8' }}
               >
-                {loading ? "Guardando..." : "Comenzar a jugar"}
+                {loading ? t.join.saving : t.join.startPlaying}
               </Button>
-              
+
               {!preloadedCompanyId && (
                 <button
                   onClick={() => setStep(1)}
                   className="w-full text-sm text-gray-500 hover:text-gray-700 mt-4"
                 >
-                  Volver atrás
+                  {t.join.goBack}
                 </button>
               )}
             </div>

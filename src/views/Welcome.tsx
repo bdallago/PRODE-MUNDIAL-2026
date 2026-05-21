@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { User } from "firebase/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Home, Trophy, Users, PenSquare, BookOpen, MessageSquareWarning, X, FileText, Image as ImageIcon, Film } from "lucide-react";
+import { Trophy, PenSquare, BookOpen, MessageSquareWarning, X, FileText, Image as ImageIcon, Film } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../components/ui/button";
 import { addDoc, collection } from "firebase/firestore";
@@ -11,8 +11,10 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, auth, storage } from "../firebase";
 import { CountdownBanner } from "../components/CountdownBanner";
 import { TutorialModal } from "../components/TutorialModal";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function Welcome({ user, userData, companyName, companyDetails }: { user: User | null, userData?: any, companyName: string, companyDetails?: any }) {
+  const { t } = useLanguage();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportText, setReportText] = useState("");
   const [reportFiles, setReportFiles] = useState<File[]>([]);
@@ -25,7 +27,6 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
       const newFiles = Array.from(e.target.files);
       setReportFiles(prev => [...prev, ...newFiles]);
     }
-    // Reset input so the same file can be selected again if needed
     e.target.value = '';
   };
 
@@ -39,25 +40,23 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
     setSubmitError(null);
     try {
       const fileUrls: string[] = [];
-      
+
       if (reportFiles.length > 0) {
         for (let i = 0; i < reportFiles.length; i++) {
           const file = reportFiles[i];
           const fileRef = ref(storage, `reports/${Date.now()}_${file.name}`);
-          
-          // Timeout to prevent hanging
+
           const uploadPromise = uploadBytes(fileRef, file);
-          const timeoutPromise = new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error("Firebase Storage bloqueó la subida. Por favor, revisá las reglas de seguridad en tu consola de Firebase.")), 15000)
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(t.welcome.errStorage)), 15000)
           );
-          
+
           await Promise.race([uploadPromise, timeoutPromise]);
           const url = await getDownloadURL(fileRef);
           fileUrls.push(url);
         }
       }
 
-      // Guardamos el reporte en Firestore
       await addDoc(collection(db, "reports"), {
         message: reportText,
         userEmail: auth.currentUser?.email || "",
@@ -65,7 +64,7 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
         createdAt: new Date().toISOString(),
         attachments: fileUrls
       });
-      
+
       setSubmitSuccess(true);
       setTimeout(() => {
         setIsReportModalOpen(false);
@@ -75,7 +74,7 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
       }, 3000);
     } catch (error: any) {
       console.error("Error al guardar reporte:", error);
-      setSubmitError(error.message || "Hubo un error al enviar el reporte. Verificá tu conexión y volvé a intentar.");
+      setSubmitError(error.message || t.welcome.errSubmit);
     } finally {
       setIsSubmitting(false);
     }
@@ -87,9 +86,9 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
     <div className="max-w-4xl mx-auto space-y-8 px-4 sm:px-6 py-6 md:py-8">
       <TutorialModal onComplete={() => {}} user={user} userData={userData} />
       <CountdownBanner />
-      
+
       {isPremium && companyDetails?.bannerMessage && (
-        <div 
+        <div
           className="p-4 rounded-r-lg shadow-sm border-l-4"
           style={{ backgroundColor: 'color-mix(in srgb, var(--brand-color, #a855f7) 10%, white)', borderColor: 'var(--brand-color, #a855f7)' }}
         >
@@ -100,7 +99,7 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium" style={{ color: 'color-mix(in srgb, var(--brand-color, #a855f7) 80%, black)' }}>Mensaje de RRHH</h3>
+              <h3 className="text-sm font-medium" style={{ color: 'color-mix(in srgb, var(--brand-color, #a855f7) 80%, black)' }}>{t.welcome.hrMessage}</h3>
               <div className="mt-2 text-sm whitespace-pre-wrap" style={{ color: 'color-mix(in srgb, var(--brand-color, #a855f7) 60%, black)' }}>
                 {companyDetails.bannerMessage}
               </div>
@@ -111,13 +110,13 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
 
       <div className="flex flex-col items-center justify-center gap-4 bg-white p-6 md:p-10 rounded-lg shadow-sm border border-gray-100 text-center">
         <div className="w-full space-y-2 md:space-y-4 py-4">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight">Bienvenido,</h1>
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight">{t.welcome.greeting}</h1>
           <p className="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight">{user?.displayName}</p>
           <div className="h-1 w-20 bg-[var(--brand-color,#2563eb)] mx-auto my-6 rounded-full"></div>
-          <p className="text-lg md:text-2xl font-medium text-gray-800">Prode Mundial 2026 • <span className="font-bold">{companyName}</span></p>
-          
+          <p className="text-lg md:text-2xl font-medium text-gray-800">{t.welcome.subtitle} <span className="font-bold">{companyName}</span></p>
+
           <p className="text-gray-700 mt-6 md:mt-8 text-lg text-center max-w-2xl mx-auto">
-            Demostrá tus conocimientos futbolísticos, participá con tus compañeros y convertite en el campeón de los pronósticos.
+            {t.welcome.description}
           </p>
         </div>
       </div>
@@ -127,7 +126,7 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
           <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col items-center justify-center p-8 border border-gray-200">
             <BookOpen className="w-8 h-8 text-[var(--brand-color,#2563eb)] mb-3 opacity-80" />
             <CardTitle className="text-xl font-bold text-gray-900 m-0">
-              Reglas
+              {t.welcome.rules}
             </CardTitle>
           </Card>
         </Link>
@@ -136,7 +135,7 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
           <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col items-center justify-center p-8 border border-gray-200">
             <PenSquare className="w-8 h-8 text-[var(--brand-color,#2563eb)] mb-3 opacity-80" />
             <CardTitle className="text-xl font-bold text-gray-900 m-0">
-              Mis Predicciones
+              {t.welcome.predictions}
             </CardTitle>
           </Card>
         </Link>
@@ -145,7 +144,7 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
           <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col items-center justify-center p-8 border border-gray-200">
             <Trophy className="w-8 h-8 text-[var(--brand-color,#2563eb)] mb-3 opacity-80" />
             <CardTitle className="text-xl font-bold text-gray-900 m-0">
-              Ranking
+              {t.welcome.ranking}
             </CardTitle>
           </Card>
         </Link>
@@ -154,16 +153,13 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
       <Card id="tutorial-reportes" className="hover:shadow-md transition-shadow border-t-4 border-t-red-500 bg-red-50/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl flex items-center gap-2 text-red-900">
-            <MessageSquareWarning className="w-5 h-5" /> Reportar Errores o Sugerencias
+            <MessageSquareWarning className="w-5 h-5" /> {t.welcome.reportTitle}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-gray-700">
-          <p className="mb-4">
-            ¿Encontraste algún problema o tenés alguna idea para mejorar la aplicación? ¡Queremos escucharte! 
-            Por favor, sé lo más detallado y preciso posible en tu mensaje. Si tenés imágenes o videos, podés adjuntarlos acá.
-          </p>
+          <p className="mb-4">{t.welcome.reportDesc}</p>
           <Button onClick={() => setIsReportModalOpen(true)} className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white">
-            Enviar Reporte o Sugerencia
+            {t.welcome.reportBtn}
           </Button>
         </CardContent>
       </Card>
@@ -175,15 +171,13 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
             <button onClick={() => setIsReportModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
               <X className="w-6 h-6" />
             </button>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Enviar Reporte o Sugerencia</h3>
-            <p className="text-gray-600 mb-6 text-sm">
-              Por favor, sé lo más detallado y preciso posible. Si tenés capturas de pantalla o videos, podés adjuntarlos acá.
-            </p>
-            
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t.welcome.modalTitle}</h3>
+            <p className="text-gray-600 mb-6 text-sm">{t.welcome.modalDesc}</p>
+
             {submitSuccess ? (
               <div className="bg-green-50 text-green-800 p-4 rounded-lg border border-green-200 text-center">
-                <p className="font-bold">¡Reporte enviado con éxito!</p>
-                <p className="text-sm mt-1">Beno lo va a revisar a la brevedad.</p>
+                <p className="font-bold">{t.welcome.successTitle}</p>
+                <p className="text-sm mt-1">{t.welcome.successDesc}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmitReport} className="space-y-4">
@@ -193,35 +187,35 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tu mensaje</label>
-                  <textarea 
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.welcome.messageLabel}</label>
+                  <textarea
                     required
                     rows={5}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand resize-none"
-                    placeholder="Describí el error o tu sugerencia acá..."
+                    placeholder={t.welcome.messagePlaceholder}
                     value={reportText}
                     onChange={(e) => setReportText(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Adjuntar archivos (Opcional)</label>
-                  <input 
-                    type="file" 
-                    multiple 
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.welcome.attachLabel}</label>
+                  <input
+                    type="file"
+                    multiple
                     accept="image/*,video/*"
                     onChange={handleFileSelect}
                     className="w-full p-2 border border-gray-300 rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand/10 file:text-brand hover:file:bg-brand/20"
                   />
-                  <p className="text-xs text-gray-500 mt-1 mb-3">Formatos permitidos: Cualquier formato de imagen o video.</p>
-                  
+                  <p className="text-xs text-gray-500 mt-1 mb-3">{t.welcome.attachHint}</p>
+
                   {reportFiles.length > 0 && (
                     <div className="space-y-2 mt-3 max-h-40 overflow-y-auto pr-2">
                       {reportFiles.map((file, index) => (
                         <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded border border-gray-200">
                           <div className="flex items-center gap-2 overflow-hidden">
                             <div className="bg-brand/10 p-1.5 rounded text-brand shrink-0">
-                              {file.type.startsWith('image/') ? <ImageIcon className="w-4 h-4" /> : 
-                               file.type.startsWith('video/') ? <Film className="w-4 h-4" /> : 
+                              {file.type.startsWith('image/') ? <ImageIcon className="w-4 h-4" /> :
+                               file.type.startsWith('video/') ? <Film className="w-4 h-4" /> :
                                <FileText className="w-4 h-4" />}
                             </div>
                             <div className="truncate">
@@ -229,11 +223,11 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
                               <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                             </div>
                           </div>
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => removeFile(index)}
                             className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors shrink-0"
-                            title="Eliminar archivo"
+                            title={t.welcome.deleteFile}
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -242,18 +236,18 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
                     </div>
                   )}
                 </div>
-                
+
                 <div className="pt-2">
                   <Button type="submit" disabled={isSubmitting} className="w-full btn-primary py-6 text-lg">
-                    {isSubmitting ? 'Enviando...' : 'Enviar a Beno'}
+                    {isSubmitting ? t.welcome.submitting : t.welcome.submitBtn}
                   </Button>
                 </div>
               </form>
             )}
-            
+
             <div className="mt-6 pt-4 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-500">
-                O si preferís, escribime directamente a:<br/>
+                {t.welcome.contactNote}<br/>
                 <a href="mailto:benitodallago@gmail.com" className="text-brand font-medium hover:underline">benitodallago@gmail.com</a>
               </p>
             </div>

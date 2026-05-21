@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { User, signOut } from "firebase/auth";
-import { auth, db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { auth } from "../firebase";
 import { Button } from "./ui/button";
-import { Trophy, LogOut, Settings, PenSquare, BookOpen, Users, Home, Building2 } from "lucide-react";
+import { Trophy, LogOut, Settings, PenSquare, BookOpen, Home, Building2 } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
+import { LanguageSelector } from "./LanguageSelector";
 
 export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, brandColor }: { user: User; isAdmin: boolean; userData?: any; companyName: string; logoUrl?: string | null; brandColor?: string }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -21,8 +22,8 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
   const getLinkStyle = (path: string) => {
     const isActive = pathname === path;
     return `hidden md:flex items-center justify-center gap-1.5 px-2 lg:px-3 py-1.5 lg:py-2 rounded-md transition-all duration-300 font-semibold text-xs lg:text-sm whitespace-nowrap ${
-      isActive 
-        ? "bg-white text-gray-900 shadow-sm" 
+      isActive
+        ? "bg-white text-gray-900 shadow-sm"
         : "bg-white/30 text-white hover:bg-white/40"
     }`;
   };
@@ -30,8 +31,8 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
   const getMobileLinkStyle = (path: string) => {
     const isActive = pathname === path;
     return `flex flex-col items-center text-xs p-2 rounded-md transition-colors flex-1 mx-1 font-semibold ${
-      isActive 
-        ? "bg-white text-gray-900 shadow-sm" 
+      isActive
+        ? "bg-white text-gray-900 shadow-sm"
         : "bg-transparent text-white hover:bg-white/30"
     }`;
   };
@@ -51,33 +52,34 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
                 </>
               )}
             </Link>
-            
+
             <div className="hidden md:flex items-center justify-center gap-1 lg:gap-2 flex-1 overflow-x-auto no-scrollbar">
-              <Link href="/" className={getLinkStyle("/")}>
-                <Home className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Inicio</span>
+              <Link href="/" className={getLinkStyle("/")} id="tutorial-home">
+                <Home className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>{t.nav.home}</span>
               </Link>
-              <Link href="/instructions" className={getLinkStyle("/instructions")}>
-                <BookOpen className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Reglas</span>
+              <Link href="/instructions" className={getLinkStyle("/instructions")} id="tutorial-reglas">
+                <BookOpen className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>{t.nav.rules}</span>
               </Link>
-              <Link href="/predictions" className={getLinkStyle("/predictions")}>
-                <PenSquare className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Predicciones</span>
+              <Link href="/predictions" className={getLinkStyle("/predictions")} id="tutorial-predicciones">
+                <PenSquare className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>{t.nav.predictions}</span>
               </Link>
-              <Link href="/dashboard" className={getLinkStyle("/dashboard")}>
-                <Trophy className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Ranking</span>
+              <Link href="/dashboard" className={getLinkStyle("/dashboard")} id="tutorial-ranking">
+                <Trophy className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>{t.nav.ranking}</span>
               </Link>
               {isAdmin && (
                 <Link href="/admin" className={getLinkStyle("/admin")}>
-                  <Settings className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Admin</span>
+                  <Settings className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>{t.nav.admin}</span>
                 </Link>
               )}
               {userData?.role === 'company_admin' && (
                 <Link href="/company-admin" className={getLinkStyle("/company-admin")}>
-                  <Building2 className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>Panel</span>
+                  <Building2 className="h-3.5 w-3.5 lg:h-4 lg:w-4 shrink-0" /> <span>{t.nav.panel}</span>
                 </Link>
               )}
             </div>
-              
-            <div className="flex items-center justify-end gap-2 md:gap-3 md:w-auto lg:w-1/4 shrink-0">
+
+            <div className="flex items-center justify-end gap-1 md:gap-2 md:w-auto lg:w-1/4 shrink-0">
+              <LanguageSelector light />
               <div className="flex items-center gap-2">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="Profile" className="w-7 h-7 md:w-8 md:h-8 rounded-full border border-white/30" referrerPolicy="no-referrer" />
@@ -100,24 +102,24 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-2 py-1 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]" style={{ backgroundColor: brandColor || '#1e3a8a' }}>
         <div className="flex items-center justify-around">
           <Link href="/" className={getMobileLinkStyle("/")}>
-            <Home className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">Inicio</span>
+            <Home className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">{t.nav.home}</span>
           </Link>
           <Link href="/instructions" className={getMobileLinkStyle("/instructions")}>
-            <BookOpen className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">Reglas</span>
+            <BookOpen className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">{t.nav.rules}</span>
           </Link>
           <Link href="/predictions" className={getMobileLinkStyle("/predictions")}>
-            <PenSquare className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">Predecir</span>
+            <PenSquare className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">{t.nav.predict}</span>
           </Link>
           <Link href="/dashboard" className={getMobileLinkStyle("/dashboard")}>
-            <Trophy className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">Ranking</span>
+            <Trophy className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">{t.nav.ranking}</span>
           </Link>
           {(isAdmin || userData?.role === 'company_admin') && (
-            <Link 
-              href={isAdmin ? "/admin" : "/company-admin"} 
+            <Link
+              href={isAdmin ? "/admin" : "/company-admin"}
               className={getMobileLinkStyle(isAdmin ? "/admin" : "/company-admin")}
             >
               {isAdmin ? <Settings className="h-5 w-5 mb-0.5" /> : <Building2 className="h-5 w-5 mb-0.5" />}
-              <span className="text-[10px]">Panel</span>
+              <span className="text-[10px]">{t.nav.panel}</span>
             </Link>
           )}
         </div>

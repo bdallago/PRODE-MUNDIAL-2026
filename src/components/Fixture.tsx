@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
 import { GROUPS, TEAM_FLAGS } from "../data";
 import { doc, getDocFromCache, getDocFromServer } from "firebase/firestore";
 import { db } from "../firebase";
+import { useLanguage } from "../i18n/LanguageContext";
 
 // Generar el fixture lógicamente
 const generateFixture = () => {
@@ -68,6 +69,13 @@ const TeamFlag = ({ teamName }: { teamName: string }) => {
 };
 
 export function Fixture() {
+  const { t } = useLanguage();
+  const tTeams = t.teams as Record<string, string>;
+  const tDays = t.fixture.days as Record<string, string>;
+  const translateDate = (date: string) => {
+    const [day, num] = date.split(' ');
+    return `${tDays[day] || day} ${num}`;
+  };
   const [currentFecha, setCurrentFecha] = useState(0);
   const [actualGroups, setActualGroups] = useState<Record<string, string[]>>(GROUPS);
 
@@ -135,12 +143,12 @@ export function Fixture() {
         <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-slate-200">
           {/* Header */}
           <div className="bg-brand text-white p-4 text-center">
-            <h2 className="text-lg font-bold tracking-wider mb-4 text-white">FIXTURE MUNDIAL</h2>
+            <h2 className="text-lg font-bold tracking-wider mb-4 text-white">{t.fixture.title}</h2>
             <div className="flex items-center justify-between px-4">
               <button onClick={handlePrev} className="p-1 hover:bg-white/20 rounded-full transition-colors">
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <span className="font-bold text-base">FECHA {currentFecha + 1}</span>
+              <span className="font-bold text-base">{t.fixture.matchday} {currentFecha + 1}</span>
               <button onClick={handleNext} className="p-1 hover:bg-white/20 rounded-full transition-colors">
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -152,7 +160,7 @@ export function Fixture() {
             {Object.entries(groupedMatches).map(([date, dayMatches]) => (
               <div key={date}>
                 <div className="bg-slate-100 text-slate-700 text-center py-1.5 text-sm font-bold border-y border-slate-200 uppercase tracking-wide">
-                  {date}
+                  {translateDate(date)}
                 </div>
                 <div className="divide-y divide-slate-100">
                   {dayMatches.map((match, idx) => (
@@ -161,11 +169,11 @@ export function Fixture() {
                         {match.time}
                       </div>
                       <div className="flex-1 grid grid-cols-[1fr_24px_16px_24px_1fr] sm:grid-cols-[1fr_28px_20px_28px_1fr] items-center py-2 sm:py-3 px-2 sm:px-4 gap-1 sm:gap-2">
-                        <div className="text-center font-semibold text-xs sm:text-sm truncate px-1">{match.team1}</div>
+                        <div className="text-center font-semibold text-xs sm:text-sm truncate px-1">{tTeams[match.team1] || match.team1}</div>
                         <div className="flex justify-center"><TeamFlag teamName={match.team1} /></div>
                         <div className="text-center text-slate-400 font-bold text-xs sm:text-sm">-</div>
                         <div className="flex justify-center"><TeamFlag teamName={match.team2} /></div>
-                        <div className="text-center font-semibold text-xs sm:text-sm truncate px-1">{match.team2}</div>
+                        <div className="text-center font-semibold text-xs sm:text-sm truncate px-1">{tTeams[match.team2] || match.team2}</div>
                       </div>
                     </div>
                   ))}
@@ -179,9 +187,9 @@ export function Fixture() {
         <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-slate-200">
           {/* Header */}
           <div className="bg-brand text-white p-4 text-center">
-            <h2 className="text-lg font-bold tracking-wider mb-4 text-white">FASE DE GRUPOS</h2>
+            <h2 className="text-lg font-bold tracking-wider mb-4 text-white">{t.fixture.groupStage}</h2>
             <div className="flex items-center justify-center px-4 h-7">
-              <span className="font-bold text-base">POSICIONES</span>
+              <span className="font-bold text-base">{t.fixture.standings}</span>
             </div>
           </div>
 
@@ -192,14 +200,14 @@ export function Fixture() {
               .map(([groupLetter, teams]) => (
               <div key={groupLetter} className="border-b border-slate-200 last:border-b-0">
                 <div className="bg-brand text-white text-left py-2 px-3 text-sm font-bold tracking-wide flex justify-between">
-                  <span>GRUPO {groupLetter}</span>
+                  <span>{t.fixture.group} {groupLetter}</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs sm:text-sm text-left table-fixed">
                     <thead className="text-[10px] sm:text-xs text-slate-500 bg-slate-50 border-b border-slate-200 uppercase">
                       <tr>
                         <th className="w-8 sm:w-10 py-2 text-center">#</th>
-                        <th className="py-2 text-left">Equipos</th>
+                        <th className="py-2 text-left">{t.fixture.teams}</th>
                         <th className="w-8 sm:w-10 py-2 text-center font-bold text-slate-700">PTS</th>
                         <th className="w-6 sm:w-8 py-2 text-center">J</th>
                         <th className="w-8 sm:w-10 py-2 text-center">Gol</th>
@@ -220,7 +228,7 @@ export function Fixture() {
                           <td className="py-2 font-medium text-slate-800">
                             <div className="flex items-center gap-1.5 sm:gap-2">
                               <TeamFlag teamName={team} />
-                              <span className="truncate">{team}</span>
+                              <span className="truncate">{tTeams[team] || team}</span>
                             </div>
                           </td>
                           <td className="py-2 text-center font-bold text-slate-800">0</td>

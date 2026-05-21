@@ -5,8 +5,10 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import { TEAM_FLAGS } from '../data';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export const SortableItem: React.FC<{ id: string, team: string, index: number, disabled?: boolean }> = ({ id, team, index, disabled = false }) => {
+  const { t } = useLanguage();
   const {
     attributes,
     listeners,
@@ -107,7 +109,7 @@ export const SortableItem: React.FC<{ id: string, team: string, index: number, d
         />
       )}
 
-      <span className="font-medium truncate flex-1">{team}</span>
+      <span className="font-medium truncate flex-1">{(t.teams as Record<string, string>)[team] || team}</span>
 
 
     </div>

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Button } from "../components/ui/button";
 import { Users, Trash2, Building2, Calculator, Copy, CheckCircle2, Trophy, AlertCircle, Download, MessageSquare, Lock, Bell, PenSquare } from "lucide-react";
 import { CountdownBanner } from "../components/CountdownBanner";
+import { useLanguage } from "../i18n/LanguageContext";
 // import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 
 interface UserProfile {
@@ -21,6 +22,7 @@ interface UserProfile {
 }
 
 export default function CompanyAdmin({ userData, hideBanner = false, companyName }: { userData: any, hideBanner?: boolean, companyName?: string }) {
+  const { t, lang } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [company, setCompany] = useState<any>(null);
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -212,11 +214,11 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
   };
 
   if (loading) {
-    return <div className="text-center py-10">Cargando panel de {companyName || 'tu empresa'}...</div>;
+    return <div className="text-center py-10">{t.companyAdmin.loading} {companyName || ''}...</div>;
   }
 
   if (!company) {
-    return <div className="text-center py-10 text-red-500">Error: No se encontró la información de la empresa.</div>;
+    return <div className="text-center py-10 text-red-500">{t.companyAdmin.noCompany}</div>;
   }
 
   const participationRate = stats.totalUsers > 0 ? Math.round((stats.predictionsMade / stats.totalUsers) * 100) : 0;
@@ -229,9 +231,9 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Building2 className="w-8 h-8" style={{ color: 'var(--brand-color, #9333ea)' }} /> Lista de Participantes
+            <Building2 className="w-8 h-8" style={{ color: 'var(--brand-color, #9333ea)' }} /> {t.companyAdmin.title}
           </h1>
-          <p className="text-gray-500 mt-1">Administrá los miembros de {company.name} y enviá recordatorios.</p>
+          <p className="text-gray-500 mt-1">{t.companyAdmin.subtitle} {company.name} {t.companyAdmin.subtitle2}</p>
         </div>
       </div>
 
@@ -244,7 +246,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-1 text-white border-none shadow-lg" style={{ backgroundColor: 'var(--brand-color, #9333ea)' }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-white/80 text-sm font-medium uppercase tracking-wider">Código de Invitación</CardTitle>
+            <CardTitle className="text-white/80 text-sm font-medium uppercase tracking-wider">{t.companyAdmin.inviteCode}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-4">
@@ -258,10 +260,10 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                 style={{ color: 'var(--brand-color, #9333ea)' }}
               >
                 {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? '¡Copiado!' : 'Copiar Código'}
+                {copied ? t.companyAdmin.copied : t.companyAdmin.copyCode}
               </Button>
               <p className="text-xs text-white/70 mt-4 text-center">
-                Compartí este código con los empleados para que puedan unirse al prode de la empresa.
+                {t.companyAdmin.codeHint}
               </p>
             </div>
           </CardContent>
@@ -270,7 +272,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
         <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card className="bg-white shadow-sm border border-gray-100">
             <CardHeader className="pb-2">
-              <CardTitle className="text-gray-500 text-sm font-medium uppercase tracking-wider">Usuarios Activos</CardTitle>
+              <CardTitle className="text-gray-500 text-sm font-medium uppercase tracking-wider">{t.companyAdmin.activeUsers}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
@@ -287,13 +289,13 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
           
           <Card className="bg-white shadow-sm border border-gray-100">
             <CardHeader className="pb-2">
-              <CardTitle className="text-gray-500 text-sm font-medium uppercase tracking-wider">Tasa de Participación</CardTitle>
+              <CardTitle className="text-gray-500 text-sm font-medium uppercase tracking-wider">{t.companyAdmin.participationRate}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold text-gray-900">{participationRate}%</p>
-                  <p className="text-sm text-gray-500 mt-1">{stats.predictionsMade} de {stats.totalUsers} guardaron su prode</p>
+                  <p className="text-sm text-gray-500 mt-1">{stats.predictionsMade} {t.companyAdmin.of} {stats.totalUsers} {t.companyAdmin.savedPrede}</p>
                 </div>
                 <div className="h-16 w-16 flex items-center justify-center">
                   {/*<RadialBarChart width={64} height={64} cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" barSize={8} data={chartData} startAngle={90} endAngle={-270}>
@@ -307,7 +309,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
 
           <Card className="bg-white shadow-sm border border-gray-100">
             <CardHeader className="pb-2">
-              <CardTitle className="text-gray-500 text-sm font-medium uppercase tracking-wider">Faltan Completar</CardTitle>
+              <CardTitle className="text-gray-500 text-sm font-medium uppercase tracking-wider">{t.companyAdmin.remaining}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
@@ -316,7 +318,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-gray-900">{stats.totalUsers - stats.predictionsMade}</p>
-                  <p className="text-sm text-gray-500">Usuarios sin predicciones</p>
+                  <p className="text-sm text-gray-500">{t.companyAdmin.noPredsUsers}</p>
                 </div>
               </div>
             </CardContent>
@@ -330,16 +332,37 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
             <CardHeader>
               <CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
                 <MessageSquare className="w-5 h-5" style={{ color: 'var(--brand-color, #9333ea)' }} />
-                Kit de Comunicación Interna
+                {t.companyAdmin.commKit}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">
-                  Copiá y pegá estos mensajes en Slack, Teams o por Mail para fomentar la participación en tu empresa.
+                  {t.companyAdmin.commKitDesc}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
+                  {(lang === 'en' ? [
+                    {
+                      title: "Initial Invitation",
+                      body: `The World Cup Prode has arrived at ${companyName || 'your company'}! 🏆⚽\n\nShow off your football knowledge competing with your colleagues. There are prizes for the best!\n\nSign up here and submit your predictions:\n👉 ${window.location.origin}\nCompany code: ${company?.code}`
+                    },
+                    {
+                      title: "Reminder for Latecomers",
+                      body: `Last days to submit your Prode! ⏰\n\nYou're still in time to participate and compete for prizes. You have until June 11 to lock in your predictions before the World Cup starts.\n\nSign in now and complete your fixture:\n👉 ${window.location.origin}`
+                    },
+                    {
+                      title: "Halfway - Round of 16",
+                      body: `The Group Stage is over at ${companyName || 'your company'}'s Prode! 📊\n\nThe tournament heats up as the knockout rounds begin. Have you checked your ranking position yet? There are still many points up for grabs in individual matches!\n\nCheck the ranking here:\n👉 ${window.location.origin}`
+                    },
+                    {
+                      title: "Final Stretch - Semis & Final",
+                      body: `We've reached the World Cup final stretch! 🥇\n\nOnly a couple of matches left. This is the moment of truth to define who takes the big prizes at ${companyName || 'your company'}. Don't forget to predict the result of the Grand Final!\n\nSubmit your predictions here:\n👉 ${window.location.origin}`
+                    },
+                    {
+                      title: "Winner Announcement",
+                      body: `We have our ${companyName || 'your company'} Prode champions! 🥳🏆\n\nThank you all for participating. It has been an incredible tournament. Special congratulations to the podium winners who take home our prizes.\n\nYou can see the final historical ranking here:\n👉 ${window.location.origin}`
+                    }
+                  ] : [
                     {
                       title: "Invitación Inicial",
                       body: `¡Llegó el Prode Mundial a ${companyName || 'la empresa'}! 🏆⚽\n\nDemostrá cuánto sabés de fútbol compitiendo con todos tus compañeros. ¡Hay premios para los mejores!\n\nIngresá acá para registrarte y cargar tus predicciones:\n👉 ${window.location.origin}\nCódigo de empresa: ${company?.code}`
@@ -360,7 +383,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                       title: "Anuncio de Ganadores",
                       body: `¡Tenemos a los campeones del Prode ${companyName || 'la empresa'}! 🥳🏆\n\nGracias a todos por participar. Ha sido un torneo increíble. Felicitaciones especiales a los ganadores del podio que se llevan nuestros premios.\n\nPodés ver el ranking final histórico ingresando acá:\n👉 ${window.location.origin}`
                     }
-                  ].map((kit, idx) => (
+                  ]).map((kit, idx) => (
                     <div key={idx} className="bg-gray-50 p-4 rounded-md border border-gray-200 relative group">
                       <h4 className="font-bold text-sm text-gray-700 mb-2">{kit.title}</h4>
                       <p className="text-xs text-gray-600 whitespace-pre-wrap">{kit.body}</p>
@@ -370,10 +393,10 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                         className="absolute top-2 right-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity bg-white"
                         onClick={() => {
                           navigator.clipboard.writeText(kit.body);
-                          setMessage({ type: 'success', text: 'Mensaje copiado al portapapeles' });
+                          setMessage({ type: 'success', text: t.companyAdmin.msgCopied });
                         }}
                       >
-                        <Copy className="w-3 h-3 mr-1" /> Copiar
+                        <Copy className="w-3 h-3 mr-1" /> {t.companyAdmin.copy}
                       </Button>
                     </div>
                   ))}
@@ -384,24 +407,24 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
 
           <Card className="bg-white shadow-sm border border-gray-100">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-gray-900">Banner de Comunicación Interna</CardTitle>
+              <CardTitle className="text-lg font-bold text-gray-900">{t.companyAdmin.bannerTitle}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">
-                  Escribe un mensaje que todos los empleados verán en la parte superior de su panel principal (Dashboard). Útil para anunciar premios, fechas límite o mensajes motivacionales.
+                  {t.companyAdmin.bannerDesc}
                 </p>
                 <textarea
                   value={bannerMessage}
                   onChange={(e) => setBannerMessage(e.target.value)}
-                  placeholder="Ej: ¡Recuerden que el ganador se lleva una camiseta oficial! Tienen tiempo hasta el viernes para cargar sus resultados."
+                  placeholder={t.companyAdmin.bannerPlaceholder}
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 min-h-[100px]"
                   maxLength={500}
                 />
                 <div className="flex justify-between items-center">
                   {bannerSuccess ? (
                     <span className="text-green-600 text-sm font-medium flex items-center gap-1">
-                      <CheckCircle2 className="w-4 h-4" /> Banner actualizado
+                      <CheckCircle2 className="w-4 h-4" /> {t.companyAdmin.bannerUpdated}
                     </span>
                   ) : (
                     <span></span>
@@ -417,15 +440,15 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                       }}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
-                      Limpiar Banner
+                      {t.companyAdmin.clearBanner}
                     </Button>
-                    <Button 
-                      onClick={handleSaveBanner} 
+                    <Button
+                      onClick={handleSaveBanner}
                       disabled={savingBanner}
                       className="text-white"
                       style={{ backgroundColor: 'var(--brand-color, #9333ea)' }}
                     >
-                      {savingBanner ? 'Guardando...' : 'Guardar'}
+                      {savingBanner ? t.companyAdmin.saving : t.companyAdmin.save}
                     </Button>
                   </div>
                 </div>
@@ -435,54 +458,54 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
 
           <Card className="bg-white shadow-sm border border-gray-100">
             <CardHeader>
-              <CardTitle className="text-lg font-bold text-gray-900">Gestión de Premios</CardTitle>
+              <CardTitle className="text-lg font-bold text-gray-900">{t.companyAdmin.prizesTitle}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">
-                  Definí los premios para los ganadores del prode. Estos se mostrarán en el dashboard de todos los participantes.
+                  {t.companyAdmin.prizesDesc}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">1º Puesto</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.companyAdmin.prize1}</label>
                     <input
                       type="text"
                       value={prizes.first}
                       onChange={(e) => setPrizes({ ...prizes, first: e.target.value })}
-                      placeholder="Ej: Viaje a Brasil"
+                      placeholder={t.companyAdmin.prize1Placeholder}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">2º Puesto</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.companyAdmin.prize2}</label>
                     <input
                       type="text"
                       value={prizes.second}
                       onChange={(e) => setPrizes({ ...prizes, second: e.target.value })}
-                      placeholder="Ej: TV 50 pulgadas"
+                      placeholder={t.companyAdmin.prize2Placeholder}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">3º Puesto</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.companyAdmin.prize3}</label>
                     <input
                       type="text"
                       value={prizes.third}
                       onChange={(e) => setPrizes({ ...prizes, third: e.target.value })}
-                      placeholder="Ej: Camiseta oficial"
+                      placeholder={t.companyAdmin.prize3Placeholder}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
                 </div>
                 <div className="flex justify-end items-center gap-3 mt-4">
-                  {prizeSuccess && <span className="text-sm text-green-600 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Guardado</span>}
-                  <Button 
-                    onClick={handleSavePrizes} 
+                  {prizeSuccess && <span className="text-sm text-green-600 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> {t.companyAdmin.prizeSaved}</span>}
+                  <Button
+                    onClick={handleSavePrizes}
                     disabled={savingPrizes}
                     className="text-white"
                     style={{ backgroundColor: 'var(--brand-color, #9333ea)' }}
                   >
-                    {savingPrizes ? 'Guardando...' : 'Guardar Premios'}
+                    {savingPrizes ? t.companyAdmin.saving : t.companyAdmin.savePrizes}
                   </Button>
                 </div>
               </div>
@@ -500,7 +523,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
               onClick={() => {
                 const rezagados = users.filter(u => u.predictionStatus !== 'complete').map(u => u.email).filter(Boolean);
                 if (rezagados.length === 0) {
-                  setMessage({ type: 'success', text: '¡Todos los usuarios ya completaron sus predicciones!' });
+                  setMessage({ type: 'success', text: t.companyAdmin.msgAllPredictions });
                   window.scrollTo(0, 0);
                   return;
                 }
@@ -530,14 +553,14 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
               }}
               className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
             >
-              <MessageSquare className="w-4 h-4" /> Recordar a Rezagados
+              <MessageSquare className="w-4 h-4" /> {t.companyAdmin.remindLaggards}
             </Button>
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               onClick={exportToCSV}
               className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white border-green-600 w-full md:w-auto"
             >
-              <Download className="w-4 h-4" /> Exportar a Excel
+              <Download className="w-4 h-4" /> {t.companyAdmin.exportCSV}
             </Button>
           </div>
         </div>
@@ -547,11 +570,11 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
                   <tr>
-                    <th className="px-4 py-3 min-w-[150px]">Empleado</th>
-                    <th className="px-4 py-3 hidden md:table-cell">Email</th>
-                    <th className="px-4 py-3 hidden sm:table-cell">Rol</th>
-                    <th className="px-4 py-3 text-center">Prode</th>
-                    <th className="px-4 py-3 text-right">Acciones</th>
+                    <th className="px-4 py-3 min-w-[150px]">{t.companyAdmin.colEmployee}</th>
+                    <th className="px-4 py-3 hidden md:table-cell">{t.companyAdmin.colEmail}</th>
+                    <th className="px-4 py-3 hidden sm:table-cell">{t.companyAdmin.colRole}</th>
+                    <th className="px-4 py-3 text-center">{t.companyAdmin.colPrede}</th>
+                    <th className="px-4 py-3 text-right">{t.companyAdmin.colActions}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -575,7 +598,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                       <td className="px-4 py-4 text-gray-600 hidden md:table-cell">{u.email}</td>
                       <td className="px-4 py-4 hidden sm:table-cell">
                         <span className={`px-2 py-1 rounded-full text-[10px] font-medium border ${u.role === 'company_admin' ? 'bg-brand/10 text-brand border-brand/20' : 'bg-gray-100 text-gray-800 border-gray-200'}`}>
-                          {u.role === 'company_admin' ? 'RRHH' : 'Jugador'}
+                          {u.role === 'company_admin' ? t.companyAdmin.roleHR : t.companyAdmin.rolePlayer}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center">
@@ -631,7 +654,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                   {users.length === 0 && (
                     <tr>
                       <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                        Aún no hay empleados registrados en tu empresa.
+                        {t.companyAdmin.noEmployees}
                       </td>
                     </tr>
                   )}
@@ -645,17 +668,17 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
       {editingUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-1">Editar nombre de usuario</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-1">{t.companyAdmin.editUserTitle}</h3>
             <p className="text-gray-500 text-sm mb-5">
-              Cambiá el nombre que aparece en el ranking y el panel. El email no se modifica.
+              {t.companyAdmin.editUserDesc}
             </p>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nombre actual</label>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t.companyAdmin.currentName}</label>
                 <p className="text-gray-800 font-medium">{editingUser.currentName}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nuevo nombre</label>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t.companyAdmin.newName}</label>
                 <input
                   type="text"
                   value={editingUser.newName}
@@ -663,20 +686,20 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
                   onKeyDown={(e) => e.key === 'Enter' && handleRenameUser()}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand"
                   maxLength={50}
-                  placeholder="Nombre y apellido..."
+                  placeholder={t.companyAdmin.namePlaceholder}
                   autoFocus
                 />
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <Button variant="outline" onClick={() => setEditingUser(null)}>Cancelar</Button>
+              <Button variant="outline" onClick={() => setEditingUser(null)}>{t.companyAdmin.cancel}</Button>
               <Button
                 onClick={handleRenameUser}
                 disabled={savingName || !editingUser.newName.trim() || editingUser.newName.trim() === editingUser.currentName}
                 className="text-white"
                 style={{ backgroundColor: 'var(--brand-color, #9333ea)' }}
               >
-                {savingName ? 'Guardando...' : 'Guardar nombre'}
+                {savingName ? t.companyAdmin.saving : t.companyAdmin.saveName}
               </Button>
             </div>
           </div>
@@ -687,20 +710,20 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              {userToBlock.isBlocked ? 'Desbloquear usuario' : 'Bloquear usuario'}
+              {userToBlock.isBlocked ? t.companyAdmin.unblockUserTitle : t.companyAdmin.blockUserTitle}
             </h3>
             <p className="text-gray-600 mb-6">
-              ¿Estás seguro de {userToBlock.isBlocked ? 'desbloquear' : 'bloquear'} a{' '}
+              ¿Estás seguro de {userToBlock.isBlocked ? t.companyAdmin.unblockWord : t.companyAdmin.blockWord} a{' '}
               <span className="font-semibold">{userToBlock.name}</span>?
-              {!userToBlock.isBlocked && ' No podrá acceder al prode hasta que lo desbloquees.'}
+              {!userToBlock.isBlocked && ' ' + t.companyAdmin.blockWarning}
             </p>
             <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setUserToBlock(null)}>Cancelar</Button>
+              <Button variant="outline" onClick={() => setUserToBlock(null)}>{t.companyAdmin.cancel}</Button>
               <Button
                 onClick={confirmToggleBlockUser}
                 className={`text-white ${userToBlock.isBlocked ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-500 hover:bg-orange-600'}`}
               >
-                {userToBlock.isBlocked ? 'Desbloquear' : 'Bloquear'}
+                {userToBlock.isBlocked ? t.companyAdmin.unblock : t.companyAdmin.block}
               </Button>
             </div>
           </div>
@@ -710,17 +733,17 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
       {userToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Confirmar eliminación</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t.companyAdmin.deleteTitle}</h3>
             <p className="text-gray-600 mb-6">
-              ¿Estás seguro de eliminar a <span className="font-semibold">{userToDelete.name}</span> de tu empresa? 
-              Esto borrará su cuenta y todas sus predicciones de forma permanente.
+              ¿Estás seguro de eliminar a <span className="font-semibold">{userToDelete.name}</span>?{' '}
+              {t.companyAdmin.deleteWarning}
             </p>
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setUserToDelete(null)}>
-                Cancelar
+                {t.companyAdmin.cancel}
               </Button>
               <Button variant="destructive" onClick={confirmRemoveUser} className="bg-red-600 hover:bg-red-700">
-                Eliminar usuario
+                {t.companyAdmin.deleteBtn}
               </Button>
             </div>
           </div>

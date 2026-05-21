@@ -15,10 +15,12 @@ import { CountdownBanner } from "../components/CountdownBanner";
 import { Fixture } from "../components/Fixture";
 import { Bracket } from "../components/Bracket";
 import { GROUPS, SPECIAL_QUESTIONS, KNOCKOUT_STAGES, ALL_TEAMS, MATCHES, TEAM_FLAGS } from "../data";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const DEFAULT_DEADLINE = new Date('2026-06-11T00:00:00').getTime();
 
 export default function Predictions({ user }: { user: User }) {
+  const { t, lang } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
@@ -182,7 +184,7 @@ export default function Predictions({ user }: { user: User }) {
 
   const handleMatchChange = (matchId: string, team: 'home' | 'away', value: string, matchDate: string, matchTime: string) => {
     if (checkMatchLocked(matchDate, matchTime)) {
-      setMessage({ type: 'error', text: 'El tiempo para editar este partido ha expirado (1 hora antes).' });
+      setMessage({ type: 'error', text: t.predictions.errMatchExpired });
       return;
     }
     
@@ -250,15 +252,15 @@ export default function Predictions({ user }: { user: User }) {
       setHasSavedDoc(true);
       
       if (!isAutoSave) {
-        setMessage({ type: 'success', text: lock ? 'Predicciones guardadas y fijadas con éxito.' : 'Predicciones guardadas con éxito.' });
+        setMessage({ type: 'success', text: lock ? t.predictions.successLocked : t.predictions.successSaved });
       }
     } catch (error: any) {
       console.error("Error saving predictions:", error);
       if (!isAutoSave) {
         if (error?.code === 'permission-denied' || error?.message?.includes('permission')) {
-          setMessage({ type: 'error', text: 'El tiempo para enviar predicciones generales ha terminado.' });
+          setMessage({ type: 'error', text: t.predictions.errDeadline });
         } else {
-          setMessage({ type: 'error', text: 'Hubo un error al guardar. Intenta de nuevo.' });
+          setMessage({ type: 'error', text: t.predictions.errSave });
         }
       }
     } finally {
@@ -283,7 +285,7 @@ export default function Predictions({ user }: { user: User }) {
   const sortedDates = Object.keys(matchesByDate).sort();
 
   if (loading) {
-    return <div className="text-center py-10">Cargando tus predicciones...</div>;
+    return <div className="text-center py-10">{t.predictions.loading}</div>;
   }
 
   const totalGroups = Object.keys(GROUPS).length;
@@ -306,18 +308,16 @@ export default function Predictions({ user }: { user: User }) {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <div className="w-full flex-1">
             <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold text-gray-900 text-center md:text-left">Mis Predicciones</h1>
+              <h1 className="text-3xl font-bold text-gray-900 text-center md:text-left">{t.predictions.title}</h1>
               {saving && (
                 <div className="flex items-center gap-2 text-brand animate-pulse">
                   <div className="w-2 h-2 bg-brand rounded-full"></div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Sincronizando...</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">{t.predictions.syncing}</span>
                 </div>
               )}
             </div>
             <p className="text-gray-700 mt-2 text-justify md:text-left">
-              {effectiveIsLocked 
-                ? "Tus predicciones están fijadas y no pueden ser modificadas." 
-                : "Podés 'Guardar Borrador' cuantas veces quieras. El sistema también guarda tus cambios automáticamente. Las elecciones solo se van a fijar permanentemente al hacer clic en 'Fijar Predicciones'."}
+              {effectiveIsLocked ? t.predictions.lockedMsg : t.predictions.draftMsg}
             </p>
           </div>
         </div>
@@ -326,7 +326,7 @@ export default function Predictions({ user }: { user: User }) {
       {!effectiveIsLocked && (
         <div className="sticky top-[56px] md:top-[64px] z-40 bg-white py-4 px-4 sm:px-6 border-b border-gray-200 sm:border-none shadow-sm sm:shadow-none flex flex-col sm:flex-row justify-between items-center gap-3 transition-all mb-8">
           <div className="text-sm font-medium text-gray-700 hidden sm:block">
-            Progreso: Grupos {groupsFilled}/{totalGroups} | Especiales {specialsFilled}/{totalSpecials}
+            {t.predictions.progressLabel} {t.predictions.groupsLabel} {groupsFilled}/{totalGroups} | {t.predictions.specialsLabel} {specialsFilled}/{totalSpecials}
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button 
@@ -335,14 +335,14 @@ export default function Predictions({ user }: { user: User }) {
               disabled={saving}
               className="flex-1 sm:w-auto flex items-center justify-center gap-2 bg-white"
             >
-              <Save className="w-4 h-4" /> {saving ? "Guardando..." : "Guardar Borrador"}
+              <Save className="w-4 h-4" /> {saving ? t.predictions.saving : t.predictions.saveDraft}
             </Button>
             <Button 
               onClick={() => setConfirmLock(true)}
               disabled={saving}
               className="flex-1 sm:w-auto flex items-center justify-center gap-2 text-white bg-green-600 hover:bg-green-700 border border-green-600"
             >
-              <Lock className="w-4 h-4" /> Fijar Predicciones
+              <Lock className="w-4 h-4" /> {t.predictions.lockPredictions}
             </Button>
           </div>
         </div>
@@ -351,19 +351,19 @@ export default function Predictions({ user }: { user: User }) {
       <div className="px-4 sm:px-6 space-y-8">
       {effectiveIsLocked ? (
         <div className="flex items-center gap-2 text-green-800 bg-green-50 px-4 py-3 rounded-md border border-green-200 justify-center w-full shadow-sm font-medium">
-          <Lock className="w-4 h-4" /> Predicciones Fijadas
+          <Lock className="w-4 h-4" /> {t.predictions.predictionsLocked}
         </div>
       ) : null}
 
       {/* Progress Section */}
       <Card className="border-gray-200 shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-gray-800">Progreso de tus Predicciones</CardTitle>
+          <CardTitle className="text-lg text-gray-800">{t.predictions.progressTitle}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-800">Fase de Grupos</span>
+              <span className="text-gray-800">{t.predictions.groupStage}</span>
               <span className="font-medium text-brand">{groupsFilled} / {totalGroups}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -373,7 +373,7 @@ export default function Predictions({ user }: { user: User }) {
           
           <div>
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-800">Preguntas Especiales</span>
+              <span className="text-gray-800">{t.predictions.specialQuestions}</span>
               <span className="font-medium text-brand">{specialsFilled} / {totalSpecials}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -383,7 +383,7 @@ export default function Predictions({ user }: { user: User }) {
           
           <div>
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-800">Partidos Individuales</span>
+              <span className="text-gray-800">{t.predictions.individualMatches}</span>
               <span className="font-medium text-brand">{matchesFilled} / {totalMatches}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -408,38 +408,38 @@ export default function Predictions({ user }: { user: User }) {
           className={`flex-1 whitespace-nowrap ${activeTab === 'groups' ? 'text-white border-transparent' : 'text-gray-900 bg-white border-gray-300 hover:bg-gray-50'}`}
           style={activeTab === 'groups' ? { backgroundColor: 'var(--brand-color, #1e3a8a)' } : {}}
         >
-          Fase de Grupos
+          {t.predictions.groupStage}
         </Button>
-        <Button 
-          variant={activeTab === 'specials' ? 'default' : 'outline'} 
+        <Button
+          variant={activeTab === 'specials' ? 'default' : 'outline'}
           onClick={() => setActiveTab('specials')}
           className={`flex-1 whitespace-nowrap ${activeTab === 'specials' ? 'text-white border-transparent' : 'text-gray-900 bg-white border-gray-300 hover:bg-gray-50'}`}
           style={activeTab === 'specials' ? { backgroundColor: 'var(--brand-color, #1e3a8a)' } : {}}
         >
-          Preguntas Especiales
+          {t.predictions.specialQuestions}
         </Button>
-        <Button 
-          variant={activeTab === 'matches' ? 'default' : 'outline'} 
+        <Button
+          variant={activeTab === 'matches' ? 'default' : 'outline'}
           onClick={() => setActiveTab('matches')}
           className={`flex-1 whitespace-nowrap ${activeTab === 'matches' ? 'text-white border-transparent' : 'text-gray-900 bg-white border-gray-300 hover:bg-gray-50'}`}
           style={activeTab === 'matches' ? { backgroundColor: 'var(--brand-color, #1e3a8a)' } : {}}
         >
-          Partidos Individuales
+          {t.predictions.individualMatches}
         </Button>
-        <Button 
-          variant={activeTab === 'knockouts' ? 'default' : 'outline'} 
+        <Button
+          variant={activeTab === 'knockouts' ? 'default' : 'outline'}
           onClick={() => setActiveTab('knockouts')}
           className={`flex-1 whitespace-nowrap ${activeTab === 'knockouts' ? 'text-white border-transparent' : 'text-gray-900 bg-white border-gray-300 hover:bg-gray-50'}`}
           style={activeTab === 'knockouts' ? { backgroundColor: 'var(--brand-color, #1e3a8a)' } : {}}
         >
-          Fase Eliminatoria
+          {t.predictions.knockoutStage}
         </Button>
       </div>
 
       {activeTab === 'groups' && (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Fase de Grupos</h2>
-        <p className="text-sm text-gray-800 mb-4 text-justify">Arrastrá los equipos para ordenarlos del 1º al 4º puesto. Los dos primeros y los 8 mejores terceros avanzan a 16avos.</p>
+        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>{t.predictions.groupStage}</h2>
+        <p className="text-sm text-gray-800 mb-4 text-justify">{t.predictions.groupStageDesc}</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
           {Object.entries(groupPredictions)
@@ -447,13 +447,13 @@ export default function Predictions({ user }: { user: User }) {
             .map(([groupLetter, teams]) => (
             <Card key={groupLetter} className="overflow-hidden border-t-4" style={{ borderTopColor: 'var(--brand-color, #2563eb)' }}>
               <CardHeader className="bg-gray-50 py-3 px-4 border-b flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-lg">Grupo {groupLetter}</CardTitle>
+                <CardTitle className="text-lg">{t.predictions.group} {groupLetter}</CardTitle>
                 {confirmedGroups.includes(groupLetter) ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-500" title="Confirmado" />
+                  <CheckCircle2 className="w-5 h-5 text-green-500" title={t.predictions.confirmed} />
                 ) : (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="h-8 text-xs bg-white hover:bg-green-50 hover:text-green-700 hover:border-green-300 transition-colors"
                     onClick={() => {
                         if (!effectiveIsLocked) {
@@ -462,7 +462,7 @@ export default function Predictions({ user }: { user: User }) {
                     }}
                     disabled={effectiveIsLocked}
                   >
-                    Confirmar
+                    {t.predictions.confirm}
                   </Button>
                 )}
               </CardHeader>
@@ -491,19 +491,19 @@ export default function Predictions({ user }: { user: User }) {
 
       {activeTab === 'specials' && (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Preguntas Especiales</h2>
-        <p className="text-sm text-gray-800 mb-4 text-justify">Por favor, escribí el nombre completo del jugador o selección elegida para evitar confusiones en la corrección.</p>
+        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>{t.predictions.specialQuestions}</h2>
+        <p className="text-sm text-gray-800 mb-4 text-justify">{t.predictions.specialsDesc}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {SPECIAL_QUESTIONS.map((q) => (
             <Card key={q.id}>
               <CardContent className="p-5">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {q.label}
+                  {(t.specialQuestions as Record<string, string>)[q.id] || q.label}
                 </label>
                 <input
                   type="text"
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500 transition-colors"
-                  placeholder="Escribí tu respuesta..."
+                  placeholder={t.predictions.answerPlaceholder}
                   value={specialPredictions[q.id] || ""}
                   onChange={(e) => handleSpecialChange(q.id, e.target.value)}
                   disabled={effectiveIsLocked}
@@ -517,17 +517,26 @@ export default function Predictions({ user }: { user: User }) {
 
       {activeTab === 'matches' && (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Partidos Individuales</h2>
+        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>{t.predictions.individualMatches}</h2>
         <div className="bg-[#f0f9ff] border border-[var(--brand-color,#1e3a8a)] p-5 rounded-lg text-gray-900 text-sm mb-4 shadow-sm">
-          <p className="font-bold mb-2 text-base">¿Le tuviste demasiada fe a un equipo? ¿Lesión de último minuto? ¡No pasa nada!</p>
-          <p>Podés predecir hasta 1 hora antes de cada partido. <br className="hidden sm:block"/>Acertar ganador/empate = <strong className="text-green-700">1 punto</strong>. Resultado exacto = <strong className="text-green-700">+1 punto extra</strong>.</p>
+          <p className="font-bold mb-2 text-base">{t.predictions.matchesInfoTitle}</p>
+          <p>{t.predictions.matchesInfoDesc} <br className="hidden sm:block"/>{t.predictions.winnerDraw} <strong className="text-green-700">{t.predictions.pointLabel}</strong>. {t.predictions.exactResult} <strong className="text-green-700">{t.predictions.extraPoint}</strong>.</p>
         </div>
 
         <div className="space-y-3">
           {sortedDates.map(date => {
             const dateMatches = matchesByDate[date];
             const savedCount = dateMatches.filter(m => matchPredictions[m.id]?.home !== undefined && matchPredictions[m.id]?.away !== undefined && matchPredictions[m.id]?.home !== '' && matchPredictions[m.id]?.away !== '').length;
-            const isToday = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }) === date.toLowerCase();
+            const spanishMonths: Record<string, number> = { enero:1, febrero:2, marzo:3, abril:4, mayo:5, junio:6, julio:7, agosto:8, septiembre:9, octubre:10, noviembre:11, diciembre:12 };
+            const dateParts = date.toLowerCase().split(' de ');
+            const parsedDay = dateParts.length === 2 ? parseInt(dateParts[0]) : NaN;
+            const parsedMonth = dateParts.length === 2 ? spanishMonths[dateParts[1]] : NaN;
+            const today = new Date();
+            const isToday = !isNaN(parsedDay) && !isNaN(parsedMonth) && today.getDate() === parsedDay && today.getMonth() + 1 === parsedMonth;
+            const tMonths = t.months as Record<string, string>;
+            const displayDate = dateParts.length === 2
+              ? (lang === 'en' ? `${tMonths[dateParts[1]] || dateParts[1]} ${parsedDay}` : `${parsedDay} de ${tMonths[dateParts[1]] || dateParts[1]}`)
+              : date;
             return (
             <details key={date} className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" open={isToday}>
               <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none hover:bg-gray-50/80 transition-colors" style={{ background: isToday ? 'color-mix(in srgb, var(--brand-color, #1e3a8a) 6%, white)' : undefined }}>
@@ -536,13 +545,13 @@ export default function Predictions({ user }: { user: User }) {
                     <Calendar className="w-4 h-4" style={{ color: 'var(--brand-color, #1e3a8a)' }} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-800 capitalize">{date}</h3>
-                    <p className="text-xs text-gray-400">{savedCount}/{dateMatches.length} predicciones guardadas</p>
+                    <h3 className="font-bold text-gray-800 capitalize">{displayDate}</h3>
+                    <p className="text-xs text-gray-400">{savedCount}/{dateMatches.length} {t.predictions.predictionsSaved}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {savedCount === dateMatches.length && dateMatches.length > 0 && (
-                    <span className="hidden sm:inline text-xs font-semibold text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">Completo</span>
+                    <span className="hidden sm:inline text-xs font-semibold text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">{t.predictions.complete}</span>
                   )}
                   <div className="text-gray-400 group-open:rotate-180 transition-transform duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
@@ -560,9 +569,9 @@ export default function Predictions({ user }: { user: User }) {
                       </div>
                       <div className="md:mt-1">
                         {matchPredictions[match.id]?.home !== undefined && matchPredictions[match.id]?.away !== undefined && matchPredictions[match.id]?.home !== '' && matchPredictions[match.id]?.away !== '' ? (
-                          <CheckCircle2 className="w-4 h-4 text-green-500" title="Guardado" />
+                          <CheckCircle2 className="w-4 h-4 text-green-500" title={t.predictions.saved} />
                         ) : (
-                          <AlertCircle className="w-4 h-4 text-orange-500 animate-pulse" title="Pendiente" />
+                          <AlertCircle className="w-4 h-4 text-orange-500 animate-pulse" title={t.predictions.pending} />
                         )}
                       </div>
                     </div>
@@ -576,7 +585,7 @@ export default function Predictions({ user }: { user: User }) {
                           <div className="shrink-0 w-6 h-4 sm:w-8 sm:h-6 bg-gray-100 rounded overflow-hidden flex items-center justify-center border border-gray-200">
                             {TEAM_FLAGS[match.home] ? <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[match.home]}.png`} alt={match.home} className="w-full h-full object-cover" /> : <span>🏳️</span>}
                           </div>
-                          <span className="font-bold text-gray-900 uppercase text-xs sm:text-sm truncate">{match.home}</span>
+                          <span className="font-bold text-gray-900 uppercase text-xs sm:text-sm truncate">{(t.teams as Record<string, string>)[match.home] || match.home}</span>
                         </div>
                         
                         <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-0.5 sm:p-1 border border-gray-200 shrink-0">
@@ -595,7 +604,7 @@ export default function Predictions({ user }: { user: User }) {
                           <div className="shrink-0 w-6 h-4 sm:w-8 sm:h-6 bg-gray-100 rounded overflow-hidden flex items-center justify-center border border-gray-200">
                             {TEAM_FLAGS[match.away] ? <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[match.away]}.png`} alt={match.away} className="w-full h-full object-cover" /> : <span>🏳️</span>}
                           </div>
-                          <span className="font-bold text-gray-900 uppercase text-xs sm:text-sm truncate">{match.away}</span>
+                          <span className="font-bold text-gray-900 uppercase text-xs sm:text-sm truncate">{(t.teams as Record<string, string>)[match.away] || match.away}</span>
                         </div>
 
                         <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-0.5 sm:p-1 border border-gray-200 shrink-0">
@@ -617,8 +626,8 @@ export default function Predictions({ user }: { user: User }) {
 
       {activeTab === 'knockouts' && (
       <div className="space-y-6 pb-12">
-        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>Fase Eliminatoria</h2>
-        <p className="text-sm text-gray-800 mb-4 text-justify">El cuadro final se irá armando a medida que avance el torneo. ¡Preparate para los cruces decisivos!</p>
+        <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>{t.predictions.knockoutStage}</h2>
+        <p className="text-sm text-gray-800 mb-4 text-justify">{t.predictions.knockoutDesc}</p>
         <Bracket />
       </div>
       )}
@@ -626,36 +635,36 @@ export default function Predictions({ user }: { user: User }) {
       {confirmLock && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Confirmar Fijación</h3>
-            
+            <h3 className="text-xl font-bold text-gray-900 mb-4">{t.predictions.confirmLockTitle}</h3>
+
             {(groupsFilled < totalGroups || specialsFilled < totalSpecials) ? (
               <div className="bg-red-50 text-red-900 p-4 rounded-md mb-6 border border-red-200">
-                <div className="font-bold flex items-center gap-2 mb-2"><AlertCircle className="w-5 h-5 text-red-600"/> ¡Atención! Te faltan completar secciones:</div>
+                <div className="font-bold flex items-center gap-2 mb-2"><AlertCircle className="w-5 h-5 text-red-600"/> {t.predictions.warningTitle}</div>
                 <ul className="list-disc pl-6 space-y-1 text-sm text-red-800">
-                  {groupsFilled < totalGroups && <li>Te faltan ordenar {totalGroups - groupsFilled} grupos.</li>}
-                  {specialsFilled < totalSpecials && <li>Te faltan responder {totalSpecials - specialsFilled} preguntas especiales.</li>}
+                  {groupsFilled < totalGroups && <li>{t.predictions.missingGroupsPre} {totalGroups - groupsFilled} {t.predictions.missingGroupsPost}</li>}
+                  {specialsFilled < totalSpecials && <li>{t.predictions.missingSpecialsPre} {totalSpecials - specialsFilled} {t.predictions.missingSpecialsPost}</li>}
                 </ul>
-                <p className="mt-3 text-sm font-medium">¿Estás seguro de que querés fijarlas así? No podrás modificarlas después.</p>
+                <p className="mt-3 text-sm font-medium">{t.predictions.lockWarning}</p>
               </div>
             ) : (
               <div className="bg-green-50 text-green-900 p-4 rounded-md mb-6 border border-green-200 text-sm">
-                <div className="font-bold flex items-center gap-2 mb-1"><CheckCircle2 className="w-5 h-5 text-green-600"/> ¡Excelente! Completaste todo.</div>
-                Una vez fijadas, las opciones ya no se pueden modificar. ¿Estás seguro de continuar?
+                <div className="font-bold flex items-center gap-2 mb-1"><CheckCircle2 className="w-5 h-5 text-green-600"/> {t.predictions.allCompleteTitle}</div>
+                {t.predictions.allCompleteMsg}
               </div>
             )}
-            
+
             <div className="flex justify-end gap-3 mt-2">
-              <Button variant="outline" onClick={() => setConfirmLock(false)} className="bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100">Cancelar</Button>
-              <Button 
-                className={groupsFilled < totalGroups || specialsFilled < totalSpecials ? "bg-red-600 hover:bg-red-700 text-white" : "bg-green-600 hover:bg-green-700 text-white"} 
-                onClick={() => { 
-                  setConfirmLock(false); 
-                  savePredictions(true); 
+              <Button variant="outline" onClick={() => setConfirmLock(false)} className="bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100">{t.predictions.cancel}</Button>
+              <Button
+                className={groupsFilled < totalGroups || specialsFilled < totalSpecials ? "bg-red-600 hover:bg-red-700 text-white" : "bg-green-600 hover:bg-green-700 text-white"}
+                onClick={() => {
+                  setConfirmLock(false);
+                  savePredictions(true);
                 }}
                 disabled={saving}
               >
                 <Lock className="w-4 h-4 mr-2" />
-                {saving ? "Fijando..." : "Sí, fijar predicciones"}
+                {saving ? t.predictions.locking : t.predictions.confirmLockBtn}
               </Button>
             </div>
           </div>
