@@ -44,7 +44,7 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
           <div className="flex items-center justify-between h-14 md:h-16">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg md:text-xl md:w-auto lg:w-1/4 shrink-0">
               {logoUrl ? (
-                <img src={logoUrl} alt={companyName} className="h-10 md:h-14 max-w-[130px] md:max-w-[180px] object-contain bg-white p-1 rounded-md shadow-sm" />
+                <img src={logoUrl} alt={companyName} className="h-10 md:h-14 max-w-[130px] md:max-w-[180px] object-contain rounded-md" />
               ) : (
                 <>
                   <Trophy className="h-5 w-5 md:h-6 md:w-6 text-white" />
