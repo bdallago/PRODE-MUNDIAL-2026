@@ -222,7 +222,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     if (loading) return;
     if (PUBLIC_PATHS.includes(pathname)) return;
 
-    if (!user) {
+    if (!user && !auth.currentUser) {
       router.push("/login");
       return;
     }
@@ -313,7 +313,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {loading && !PUBLIC_PATHS.includes(pathname) ? (
+      {(loading || (!!user && !!userData && !companyDetails && userData.role !== 'admin')) && !PUBLIC_PATHS.includes(pathname) ? (
         <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e3a8a] mb-4"></div>
           <p className="text-gray-500 font-medium animate-pulse">{t.providers.loading}</p>
