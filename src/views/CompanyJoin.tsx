@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User } from "firebase/auth";
+import { User, signOut } from "firebase/auth";
 import { collection, query, where, getDocs, doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import { Button } from "../components/ui/button";
 import { Building2, LogIn } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useRouter } from "next/navigation";
 
 export default function CompanyJoin({
   user,
@@ -20,6 +21,7 @@ export default function CompanyJoin({
   preloadedCompanyData?: any;
 }) {
   const { t } = useLanguage();
+  const router = useRouter();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -152,6 +154,15 @@ export default function CompanyJoin({
                   <LogIn className="w-5 h-5" /> {loading ? t.join.verifying : t.join.enter}
                 </Button>
               </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <button
+                onClick={() => signOut(auth).then(() => router.push('/login'))}
+                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {t.join.backToLogin}
+              </button>
             </div>
           </>
         ) : (

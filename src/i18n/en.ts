@@ -184,6 +184,7 @@ export const en = {
     saving: "Saving...",
     startPlaying: "Start playing",
     goBack: "Go back",
+    backToLogin: "Don't have a code? Back to login",
   },
   tutorial: {
     welcomeTitle: "Welcome to the 2026 World Cup Prode!",

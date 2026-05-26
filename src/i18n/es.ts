@@ -184,6 +184,7 @@ export const es = {
     saving: "Guardando...",
     startPlaying: "Comenzar a jugar",
     goBack: "Volver atrás",
+    backToLogin: "¿No tenés código? Volver al inicio",
   },
   tutorial: {
     welcomeTitle: "¡Bienvenido a El Prode Mundial 2026!",
