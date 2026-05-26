@@ -120,6 +120,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         setLoading(false);
       }
 
+      let didRedirect = false;
       try {
         const userRef = doc(db, "users", currentUser.uid);
         const userDoc = await getDoc(userRef);
@@ -150,6 +151,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               ) {
                 if (pathnameRef.current !== '/join-company') {
                   router.push("/join-company");
+                  didRedirect = true;
                 }
                 setLoading(false);
                 return;
@@ -193,11 +195,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
             localStorage.removeItem('cachedCompanyDetails');
             if (!PUBLIC_PATHS.includes(pathnameRef.current)) {
               router.push("/join-company");
+              didRedirect = true;
             }
           }
         } else {
           if (!PUBLIC_PATHS.includes(pathnameRef.current)) {
             router.push("/join-company");
+            didRedirect = true;
           }
         }
       } catch (error) {
@@ -208,9 +212,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('cachedCompanyDetails');
         if (!PUBLIC_PATHS.includes(pathnameRef.current)) {
           router.push("/join-company");
+          didRedirect = true;
         }
       } finally {
-        setLoading(false);
+        if (!didRedirect) setLoading(false);
       }
     });
 
