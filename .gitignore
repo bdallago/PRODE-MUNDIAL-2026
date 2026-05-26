@@ -7,3 +7,4 @@ coverage/
 .env*
 prompt
 prompt.txt
+firebase-applet-config.json
