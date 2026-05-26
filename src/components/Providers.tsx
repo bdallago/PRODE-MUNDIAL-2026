@@ -120,7 +120,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         setLoading(false);
       }
 
-      let didRedirect = false;
       try {
         const userRef = doc(db, "users", currentUser.uid);
         const userDoc = await getDoc(userRef);
@@ -151,7 +150,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
               ) {
                 if (pathnameRef.current !== '/join-company') {
                   router.push("/join-company");
-                  didRedirect = true;
                 }
                 setLoading(false);
                 return;
@@ -195,13 +193,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
             localStorage.removeItem('cachedCompanyDetails');
             if (!PUBLIC_PATHS.includes(pathnameRef.current)) {
               router.push("/join-company");
-              didRedirect = true;
             }
           }
         } else {
           if (!PUBLIC_PATHS.includes(pathnameRef.current)) {
             router.push("/join-company");
-            didRedirect = true;
           }
         }
       } catch (error) {
@@ -212,10 +208,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('cachedCompanyDetails');
         if (!PUBLIC_PATHS.includes(pathnameRef.current)) {
           router.push("/join-company");
-          didRedirect = true;
         }
       } finally {
-        if (!didRedirect) setLoading(false);
+        setLoading(false);
       }
     });
 
@@ -318,7 +313,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {loading && !PUBLIC_PATHS.includes(pathname) ? (
+      {(loading || (!!user && !!userData && !companyDetails && userData.role !== 'admin')) && !PUBLIC_PATHS.includes(pathname) ? (
         <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e3a8a] mb-4"></div>
           <p className="text-gray-500 font-medium animate-pulse">{t.providers.loading}</p>
