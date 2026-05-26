@@ -222,7 +222,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     if (loading) return;
     if (PUBLIC_PATHS.includes(pathname)) return;
 
-    if (!user) {
+    // auth.currentUser is updated synchronously by Firebase before React re-renders,
+    // so we use it as a fallback to avoid redirecting during the signInWithRedirect flow.
+    if (!user && !auth.currentUser) {
       router.push("/login");
       return;
     }
