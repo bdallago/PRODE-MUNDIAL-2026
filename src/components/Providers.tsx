@@ -222,7 +222,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     if (loading) return;
     if (PUBLIC_PATHS.includes(pathname)) return;
 
-    if (!user && !auth.currentUser) {
+    if (!user) {
       router.push("/login");
       return;
     }

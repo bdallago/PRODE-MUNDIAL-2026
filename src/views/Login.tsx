@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { signInWithPopup, signInWithRedirect, getRedirectResult, setPersistence, browserSessionPersistence, browserLocalPersistence } from "firebase/auth";
+import { useState } from "react";
+import { signInWithPopup, setPersistence, browserSessionPersistence, browserLocalPersistence } from "firebase/auth";
 import { auth, googleProvider, microsoftProvider } from "../firebase";
 import { useRouter } from "next/navigation";
 import { Button } from "../components/ui/button";
@@ -10,11 +10,6 @@ import Link from "next/link";
 import { useLanguage } from "../i18n/LanguageContext";
 import { LanguageSelector } from "../components/LanguageSelector";
 
-const isMobile = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  return /iPhone|iPad|iPod|Android|webOS|BlackBerry|Windows Phone/i.test(navigator.userAgent);
-};
-
 export default function Login() {
   const router = useRouter();
   const { t } = useLanguage();
@@ -22,52 +17,23 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  useEffect(() => {
-    if (!localStorage.getItem('_loginProvider')) return;
-    setLoading(true);
-    getRedirectResult(auth)
-      .then((result) => {
-        const search = localStorage.getItem('_loginSearch') || '';
-        const hash = localStorage.getItem('_loginHash') || '';
-        localStorage.removeItem('_loginSearch');
-        localStorage.removeItem('_loginHash');
-        localStorage.removeItem('_loginProvider');
-        if (result) {
-          router.push('/' + search + hash);
-        } else {
-          setLoading(false);
-        }
-      })
-      .catch((err: any) => {
-        console.error("Error getting redirect result", err);
-        const provider = localStorage.getItem('_loginProvider');
-        setError(provider === 'microsoft' ? t.login.errorMicrosoft : t.login.errorGoogle);
-        localStorage.removeItem('_loginSearch');
-        localStorage.removeItem('_loginHash');
-        localStorage.removeItem('_loginProvider');
-        setLoading(false);
-      });
-  }, []);
-
   const handleLogin = async () => {
     setLoading(true);
     setError(null);
     try {
       await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
-      if (isMobile()) {
-        localStorage.setItem('_loginSearch', window.location.search);
-        localStorage.setItem('_loginHash', window.location.hash);
-        localStorage.setItem('_loginProvider', 'google');
-        await signInWithRedirect(auth, googleProvider);
-      } else {
-        await signInWithPopup(auth, googleProvider);
-        router.push('/' + window.location.search + window.location.hash);
-      }
+      await signInWithPopup(auth, googleProvider);
+      const search = window.location.search;
+      const hash = window.location.hash;
+      router.push('/' + search + hash);
     } catch (error: any) {
       console.error("Error signing in with Google", error);
-      if (error.code !== 'auth/popup-closed-by-user') {
+      if (error.code === 'auth/popup-closed-by-user') {
+        setError(null);
+      } else {
         setError(t.login.errorGoogle);
       }
+    } finally {
       setLoading(false);
     }
   };
@@ -77,20 +43,18 @@ export default function Login() {
     setError(null);
     try {
       await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
-      if (isMobile()) {
-        localStorage.setItem('_loginSearch', window.location.search);
-        localStorage.setItem('_loginHash', window.location.hash);
-        localStorage.setItem('_loginProvider', 'microsoft');
-        await signInWithRedirect(auth, microsoftProvider);
-      } else {
-        await signInWithPopup(auth, microsoftProvider);
-        router.push('/' + window.location.search + window.location.hash);
-      }
+      await signInWithPopup(auth, microsoftProvider);
+      const search = window.location.search;
+      const hash = window.location.hash;
+      router.push('/' + search + hash);
     } catch (error: any) {
       console.error("Error signing in with Microsoft", error);
-      if (error.code !== 'auth/popup-closed-by-user') {
+      if (error.code === 'auth/popup-closed-by-user') {
+        setError(null);
+      } else {
         setError(t.login.errorMicrosoft);
       }
+    } finally {
       setLoading(false);
     }
   };
