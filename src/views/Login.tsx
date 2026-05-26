@@ -19,7 +19,10 @@ export default function Login() {
   const router = useRouter();
   const { t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return !!localStorage.getItem('_loginProvider');
+  });
   const [rememberMe, setRememberMe] = useState(true);
 
   useEffect(() => {
@@ -94,6 +97,15 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e3a8a] mb-4"></div>
+        <p className="text-gray-500 font-medium animate-pulse">{t.providers.loading}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
