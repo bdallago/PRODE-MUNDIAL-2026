@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: '/__/auth/:path*',
+        destination: 'https://project-6d1daa35-d389-4769-a06.firebaseapp.com/__/auth/:path*',
+      },
+    ];
+  },
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
   eslint: {
