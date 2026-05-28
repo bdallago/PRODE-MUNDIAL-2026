@@ -24,6 +24,7 @@ export default function ClientNavbar() {
       companyName={companyName}
       logoUrl={companyDetails?.logoUrl}
       brandColor={companyDetails?.color}
+      invertActiveButton={!!companyDetails?.invertActiveButton}
     />
   );
 }

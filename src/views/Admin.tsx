@@ -73,6 +73,8 @@ export default function Admin() {
   const [editCompanyColor, setEditCompanyColor] = useState("");
   const [editCompanyLogo, setEditCompanyLogo] = useState("");
   const [editCompanySingleTournament, setEditCompanySingleTournament] = useState(false);
+  const [editCompanyAreas, setEditCompanyAreas] = useState("");
+  const [editCompanyInvertActiveButton, setEditCompanyInvertActiveButton] = useState(false);
 
   const [activeTab, setActiveTab] = useState<'results' | 'users' | 'reports' | 'analytics' | 'companies'>('results');
 
@@ -608,12 +610,18 @@ export default function Admin() {
     try {
       const hrEmailsArray = editCompanyHREmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e);
       
+      const parsedAreas = editCompanyAreas.trim()
+        ? editCompanyAreas.split('-').map(a => a.trim()).filter(a => a)
+        : [];
+
       const updateData: any = {
         hrEmail: hrEmailsArray[0] || "",
         hrEmails: hrEmailsArray,
         color: editCompanyColor,
         logoUrl: editCompanyLogo,
-        singleTournament: editCompanySingleTournament
+        singleTournament: editCompanySingleTournament,
+        areas: parsedAreas,
+        invertActiveButton: editCompanyInvertActiveButton
       };
       
       await setDoc(doc(db, "companies", editCompanyModal.id), updateData, { merge: true });
@@ -925,6 +933,8 @@ export default function Admin() {
                         setEditCompanyColor(company.color || "#1d4ed8");
                         setEditCompanyLogo(company.logoUrl || "");
                         setEditCompanySingleTournament(company.singleTournament || false);
+                        setEditCompanyAreas(company.areas ? company.areas.join(' - ') : "");
+                        setEditCompanyInvertActiveButton(company.invertActiveButton || false);
                       }}
                     >
                       <PenSquare className="w-4 h-4" /> {t.admin.btnEdit}
@@ -1406,6 +1416,30 @@ export default function Admin() {
                   <span className="text-sm font-medium text-gray-700">{t.admin.singleTournament}</span>
                 </label>
                 <p className="text-xs text-gray-500 mt-1 ml-6">{t.admin.singleTournamentHint}</p>
+              </div>
+
+              <div className="border-t pt-4 space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.admin.areasLabel}</label>
+                  <input
+                    type="text"
+                    value={editCompanyAreas}
+                    onChange={(e) => setEditCompanyAreas(e.target.value)}
+                    placeholder="Ej: Ventas - Marketing - IT - Finanzas"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separar áreas con " - " (guión con espacios). Dejar vacío para sin áreas.</p>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editCompanyInvertActiveButton}
+                    onChange={(e) => setEditCompanyInvertActiveButton(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Botón activo invertido (negro + color principal)</span>
+                </label>
+                <p className="text-xs text-gray-500 ml-6">Activa esto si el color principal es claro y no se ve bien sobre blanco.</p>
               </div>
 
               <div className="flex justify-end gap-3 pt-6 border-t">

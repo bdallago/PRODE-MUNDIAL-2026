@@ -9,7 +9,7 @@ import { Trophy, LogOut, Settings, PenSquare, BookOpen, Home, Building2 } from "
 import { useLanguage } from "../i18n/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
 
-export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, brandColor }: { user: User; isAdmin: boolean; userData?: any; companyName: string; logoUrl?: string | null; brandColor?: string }) {
+export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, brandColor, invertActiveButton }: { user: User; isAdmin: boolean; userData?: any; companyName: string; logoUrl?: string | null; brandColor?: string; invertActiveButton?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useLanguage();
@@ -21,20 +21,16 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
 
   const getLinkStyle = (path: string) => {
     const isActive = pathname === path;
-    return `hidden md:flex items-center justify-center gap-1.5 px-2 lg:px-3 py-1.5 lg:py-2 rounded-md transition-all duration-300 font-semibold text-xs lg:text-sm whitespace-nowrap ${
-      isActive
-        ? "bg-white text-gray-900 shadow-sm"
-        : "bg-white/30 text-white hover:bg-white/40"
-    }`;
+    const base = "hidden md:flex items-center justify-center gap-1.5 px-2 lg:px-3 py-1.5 lg:py-2 rounded-md transition-all duration-300 font-semibold text-xs lg:text-sm whitespace-nowrap";
+    if (isActive && invertActiveButton) return `${base} bg-black text-brand shadow-sm`;
+    return `${base} ${isActive ? "bg-white text-gray-900 shadow-sm" : "bg-white/30 text-white hover:bg-white/40"}`;
   };
 
   const getMobileLinkStyle = (path: string) => {
     const isActive = pathname === path;
-    return `flex flex-col items-center text-xs p-2 rounded-md transition-colors flex-1 mx-1 font-semibold ${
-      isActive
-        ? "bg-white text-gray-900 shadow-sm"
-        : "bg-transparent text-white hover:bg-white/30"
-    }`;
+    const base = "flex flex-col items-center text-xs p-2 rounded-md transition-colors flex-1 mx-1 font-semibold";
+    if (isActive && invertActiveButton) return `${base} bg-black text-brand shadow-sm`;
+    return `${base} ${isActive ? "bg-white text-gray-900 shadow-sm" : "bg-transparent text-white hover:bg-white/30"}`;
   };
 
   return (
