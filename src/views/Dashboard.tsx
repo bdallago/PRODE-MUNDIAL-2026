@@ -287,7 +287,7 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
         
         <CardContent className="p-0 relative">
           {leaderboardLoading && (
-            <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center backdrop-blur-[1px]">
+            <div className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-[1px]" style={{ backgroundColor: 'color-mix(in srgb, var(--page-bg, white) 70%, transparent)' }}>
               <div className="flex flex-col items-center gap-2">
                 <div className="w-8 h-8 border-4 border-brand/20 border-t-brand rounded-full animate-spin"></div>
                 <p className="text-xs font-bold text-brand uppercase tracking-widest">{t.dashboard.updating}</p>
@@ -528,27 +528,41 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
       <CountdownBanner />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="text-white border-none" style={{ backgroundColor: 'var(--brand-color, #2563eb)' }}>
+        <Card className="border-none" style={companyDetails?.invertColors ? {
+            backgroundColor: 'color-mix(in srgb, var(--brand-color) 14%, #12121e)',
+            color: 'var(--brand-color)',
+            borderTop: '2px solid var(--brand-color)',
+          } : {
+            backgroundColor: 'var(--brand-bg, var(--brand-color, #2563eb))',
+            color: 'var(--brand-on-bg, white)',
+          }}>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="font-medium mb-1 text-white/80">{t.dashboard.myPoints}</p>
+              <p className="font-medium mb-1 opacity-70">{t.dashboard.myPoints}</p>
               <h2 className="text-5xl font-bold">{myPoints}</h2>
-              <p className="text-xs mt-2 text-white/70">{t.dashboard.myPointsHint}</p>
+              <p className="text-xs mt-2 opacity-55">{t.dashboard.myPointsHint}</p>
             </div>
-            <div className="bg-white/20 p-4 rounded-full">
-              <Trophy className="h-10 w-10 text-white" />
+            <div className="bg-white/10 p-4 rounded-full">
+              <Trophy className="h-10 w-10" style={{ color: 'var(--brand-on-bg, white)' }} />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="text-white border-none" style={{ backgroundColor: 'color-mix(in srgb, var(--brand-color, #4f46e5) 80%, black)' }}>
+        <Card className="border-none" style={companyDetails?.invertColors ? {
+            backgroundColor: 'color-mix(in srgb, var(--brand-color) 8%, #0e0e1c)',
+            color: 'var(--brand-color)',
+            borderTop: '2px solid color-mix(in srgb, var(--brand-color) 60%, transparent)',
+          } : {
+            backgroundColor: 'color-mix(in srgb, var(--brand-bg, var(--brand-color, #4f46e5)) 80%, black)',
+            color: 'var(--brand-on-bg, white)',
+          }}>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="font-medium mb-1 text-white/80">{t.dashboard.myPosition} {companyName}</p>
+              <p className="font-medium mb-1 opacity-70">{t.dashboard.myPosition} {companyName}</p>
               <h2 className="text-5xl font-bold">#{myRank || "-"}</h2>
             </div>
-            <div className="bg-white/20 p-4 rounded-full">
-              <Medal className="h-10 w-10 text-white/90" />
+            <div className="bg-white/10 p-4 rounded-full">
+              <Medal className="h-10 w-10 opacity-80" style={{ color: 'var(--brand-on-bg, white)' }} />
             </div>
           </CardContent>
         </Card>

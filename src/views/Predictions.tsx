@@ -518,7 +518,7 @@ export default function Predictions({ user }: { user: User }) {
       {activeTab === 'matches' && (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>{t.predictions.individualMatches}</h2>
-        <div className="bg-[#f0f9ff] border border-[var(--brand-color,#1e3a8a)] p-5 rounded-lg text-gray-900 text-sm mb-4 shadow-sm">
+        <div className="border p-5 rounded-lg text-sm mb-4 shadow-sm" style={{ backgroundColor: 'color-mix(in srgb, var(--brand-color) 8%, var(--page-bg, white))', borderColor: 'var(--brand-color)', color: 'inherit' }}>
           <p className="font-bold mb-2 text-base">{t.predictions.matchesInfoTitle}</p>
           <p>{t.predictions.matchesInfoDesc} <br className="hidden sm:block"/>{t.predictions.winnerDraw} <strong className="text-green-700">{t.predictions.pointLabel}</strong>. {t.predictions.exactResult} <strong className="text-green-700">{t.predictions.extraPoint}</strong>.</p>
         </div>
@@ -539,7 +539,7 @@ export default function Predictions({ user }: { user: User }) {
               : date;
             return (
             <details key={date} className="group bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" open={isToday}>
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none hover:bg-gray-50/80 transition-colors" style={{ background: isToday ? 'color-mix(in srgb, var(--brand-color, #1e3a8a) 6%, white)' : undefined }}>
+              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer list-none select-none" style={{ background: isToday ? 'color-mix(in srgb, var(--brand-color, #1e3a8a) 10%, transparent)' : undefined }}>
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg shrink-0" style={{ backgroundColor: 'color-mix(in srgb, var(--brand-color, #1e3a8a) 12%, white)' }}>
                     <Calendar className="w-4 h-4" style={{ color: 'var(--brand-color, #1e3a8a)' }} />
@@ -561,10 +561,10 @@ export default function Predictions({ user }: { user: User }) {
 
               <div className="p-4 pt-3 space-y-3 border-t border-gray-100">
                 {matchesByDate[date].sort((a, b) => a.time.localeCompare(b.time)).map(match => (
-                  <div key={match.id} className="bg-gray-50/50 rounded-xl p-4 border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8">
+                  <div key={match.id} className="rounded-xl p-4 border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8" style={{ backgroundColor: 'color-mix(in srgb, var(--brand-color) 6%, var(--page-bg, white))' }}>
                     {/* Time (Desktop) / Label (Mobile) */}
                     <div className="flex md:flex-col items-center justify-between md:justify-center md:items-start shrink-0 min-w-[60px]">
-                      <div className="flex items-center gap-1 text-sm uppercase font-black text-black bg-gray-100 px-2 py-0.5 rounded shadow-sm border border-gray-200">
+                      <div className="flex items-center gap-1 text-sm uppercase font-black px-2 py-0.5 rounded">
                         <Clock className="w-4 h-4" /> {match.time}
                       </div>
                       <div className="md:mt-1">
@@ -580,18 +580,18 @@ export default function Predictions({ user }: { user: User }) {
                     <div className="flex-1 flex flex-col md:flex-row items-center justify-center gap-2 w-full overflow-hidden">
                       
                       {/* Home */}
-                      <div className="flex items-center justify-between gap-2 w-full md:w-auto md:flex-1 bg-white md:bg-transparent p-2 md:p-0 rounded-md border md:border-transparent border-gray-200">
+                      <div className="flex items-center justify-between gap-2 w-full md:w-auto md:flex-1">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <div className="shrink-0 w-6 h-4 sm:w-8 sm:h-6 bg-gray-100 rounded overflow-hidden flex items-center justify-center border border-gray-200">
+                          <div className="shrink-0 w-6 h-4 sm:w-8 sm:h-6 rounded overflow-hidden flex items-center justify-center border border-gray-200">
                             {TEAM_FLAGS[match.home] ? <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[match.home]}.png`} alt={match.home} className="w-full h-full object-cover" /> : <span>🏳️</span>}
                           </div>
                           <span className="font-bold text-gray-900 uppercase text-xs sm:text-sm truncate">{(t.teams as Record<string, string>)[match.home] || match.home}</span>
                         </div>
-                        
-                        <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-0.5 sm:p-1 border border-gray-200 shrink-0">
-                          <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'home', -1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600 hover:text-black hover:bg-gray-200"><Minus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
+
+                        <div className="flex items-center gap-1 rounded-lg p-0.5 sm:p-1 border border-gray-200 shrink-0">
+                          <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'home', -1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600"><Minus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
                           <div className="w-5 sm:w-8 text-center font-black text-sm sm:text-lg">{matchPredictions[match.id]?.home || 0}</div>
-                          <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'home', 1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600 hover:text-black hover:bg-gray-200"><Plus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
+                          <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'home', 1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600"><Plus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
                         </div>
                       </div>
 
@@ -599,18 +599,18 @@ export default function Predictions({ user }: { user: User }) {
                       <div className="hidden md:flex font-bold text-gray-300 text-sm px-2 shrink-0">-</div>
 
                       {/* Away */}
-                      <div className="flex items-center justify-between gap-2 w-full md:w-auto md:flex-1 bg-white md:bg-transparent p-2 md:p-0 rounded-md border md:border-transparent border-gray-200">
+                      <div className="flex items-center justify-between gap-2 w-full md:w-auto md:flex-1">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <div className="shrink-0 w-6 h-4 sm:w-8 sm:h-6 bg-gray-100 rounded overflow-hidden flex items-center justify-center border border-gray-200">
+                          <div className="shrink-0 w-6 h-4 sm:w-8 sm:h-6 rounded overflow-hidden flex items-center justify-center border border-gray-200">
                             {TEAM_FLAGS[match.away] ? <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[match.away]}.png`} alt={match.away} className="w-full h-full object-cover" /> : <span>🏳️</span>}
                           </div>
                           <span className="font-bold text-gray-900 uppercase text-xs sm:text-sm truncate">{(t.teams as Record<string, string>)[match.away] || match.away}</span>
                         </div>
 
-                        <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-0.5 sm:p-1 border border-gray-200 shrink-0">
-                          <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'away', -1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600 hover:text-black hover:bg-gray-200"><Minus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
+                        <div className="flex items-center gap-1 rounded-lg p-0.5 sm:p-1 border border-gray-200 shrink-0">
+                          <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'away', -1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600"><Minus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
                           <div className="w-5 sm:w-8 text-center font-black text-sm sm:text-lg">{matchPredictions[match.id]?.away || 0}</div>
-                          <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'away', 1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600 hover:text-black hover:bg-gray-200"><Plus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
+                          <Button disabled={checkMatchLocked(match.date, match.time)} onClick={() => handleMatchScoreIncrement(match.id, 'away', 1, match.date, match.time)} variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8 text-gray-600"><Plus className="w-3 h-3 sm:w-4 sm:h-4"/></Button>
                         </div>
                       </div>
                     </div>

@@ -244,25 +244,25 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-1 text-white border-none shadow-lg" style={{ backgroundColor: 'var(--brand-color, #9333ea)' }}>
+        <Card className="md:col-span-1 border-none shadow-lg" style={{ backgroundColor: 'var(--brand-bg, var(--brand-color, #9333ea))', color: 'var(--brand-on-bg, white)' }}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-white/80 text-sm font-medium uppercase tracking-wider">{t.companyAdmin.inviteCode}</CardTitle>
+            <CardTitle className="text-sm font-medium uppercase tracking-wider opacity-80">{t.companyAdmin.inviteCode}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-4">
               <div className="text-5xl font-mono font-bold tracking-widest mb-4 bg-white/20 px-4 py-2 rounded-lg">
                 {company.code}
               </div>
-              <Button 
-                onClick={handleCopyCode} 
-                variant="outline" 
+              <Button
+                onClick={handleCopyCode}
+                variant="outline"
                 className="w-full bg-white hover:bg-gray-100 flex items-center gap-2"
                 style={{ color: 'var(--brand-color, #9333ea)' }}
               >
                 {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {copied ? t.companyAdmin.copied : t.companyAdmin.copyCode}
               </Button>
-              <p className="text-xs text-white/70 mt-4 text-center">
+              <p className="text-xs opacity-70 mt-4 text-center">
                 {t.companyAdmin.codeHint}
               </p>
             </div>

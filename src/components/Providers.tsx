@@ -259,12 +259,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // Brand color — uses preview company color when active
   const activeCompanyDetails = previewCompanyDetails ?? companyDetails;
   useEffect(() => {
-    if (activeCompanyDetails?.color) {
-      document.documentElement.style.setProperty('--brand-color', activeCompanyDetails.color);
+    const color = activeCompanyDetails?.color || '#1e3a8a';
+    document.documentElement.style.setProperty('--brand-color', color);
+    if (activeCompanyDetails?.invertColors) {
+      document.documentElement.style.setProperty('--brand-bg', '#000000');
+      document.documentElement.style.setProperty('--brand-on-bg', color);
+      document.documentElement.style.setProperty('--page-bg', '#05050f');
+      document.documentElement.dataset.invert = 'true';
     } else {
-      document.documentElement.style.setProperty('--brand-color', '#1e3a8a');
+      document.documentElement.style.setProperty('--brand-bg', color);
+      document.documentElement.style.setProperty('--brand-on-bg', 'white');
+      document.documentElement.style.setProperty('--page-bg', 'transparent');
+      delete document.documentElement.dataset.invert;
     }
-  }, [activeCompanyDetails?.color]);
+  }, [activeCompanyDetails?.color, activeCompanyDetails?.invertColors]);
 
   // When preview is active, override companyId + company data for all child pages
   const effectiveUserData = previewCompanyId && userData

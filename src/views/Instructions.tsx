@@ -57,7 +57,7 @@ export default function Instructions() {
         <CardContent className="p-0">
           <div className="divide-y divide-gray-100">
             {scoring.map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+              <div key={i} className="flex items-center justify-between p-4">
                 <div className="flex-1">
                   <h4 className="font-bold text-gray-800 text-sm">{item.label}</h4>
                   <p className="text-xs text-gray-900 whitespace-pre-wrap">{item.desc}</p>

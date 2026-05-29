@@ -4,17 +4,21 @@ html {
   scroll-behavior: smooth;
 }
 
+body {
+  background-color: var(--page-bg, transparent);
+}
+
 @theme {
   --color-brand: var(--brand-color, #2563eb);
 }
 
 @layer components {
   .btn-primary {
-    background-color: var(--brand-color, #2563eb);
-    color: white;
+    background-color: var(--brand-bg, var(--brand-color, #2563eb));
+    color: var(--brand-on-bg, white);
   }
   .btn-primary:hover {
-    background-color: color-mix(in srgb, var(--brand-color, #2563eb) 80%, black);
+    background-color: color-mix(in srgb, var(--brand-bg, var(--brand-color, #2563eb)) 80%, black);
   }
 }
 
@@ -32,3 +36,123 @@ html {
   from { transform: scaleX(0); opacity: 1; }
   to   { transform: scaleX(1); opacity: 1; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DARK MODE  (html[data-invert])
+   Palette complements a lavender/periwinkle brand color on a near-black bg.
+   Using html[data-invert] prefix for higher specificity than Tailwind utilities
+   without resorting to !important.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Page background ─────────────────────────────────────────────────────── */
+html[data-invert] body {
+  background-color: #05050f;
+}
+
+/* ── Container backgrounds ───────────────────────────────────────────────── */
+html[data-invert] .bg-white      { background-color: #12121e; }
+html[data-invert] .bg-gray-50    { background-color: #1a1a2a; }
+html[data-invert] .bg-gray-100   { background-color: #1e1e2e; }
+html[data-invert] .bg-slate-50   { background-color: #12121e; }
+html[data-invert] .bg-slate-100  { background-color: #1a1a2a; }
+html[data-invert] .bg-slate-900  { background-color: #0a0a18; }
+
+/* Medal/prize rows — keep color coding but in dark variants */
+html[data-invert] .bg-yellow-50  { background-color: #1f1a08; }
+html[data-invert] .bg-orange-50  { background-color: #1f1208; }
+html[data-invert] .bg-red-50     { background-color: #1f0808; }
+html[data-invert] .bg-green-50   { background-color: #081f0c; }
+html[data-invert] .bg-blue-50    { background-color: #08101f; }
+html[data-invert] .bg-purple-50  { background-color: #160820; }
+html[data-invert] .bg-amber-50   { background-color: #1f1808; }
+html[data-invert] .bg-indigo-50  { background-color: #0c0820; }
+
+/* ── Text colors — gray scale ────────────────────────────────────────────── */
+html[data-invert] .text-gray-900 { color: rgba(255,255,255,0.92); }
+html[data-invert] .text-gray-800 { color: rgba(255,255,255,0.85); }
+html[data-invert] .text-gray-700 { color: rgba(255,255,255,0.75); }
+html[data-invert] .text-gray-600 { color: rgba(255,255,255,0.65); }
+html[data-invert] .text-gray-500 { color: rgba(255,255,255,0.50); }
+html[data-invert] .text-gray-400 { color: rgba(255,255,255,0.38); }
+
+/* ── Text colors — slate scale (Fixture, tables) ─────────────────────────── */
+html[data-invert] .text-slate-900 { color: rgba(255,255,255,0.92); }
+html[data-invert] .text-slate-800 { color: rgba(255,255,255,0.88); }
+html[data-invert] .text-slate-700 { color: rgba(255,255,255,0.75); }
+html[data-invert] .text-slate-600 { color: rgba(255,255,255,0.62); }
+html[data-invert] .text-slate-500 { color: rgba(255,255,255,0.50); }
+html[data-invert] .text-slate-400 { color: rgba(255,255,255,0.38); }
+
+/* ── Text colors — semantic (errors, success, warnings) ──────────────────── */
+html[data-invert] .text-red-900   { color: rgba(255,150,150,0.90); }
+html[data-invert] .text-red-800   { color: rgba(255,150,150,0.80); }
+html[data-invert] .text-red-700   { color: rgba(255,150,150,0.75); }
+html[data-invert] .text-red-600   { color: rgba(255,130,130,0.85); }
+html[data-invert] .text-green-700 { color: rgba(110,230,140,0.90); }
+html[data-invert] .text-green-600 { color: rgba(110,230,140,0.80); }
+html[data-invert] .text-green-800 { color: rgba(110,230,140,0.90); }
+html[data-invert] .text-amber-700 { color: rgba(255,210,100,0.90); }
+html[data-invert] .text-yellow-800 { color: rgba(255,220,80,0.90); }
+html[data-invert] .text-yellow-500 { color: rgba(255,220,80,0.90); }
+html[data-invert] .text-yellow-600 { color: rgba(255,210,80,0.85); }
+html[data-invert] .text-orange-500 { color: rgba(255,170,80,0.90); }
+html[data-invert] .text-orange-600 { color: rgba(255,160,80,0.85); }
+html[data-invert] .text-blue-600   { color: rgba(130,180,255,0.90); }
+html[data-invert] .text-purple-700 { color: rgba(200,160,255,0.90); }
+html[data-invert] .text-indigo-700 { color: rgba(160,170,255,0.90); }
+
+/* text-black in dark mode should flip to white */
+html[data-invert] .text-black { color: rgba(255,255,255,0.92); }
+
+/* Default document color: anything without an explicit text class falls to white */
+html[data-invert] { color: rgba(255,255,255,0.88); }
+
+/* ── Borders ─────────────────────────────────────────────────────────────── */
+html[data-invert] .border-gray-100  { border-color: rgba(255,255,255,0.06); }
+html[data-invert] .border-gray-200  { border-color: rgba(255,255,255,0.10); }
+html[data-invert] .border-gray-300  { border-color: rgba(255,255,255,0.14); }
+html[data-invert] .border-slate-100 { border-color: rgba(255,255,255,0.06); }
+html[data-invert] .border-slate-200 { border-color: rgba(255,255,255,0.10); }
+html[data-invert] .border-red-200   { border-color: rgba(255,100,100,0.25); }
+html[data-invert] .border-green-200 { border-color: rgba(80,200,100,0.25); }
+html[data-invert] .border-amber-200 { border-color: rgba(255,190,50,0.25); }
+html[data-invert] .border-yellow-200 { border-color: rgba(255,210,50,0.25); }
+html[data-invert] .border-b-2       { border-bottom-color: rgba(255,255,255,0.12); }
+/* divide-y uses border-color on child elements */
+html[data-invert] .divide-slate-100 > * { border-color: rgba(255,255,255,0.06); }
+html[data-invert] .divide-y > *         { border-color: rgba(255,255,255,0.08); }
+
+/* ── Table hover ─────────────────────────────────────────────────────────── */
+html[data-invert] tbody tr:hover { background-color: rgba(255,255,255,0.04); }
+
+/* ── Semantic bg containers ──────────────────────────────────────────────── */
+html[data-invert] .bg-red-50\/50  { background-color: rgba(31,8,8,0.5); }
+/* bg-white/60 loading overlay → dark overlay */
+html[data-invert] .bg-white\/60   { background-color: rgba(5,5,15,0.70); }
+/* bg-gray-50/50 and bg-gray-50/80 (match cards, accordion hover) */
+html[data-invert] .bg-gray-50\/50 { background-color: rgba(26,26,42,0.5); }
+html[data-invert] .bg-gray-50\/80 { background-color: rgba(26,26,42,0.8); }
+/* bg-brand/5 (current user row) — keep as subtle tint, no change needed */
+
+/* Status badge backgrounds */
+html[data-invert] .bg-green-50    { background-color: #081f0c; }
+html[data-invert] .bg-amber-50    { background-color: #1f1808; }
+
+/* ── Remove shadow hover in dark mode (cards shouldn't lift) ─────────────── */
+html[data-invert] .hover\:shadow-md:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+
+/* ── Input / select / textarea ───────────────────────────────────────────── */
+html[data-invert] input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
+html[data-invert] textarea,
+html[data-invert] select {
+  background-color: #1a1a28;
+  color: rgba(255,255,255,0.90);
+  border-color: rgba(255,255,255,0.12);
+}
+html[data-invert] input::placeholder,
+html[data-invert] textarea::placeholder { color: rgba(255,255,255,0.30); }
+
+/* ── Shadows: soften on dark bg ──────────────────────────────────────────── */
+html[data-invert] .shadow-sm  { box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+html[data-invert] .shadow-md  { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+html[data-invert] .shadow-lg  { box-shadow: 0 8px 24px rgba(0,0,0,0.6); }

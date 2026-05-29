@@ -123,7 +123,7 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
 
       <div className="grid gap-4 md:grid-cols-3">
         <Link href="/instructions" className="block" id="tutorial-reglas">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col items-center justify-center p-8 border border-gray-200">
+          <Card className="cursor-pointer h-full flex flex-col items-center justify-center p-8 border border-gray-200">
             <BookOpen className="w-8 h-8 text-[var(--brand-color,#2563eb)] mb-3 opacity-80" />
             <CardTitle className="text-xl font-bold text-gray-900 m-0">
               {t.welcome.rules}
@@ -132,7 +132,7 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
         </Link>
 
         <Link href="/predictions" className="block" id="tutorial-predicciones">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col items-center justify-center p-8 border border-gray-200">
+          <Card className="cursor-pointer h-full flex flex-col items-center justify-center p-8 border border-gray-200">
             <PenSquare className="w-8 h-8 text-[var(--brand-color,#2563eb)] mb-3 opacity-80" />
             <CardTitle className="text-xl font-bold text-gray-900 m-0">
               {t.welcome.predictions}
@@ -141,7 +141,7 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
         </Link>
 
         <Link href="/dashboard" className="block" id="tutorial-ranking">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col items-center justify-center p-8 border border-gray-200">
+          <Card className="cursor-pointer h-full flex flex-col items-center justify-center p-8 border border-gray-200">
             <Trophy className="w-8 h-8 text-[var(--brand-color,#2563eb)] mb-3 opacity-80" />
             <CardTitle className="text-xl font-bold text-gray-900 m-0">
               {t.welcome.ranking}
@@ -150,7 +150,7 @@ export default function Welcome({ user, userData, companyName, companyDetails }:
         </Link>
       </div>
 
-      <Card id="tutorial-reportes" className="hover:shadow-md transition-shadow border-t-4 border-t-red-500 bg-red-50/50">
+      <Card id="tutorial-reportes" className="border-t-4 border-t-red-500 bg-red-50/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl flex items-center gap-2 text-red-900">
             <MessageSquareWarning className="w-5 h-5" /> {t.welcome.reportTitle}

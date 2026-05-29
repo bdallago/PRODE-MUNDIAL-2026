@@ -75,6 +75,7 @@ export default function Admin() {
   const [editCompanySingleTournament, setEditCompanySingleTournament] = useState(false);
   const [editCompanyAreas, setEditCompanyAreas] = useState("");
   const [editCompanyInvertActiveButton, setEditCompanyInvertActiveButton] = useState(false);
+  const [editCompanyInvertColors, setEditCompanyInvertColors] = useState(false);
 
   const [activeTab, setActiveTab] = useState<'results' | 'users' | 'reports' | 'analytics' | 'companies'>('results');
 
@@ -621,7 +622,8 @@ export default function Admin() {
         logoUrl: editCompanyLogo,
         singleTournament: editCompanySingleTournament,
         areas: parsedAreas,
-        invertActiveButton: editCompanyInvertActiveButton
+        invertActiveButton: editCompanyInvertActiveButton,
+        invertColors: editCompanyInvertColors
       };
       
       await setDoc(doc(db, "companies", editCompanyModal.id), updateData, { merge: true });
@@ -935,6 +937,7 @@ export default function Admin() {
                         setEditCompanySingleTournament(company.singleTournament || false);
                         setEditCompanyAreas(company.areas ? company.areas.join(' - ') : "");
                         setEditCompanyInvertActiveButton(company.invertActiveButton || false);
+                        setEditCompanyInvertColors(company.invertColors || false);
                       }}
                     >
                       <PenSquare className="w-4 h-4" /> {t.admin.btnEdit}
@@ -1439,7 +1442,17 @@ export default function Admin() {
                   />
                   <span className="text-sm font-medium text-gray-700">Botón activo invertido (negro + color principal)</span>
                 </label>
-                <p className="text-xs text-gray-500 ml-6">Activa esto si el color principal es claro y no se ve bien sobre blanco.</p>
+                <p className="text-xs text-gray-500 ml-6">Solo invierte el botón activo del nav. Ignorado si "Invertir colores" está activo.</p>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editCompanyInvertColors}
+                    onChange={(e) => setEditCompanyInvertColors(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Invertir colores (fondo negro + tipografía del color principal)</span>
+                </label>
+                <p className="text-xs text-gray-500 ml-6">Invierte el esquema completo: navbar, tarjetas y botones pasan a fondo negro con el color de marca como tipografía.</p>
               </div>
 
               <div className="flex justify-end gap-3 pt-6 border-t">

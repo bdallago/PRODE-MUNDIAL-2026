@@ -9,7 +9,7 @@ import { Trophy, LogOut, Settings, PenSquare, BookOpen, Home, Building2 } from "
 import { useLanguage } from "../i18n/LanguageContext";
 import { LanguageSelector } from "./LanguageSelector";
 
-export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, brandColor, invertActiveButton }: { user: User; isAdmin: boolean; userData?: any; companyName: string; logoUrl?: string | null; brandColor?: string; invertActiveButton?: boolean }) {
+export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, brandColor, invertActiveButton, invertColors }: { user: User; isAdmin: boolean; userData?: any; companyName: string; logoUrl?: string | null; brandColor?: string; invertActiveButton?: boolean; invertColors?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useLanguage();
@@ -22,6 +22,9 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
   const getLinkStyle = (path: string) => {
     const isActive = pathname === path;
     const base = "hidden md:flex items-center justify-center gap-1.5 px-2 lg:px-3 py-1.5 lg:py-2 rounded-md transition-all duration-300 font-semibold text-xs lg:text-sm whitespace-nowrap";
+    if (invertColors) {
+      return `${base} ${isActive ? "bg-brand text-white shadow-sm" : "text-white/70 hover:text-white hover:bg-white/10"}`;
+    }
     if (isActive && invertActiveButton) return `${base} bg-black text-brand shadow-sm`;
     return `${base} ${isActive ? "bg-white text-gray-900 shadow-sm" : "bg-white/30 text-white hover:bg-white/40"}`;
   };
@@ -29,13 +32,16 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
   const getMobileLinkStyle = (path: string) => {
     const isActive = pathname === path;
     const base = "flex flex-col items-center text-xs p-2 rounded-md transition-colors flex-1 mx-1 font-semibold";
+    if (invertColors) {
+      return `${base} ${isActive ? "bg-brand text-white shadow-sm" : "text-white/70 hover:text-white hover:bg-white/10"}`;
+    }
     if (isActive && invertActiveButton) return `${base} bg-black text-brand shadow-sm`;
     return `${base} ${isActive ? "bg-white text-gray-900 shadow-sm" : "bg-transparent text-white hover:bg-white/30"}`;
   };
 
   return (
     <>
-      <nav className="text-white shadow-md sticky top-0 z-50 mb-0 md:mb-6" style={{ backgroundColor: brandColor || '#1e3a8a' }}>
+      <nav className="text-white shadow-md sticky top-0 z-50 mb-0 md:mb-6" style={{ backgroundColor: 'var(--brand-bg, var(--brand-color, #1e3a8a))' }}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-14 md:h-16">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg md:text-xl md:w-auto lg:w-1/4 shrink-0">
@@ -95,7 +101,7 @@ export default function Navbar({ user, isAdmin, userData, companyName, logoUrl, 
       </nav>
 
       {/* Modern Bottom Mobile Nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-2 py-1 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]" style={{ backgroundColor: brandColor || '#1e3a8a' }}>
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-2 py-1 shadow-[0_-4px_12px_rgba(0,0,0,0.1)]" style={{ backgroundColor: 'var(--brand-bg, var(--brand-color, #1e3a8a))' }}>
         <div className="flex items-center justify-around">
           <Link href="/" className={getMobileLinkStyle("/")}>
             <Home className="h-5 w-5 mb-0.5" /> <span className="text-[10px]">{t.nav.home}</span>
