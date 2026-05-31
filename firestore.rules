@@ -61,7 +61,8 @@ service cloud.firestore {
              (!('isActive' in data) || data.isActive is bool) &&
              (!('prizes' in data) || data.prizes is map) &&
              (!('bannerMessage' in data) || (data.bannerMessage is string && data.bannerMessage.size() < 1000)) &&
-             (!('singleTournament' in data) || data.singleTournament is bool);
+             (!('singleTournament' in data) || data.singleTournament is bool) &&
+             (!('notifications' in data) || data.notifications is map);
     }
 
     function isValidUser(data) {
@@ -113,7 +114,7 @@ service cloud.firestore {
                     
       allow update: if isAuthenticated() && isValidCompany(incoming()) && (
                       isAdmin() || 
-                      (isCompanyAdmin(companyId) && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'code', 'hrEmail', 'hrEmails', 'plan', 'color', 'logoUrl', 'areas', 'isActive', 'bannerMessage', 'prizes', 'areaStats', 'statsUpdatedAt']))
+                      (isCompanyAdmin(companyId) && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'code', 'hrEmail', 'hrEmails', 'plan', 'color', 'logoUrl', 'areas', 'isActive', 'bannerMessage', 'prizes', 'areaStats', 'statsUpdatedAt', 'notifications']))
                     );
                     
       allow delete: if isAdmin();
