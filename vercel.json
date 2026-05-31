@@ -3,6 +3,14 @@
     {
       "path": "/api/sync-results",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/morning-message",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/pre-match-reminder",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
