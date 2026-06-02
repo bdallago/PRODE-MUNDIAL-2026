@@ -139,12 +139,21 @@ export async function getEnabledCompanies(
     sentReminders: Record<string, string>;
   }> = [];
 
+  const nowART = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
+  const currentHourART = nowART.getHours();
+
   for (const docSnap of snap.docs) {
     const data = docSnap.data();
     if (data.plan !== "premium") continue;
     const n = data.notifications;
     if (!n?.webhookUrl || !n?.channel) continue;
     if (!n?.[type]) continue;
+
+    if (type === "morningMessage") {
+      const configuredHour = typeof n.morningMessageHour === "number" ? n.morningMessageHour : 11;
+      if (currentHourART !== configuredHour) continue;
+    }
+
     results.push({
       id: docSnap.id,
       channel: n.channel as NotificationChannel,

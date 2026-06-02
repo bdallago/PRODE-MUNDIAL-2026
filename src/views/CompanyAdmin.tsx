@@ -49,8 +49,9 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
     webhookUrl?: string;
     morningMessage?: boolean;
     preMatchReminder?: boolean;
+    morningMessageHour?: number;
   }>({});
-  const [savingNotif, setSavingNotif] = useState<"morningMessage" | "preMatchReminder" | null>(null);
+  const [savingNotif, setSavingNotif] = useState<"morningMessage" | "preMatchReminder" | "morningMessageHour" | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -197,6 +198,23 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
       setMessage({ type: 'error', text: 'Error al guardar los premios: ' + (error.message || '') });
     } finally {
       setSavingPrizes(false);
+    }
+  };
+
+  const handleSaveMorningHour = async (hour: number) => {
+    if (!company?.id) return;
+    setSavingNotif("morningMessageHour");
+    try {
+      await setDoc(
+        doc(db, "companies", company.id),
+        { notifications: { morningMessageHour: hour } },
+        { merge: true }
+      );
+      setNotifications((prev) => ({ ...prev, morningMessageHour: hour }));
+    } catch (error: any) {
+      setMessage({ type: 'error', text: 'Error al guardar la hora: ' + (error.message || '') });
+    } finally {
+      setSavingNotif(null);
     }
   };
 
@@ -566,10 +584,25 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
 
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-800">Mensaje matutino (11am)</p>
+                      <p className="text-sm font-medium text-gray-800">Mensaje matutino</p>
                       <p className="text-xs text-gray-500 mt-0.5">
                         Resumen de partidos del día con recordatorio de predicciones.
                       </p>
+                      {notifications.morningMessage && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <label className="text-xs text-gray-500">Hora de envío:</label>
+                          <select
+                            value={notifications.morningMessageHour ?? 11}
+                            onChange={(e) => handleSaveMorningHour(Number(e.target.value))}
+                            disabled={savingNotif === "morningMessageHour"}
+                            className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-purple-500 disabled:opacity-50"
+                          >
+                            {Array.from({ length: 24 }, (_, i) => (
+                              <option key={i} value={i}>{String(i).padStart(2, "0")}:00hs</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                     </div>
                     <button
                       onClick={() => handleToggleNotification("morningMessage")}
