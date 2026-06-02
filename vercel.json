@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/sync-results",
-      "schedule": "0 0 * * *"
+      "schedule": "*/1 * * * *"
     },
     {
       "path": "/api/cron/morning-message",
@@ -10,7 +10,11 @@
     },
     {
       "path": "/api/cron/pre-match-reminder",
-      "schedule": "0 0 * * *"
+      "schedule": "*/1 * * * *"
+    },
+    {
+      "path": "/api/cron/backup-predictions",
+      "schedule": "0 8 * * *"
     }
   ]
 }

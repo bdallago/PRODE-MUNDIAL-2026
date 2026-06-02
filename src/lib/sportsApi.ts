@@ -80,13 +80,14 @@ function kickoffUTC(dateStr: string, timeStr: string): number {
   return Date.UTC(2026, month, parseInt(day), h + 5, m);
 }
 
-// Returns true if at least one match is in its active window right now
-// (from 30 min before kickoff to 130 min after — covers full time + extra time)
+// Returns true if at least one match might be finishing or recently finished.
+// Window starts at +80 min (earliest a match can end) and ends at +180 min
+// (covers 90 min regulation + extra time + penalties + buffer).
 function hasActiveWindow(): boolean {
   const now = Date.now();
   return MATCHES.some((match) => {
     const ko = kickoffUTC(match.date, match.time);
-    return now >= ko - 30 * 60_000 && now <= ko + 130 * 60_000;
+    return now >= ko + 80 * 60_000 && now <= ko + 180 * 60_000;
   });
 }
 
@@ -97,8 +98,8 @@ function resolveMatchId(homeApi: string, awayApi: string): string | null {
   return MATCHES.find((m) => m.home === home && m.away === away)?.id ?? null;
 }
 
-// Statuses that mean a match is live or has finished
-const LIVE_OR_DONE = new Set(["1H", "HT", "2H", "ET", "BT", "P", "FT", "AET", "PEN"]);
+// Only record scores when the match is definitively over
+const LIVE_OR_DONE = new Set(["FT", "AET", "PEN"]);
 
 export async function syncMatchResults(): Promise<{
   synced: number;
