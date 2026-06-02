@@ -4,7 +4,9 @@ import {
   formatMorningMessage,
   sendNotification,
   getEnabledCompanies,
+  todayART,
 } from "../../../../src/lib/notifications";
+import { adminDb } from "../../../../src/lib/firebaseAdmin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,10 +25,15 @@ export async function GET(request: NextRequest) {
   const message = formatMorningMessage(todayMatches);
   const companies = await getEnabledCompanies("morningMessage");
 
+  const today = todayART();
   let sent = 0;
   for (const company of companies) {
     try {
       await sendNotification(company.webhookUrl, company.channel, message);
+      await adminDb.collection("companies").doc(company.id).set(
+        { notifications: { morningMessageSentDate: today } },
+        { merge: true }
+      );
       sent++;
     } catch (err: any) {
       console.error(`[morning-message] Failed for company ${company.id}:`, err.message);

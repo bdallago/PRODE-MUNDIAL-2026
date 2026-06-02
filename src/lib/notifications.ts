@@ -152,6 +152,8 @@ export async function getEnabledCompanies(
     if (type === "morningMessage") {
       const configuredHour = typeof n.morningMessageHour === "number" ? n.morningMessageHour : 11;
       if (currentHourART !== configuredHour) continue;
+      const todayStr = todayART();
+      if (n.morningMessageSentDate === todayStr) continue;
     }
 
     results.push({
