@@ -8,3 +8,15 @@ coverage/
 prompt
 prompt.txt
 firebase-applet-config.json
+
+# Build artifacts
+.next/
+.vercel/
+tsconfig.tsbuildinfo
+docs/
+
+# Local data / internal docs not needed in repo
+firebase-blueprint.json
+matches.json
+metadata.json
+public/dummy.txt
