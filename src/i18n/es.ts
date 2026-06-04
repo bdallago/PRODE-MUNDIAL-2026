@@ -174,6 +174,8 @@ export const es = {
     errEmpty: "Por favor ingresa un código válido.",
     errNotFound: "No se encontró ninguna empresa con ese código.",
     errInactive: "Este código pertenece a una empresa que ha sido dada de baja.",
+    errDomain: "Solo pueden unirse cuentas de correo @{domain}. Tu cuenta ({email}) no tiene acceso.",
+    errDomainBlocked: "Tu cuenta ({email}) no tiene permiso para acceder a esta empresa. Solo se permiten cuentas @{domain}.",
     errGeneric: "Hubo un error al verificar el código.",
     helloTeam: "¡Hola, equipo de",
     selectAreaTitle: "Antes de empezar, por favor selecciona a qué área o sucursal perteneces.",
