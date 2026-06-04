@@ -19,8 +19,10 @@ import { useLanguage } from "../i18n/LanguageContext";
 
 const DEFAULT_DEADLINE = new Date('2026-06-11T00:00:00').getTime();
 
-export default function Predictions({ user }: { user: User }) {
+export default function Predictions({ user, companyDetails }: { user: User; companyDetails?: any }) {
   const { t, lang } = useLanguage();
+  const disabledSpecials: string[] = companyDetails?.disabledSpecials ?? [];
+  const activeSpecialQuestions = SPECIAL_QUESTIONS.filter(q => !disabledSpecials.includes(q.id));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
@@ -295,7 +297,7 @@ export default function Predictions({ user }: { user: User }) {
   const specialsFilled = Object.values(specialPredictions).filter(v => v && v.trim() !== '').length;
   const matchesFilled = Object.values(matchPredictions).filter(m => m.home !== '' && m.away !== '').length;
 
-  const totalSpecials = SPECIAL_QUESTIONS.length;
+  const totalSpecials = activeSpecialQuestions.length;
   const totalMatches = MATCHES.length;
 
   return (
@@ -494,7 +496,7 @@ export default function Predictions({ user }: { user: User }) {
         <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>{t.predictions.specialQuestions}</h2>
         <p className="text-sm text-gray-800 mb-4 text-justify">{t.predictions.specialsDesc}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {SPECIAL_QUESTIONS.map((q) => (
+          {activeSpecialQuestions.map((q) => (
             <Card key={q.id}>
               <CardContent className="p-5">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">

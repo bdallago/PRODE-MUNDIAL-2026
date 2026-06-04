@@ -8,10 +8,10 @@ const Predictions = dynamic(() => import("../../src/views/Predictions"), {
 });
 
 export default function PredictionsPage() {
-  const { user, loading } = useAppContext();
+  const { user, loading, companyDetails } = useAppContext();
 
   if (loading) return null;
   if (!user) return null;
 
-  return <Predictions user={user} />;
+  return <Predictions user={user} companyDetails={companyDetails} />;
 }

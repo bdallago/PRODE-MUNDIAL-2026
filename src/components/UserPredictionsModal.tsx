@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { GROUPS, SPECIAL_QUESTIONS, TEAM_FLAGS } from "../data";
+import { useAppContext } from "./Providers";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { X, Lock, Unlock, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "./ui/button";
@@ -15,6 +16,9 @@ interface UserPredictionsModalProps {
 }
 
 export function UserPredictionsModal({ userId, userName, onClose }: UserPredictionsModalProps) {
+  const { companyDetails } = useAppContext();
+  const disabledSpecials: string[] = companyDetails?.disabledSpecials ?? [];
+  const activeSpecialQuestions = SPECIAL_QUESTIONS.filter(q => !disabledSpecials.includes(q.id));
   const [loading, setLoading] = useState(true);
   const [predictions, setPredictions] = useState<any>(null);
   const [results, setResults] = useState<any>(null);
@@ -222,7 +226,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
           <div>
             <h4 className="text-xl font-bold text-brand mb-4">Preguntas Especiales</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {SPECIAL_QUESTIONS.map((q) => {
+              {activeSpecialQuestions.map((q) => {
                 const answer = specials[q.id] || "Sin respuesta";
                 const status = getSpecialStatus(q.id, answer);
                 let bgColor = "bg-gray-50";
