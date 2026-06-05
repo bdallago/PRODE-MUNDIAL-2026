@@ -66,19 +66,6 @@ export default function CompanyJoin({
         return;
       }
 
-      if (cData.allowedDomain) {
-        const userEmail = user.email?.toLowerCase() || "";
-        if (!userEmail.endsWith(`@${cData.allowedDomain}`)) {
-          setError(
-            t.join.errDomain
-              .replace("{domain}", cData.allowedDomain)
-              .replace("{email}", user.email || "")
-          );
-          setLoading(false);
-          return;
-        }
-      }
-
       setCompanyId(cId);
       setCompanyData(cData);
 

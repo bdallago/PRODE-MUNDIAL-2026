@@ -137,17 +137,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
             if (companyDoc.exists() && companyDoc.data().isActive !== false) {
               const compData = companyDoc.data();
 
-              // Domain restriction — sign out if user's email doesn't match
-              if (compData.allowedDomain && data.role !== 'admin') {
-                const userEmail = currentUser.email?.toLowerCase() || "";
-                if (!userEmail.endsWith(`@${compData.allowedDomain}`)) {
-                  import("firebase/auth").then(({ signOut }) => signOut(auth));
-                  router.push("/login?blocked=1");
-                  setLoading(false);
-                  return;
-                }
-              }
-
               setCompanyName(compData.name);
               setCompanyDetails(compData);
               localStorage.setItem('cachedCompanyDetails', JSON.stringify(compData));

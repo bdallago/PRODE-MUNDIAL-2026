@@ -174,8 +174,6 @@ export const en = {
     errEmpty: "Please enter a valid code.",
     errNotFound: "No company found with that code.",
     errInactive: "This code belongs to a company that has been deactivated.",
-    errDomain: "Only @{domain} accounts can join. Your account ({email}) does not have access.",
-    errDomainBlocked: "Your account ({email}) does not have permission to access this company. Only @{domain} accounts are allowed.",
     errGeneric: "There was an error verifying the code.",
     helloTeam: "Hello, team of",
     selectAreaTitle: "Before we start, please select which area or branch you belong to.",
