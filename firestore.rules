@@ -112,9 +112,10 @@ service cloud.firestore {
                     incoming().keys().hasAll(['name', 'code', 'createdBy', 'createdAt']) &&
                     incoming().createdBy == request.auth.uid;
                     
-      allow update: if isAuthenticated() && isValidCompany(incoming()) && (
-                      isAdmin() || 
-                      (isCompanyAdmin(companyId) && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'code', 'hrEmail', 'hrEmails', 'plan', 'color', 'logoUrl', 'areas', 'isActive', 'bannerMessage', 'prizes', 'areaStats', 'statsUpdatedAt', 'notifications']))
+      allow update: if isAuthenticated() && (
+                      (isAdmin() && isValidCompany(incoming())) ||
+                      (isCompanyAdmin(companyId) && isValidCompany(incoming()) && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'code', 'hrEmail', 'hrEmails', 'plan', 'color', 'logoUrl', 'areas', 'isActive', 'bannerMessage', 'prizes', 'areaStats', 'statsUpdatedAt', 'notifications'])) ||
+                      (isCompanyAdmin(companyId) && incoming().diff(existing()).affectedKeys().hasOnly(['notifications']))
                     );
                     
       allow delete: if isAdmin();
