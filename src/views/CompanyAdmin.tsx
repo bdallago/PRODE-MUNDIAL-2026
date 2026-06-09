@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { collection, query, where, getDocs, doc, deleteDoc, getDoc, setDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -52,6 +52,7 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
     morningMessageHour?: number;
   }>({});
   const [savingNotif, setSavingNotif] = useState<"morningMessage" | "preMatchReminder" | "morningMessageHour" | null>(null);
+  const [notifError, setNotifError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -204,15 +205,14 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
   const handleSaveMorningHour = async (hour: number) => {
     if (!company?.id) return;
     setSavingNotif("morningMessageHour");
+    setNotifError(null);
     try {
-      await setDoc(
-        doc(db, "companies", company.id),
-        { notifications: { morningMessageHour: hour } },
-        { merge: true }
-      );
+      await updateDoc(doc(db, "companies", company.id), {
+        [`notifications.morningMessageHour`]: hour,
+      });
       setNotifications((prev) => ({ ...prev, morningMessageHour: hour }));
     } catch (error: any) {
-      setMessage({ type: 'error', text: 'Error al guardar la hora: ' + (error.message || '') });
+      setNotifError('Error al guardar la hora: ' + (error.code ? `[${error.code}] ` : '') + (error.message || JSON.stringify(error)));
     } finally {
       setSavingNotif(null);
     }
@@ -221,16 +221,15 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
   const handleToggleNotification = async (field: "morningMessage" | "preMatchReminder") => {
     if (!company?.id) return;
     setSavingNotif(field);
+    setNotifError(null);
     const newValue = !notifications[field];
     try {
-      await setDoc(
-        doc(db, "companies", company.id),
-        { notifications: { [field]: newValue } },
-        { merge: true }
-      );
+      await updateDoc(doc(db, "companies", company.id), {
+        [`notifications.${field}`]: newValue,
+      });
       setNotifications((prev) => ({ ...prev, [field]: newValue }));
     } catch (error: any) {
-      setMessage({ type: 'error', text: 'Error al guardar la configuración: ' + (error.message || '') });
+      setNotifError('Error al guardar: ' + (error.code ? `[${error.code}] ` : '') + (error.message || JSON.stringify(error)));
     } finally {
       setSavingNotif(null);
     }
@@ -565,6 +564,11 @@ export default function CompanyAdmin({ userData, hideBanner = false, companyName
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {notifError && (
+                <div className="mb-3 p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">
+                  {notifError}
+                </div>
+              )}
               {!notifications.webhookUrl ? (
                 <p className="text-sm text-gray-500">
                   Este espacio aún no tiene un canal configurado. Contactá con soporte para activar las notificaciones.
