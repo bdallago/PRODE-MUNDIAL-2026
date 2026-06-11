@@ -95,6 +95,7 @@ export const en = {
     days: "Days",
     timeUp: "Time's Up!",
     timeUpDesc: "The World Cup has started. Group stage and special questions are locked. Keep predicting individual matches up to 1 hour before each one.",
+    pointsDelay: "Points update automatically within 2 minutes of each match ending.",
   },
   dashboard: {
     loading: "Loading standings...",

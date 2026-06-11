@@ -1,5 +1,6 @@
 import { MATCHES } from "../data";
 import { adminDb } from "./firebaseAdmin";
+import { recalculatePoints } from "./recalculate-points";
 
 const API_BASE = process.env.FOOTBALL_API_BASE_URL || "https://v3.football.api-sports.io";
 const API_KEY  = process.env.FOOTBALL_API_KEY || "";
@@ -72,12 +73,12 @@ const MONTH_ES: Record<string, number> = {
 };
 
 // Converts "11 de junio" + "16:00" to a UTC timestamp.
-// Assumes match times are in UTC-5 (CDT — covers USA/Mexico venues).
+// Match times are stored in ART (UTC-3).
 function kickoffUTC(dateStr: string, timeStr: string): number {
   const [day, , monthStr] = dateStr.split(" ");
   const month = MONTH_ES[monthStr.toLowerCase()];
   const [h, m] = timeStr.split(":").map(Number);
-  return Date.UTC(2026, month, parseInt(day), h + 5, m);
+  return Date.UTC(2026, month, parseInt(day), h + 3, m);
 }
 
 // Returns true if at least one match might be finishing or recently finished.
@@ -180,6 +181,8 @@ export async function syncMatchResults(): Promise<{
       throw err;
     }
   }
+
+  await recalculatePoints();
 
   return { synced: Object.keys(updates).length - 1 }; // -1 for updatedAt
 }

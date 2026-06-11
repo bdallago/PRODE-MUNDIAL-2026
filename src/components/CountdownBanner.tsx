@@ -48,6 +48,7 @@ export function CountdownBanner() {
         <div>
           <h3 className="font-bold">{t.countdown.timeUp}</h3>
           <p className="text-sm">{t.countdown.timeUpDesc}</p>
+          <p className="text-xs mt-1 text-red-700">{t.countdown.pointsDelay}</p>
         </div>
       </div>
     );

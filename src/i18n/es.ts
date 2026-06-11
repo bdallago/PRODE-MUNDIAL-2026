@@ -95,6 +95,7 @@ export const es = {
     days: "Días",
     timeUp: "¡Tiempo Agotado!",
     timeUpDesc: "El Mundial ha comenzado. Fase de grupos y preguntas especiales bloqueadas. Seguí prediciendo los partidos individuales hasta 1 hora antes de cada uno.",
+    pointsDelay: "Los puntos se actualizan automáticamente dentro de los 2 minutos de finalizado cada partido.",
   },
   dashboard: {
     loading: "Cargando clasificación...",
