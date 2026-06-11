@@ -8,9 +8,15 @@ function getDb(): Firestore {
   const dbId = (process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "(default)").replace(/^"|"$/g, "");
   let app: App;
   if (getApps().length === 0) {
-    const serviceAccount = JSON.parse(
-      Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY!, "base64").toString("utf-8")
-    );
+    const rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY!.trim();
+    let serviceAccount: any;
+    try {
+      // Try base64 decode first (expected format)
+      serviceAccount = JSON.parse(Buffer.from(rawKey, "base64").toString("utf-8"));
+    } catch {
+      // Fall back to raw JSON (key stored as plain JSON string in Vercel)
+      serviceAccount = JSON.parse(rawKey);
+    }
     app = initializeApp({
       credential: cert(serviceAccount),
       projectId: serviceAccount.project_id,
