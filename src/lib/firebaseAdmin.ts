@@ -1,26 +1,24 @@
-import { initializeApp, getApps, cert } from "firebase-admin/app";
+import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
-
-// Force REST transport before any Firestore initialization — avoids gRPC binary parse errors in Vercel serverless
-process.env.FIRESTORE_PREFER_REST = "true";
 
 let _db: Firestore | null = null;
 
 function getDb(): Firestore {
   if (_db) return _db;
   const dbId = (process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "(default)").replace(/^"|"$/g, "");
+  let app: App;
   if (getApps().length === 0) {
     const serviceAccount = JSON.parse(
       Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY!, "base64").toString("utf-8")
     );
-    initializeApp({
+    app = initializeApp({
       credential: cert(serviceAccount),
       projectId: serviceAccount.project_id,
     });
+  } else {
+    app = getApps()[0];
   }
-  _db = getFirestore(dbId);
-  // Force REST transport — avoids gRPC binary parse errors in Vercel serverless
-  _db.settings({ preferRest: true });
+  _db = getFirestore(app, dbId);
   return _db;
 }
 
