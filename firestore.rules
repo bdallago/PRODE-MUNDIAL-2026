@@ -33,11 +33,27 @@ service cloud.firestore {
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
 
+    function userCompanyId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId;
+    }
+
+    // Per-company deadline override (e.g. late-launch companies get extra time)
+    function hasCompanyDeadlineOverride() {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             ('companyId' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) &&
+             exists(/databases/$(database)/documents/companies/$(userCompanyId())) &&
+             ('deadlineOverride' in get(/databases/$(database)/documents/companies/$(userCompanyId())).data);
+    }
+
     function isBeforeTournamentDeadline() {
       let configPath = /databases/$(database)/documents/config/tournament;
-      return !exists(configPath) || 
-             !('deadline' in get(configPath).data) || 
-             request.time.toMillis() < get(configPath).data.deadline;
+      return (hasCompanyDeadlineOverride() &&
+              request.time.toMillis() < get(/databases/$(database)/documents/companies/$(userCompanyId())).data.deadlineOverride) ||
+             (!hasCompanyDeadlineOverride() && (
+              !exists(configPath) ||
+              !('deadline' in get(configPath).data) ||
+              request.time.toMillis() < get(configPath).data.deadline));
     }
 
     function isValidId(id) {
@@ -62,7 +78,8 @@ service cloud.firestore {
              (!('prizes' in data) || data.prizes is map) &&
              (!('bannerMessage' in data) || (data.bannerMessage is string && data.bannerMessage.size() < 1000)) &&
              (!('singleTournament' in data) || data.singleTournament is bool) &&
-             (!('notifications' in data) || data.notifications is map);
+             (!('notifications' in data) || data.notifications is map) &&
+             (!('deadlineOverride' in data) || data.deadlineOverride is number);
     }
 
     function isValidUser(data) {

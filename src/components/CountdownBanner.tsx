@@ -3,22 +3,34 @@
 import { useState, useEffect } from "react";
 import { Clock, Lock } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useAppContext } from "./Providers";
 
-const DEADLINE = new Date('2026-06-11T00:00:00').getTime();
+// 2026-06-12 00:00 ART — matches config/tournament.deadline in Firestore
+const DEFAULT_DEADLINE = 1781233200000;
 
 export function CountdownBanner() {
-  const { t } = useLanguage();
-  const [timeLeft, setTimeLeft] = useState(DEADLINE - Date.now());
+  const { t, lang } = useLanguage();
+  const appContext = useAppContext();
+  const deadline: number = appContext?.deadline ?? DEFAULT_DEADLINE;
+  const [timeLeft, setTimeLeft] = useState(deadline - Date.now());
 
   useEffect(() => {
-    setTimeLeft(DEADLINE - Date.now());
+    setTimeLeft(deadline - Date.now());
     const interval = setInterval(() => {
-      setTimeLeft(DEADLINE - Date.now());
+      setTimeLeft(deadline - Date.now());
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [deadline]);
 
   const isTimeUp = timeLeft <= 0;
+
+  // Last fully-available day: one minute before the deadline, in ART
+  const lastDay = new Intl.DateTimeFormat(lang === 'es' ? 'es-AR' : 'en-US', {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'America/Argentina/Buenos_Aires',
+  }).format(new Date(deadline - 60000));
+  const deadlineDateText = lang === 'es' ? `${lastDay} inclusive` : `${lastDay} (inclusive)`;
 
   const formatTime = (ms: number) => {
     if (ms <= 0) return `00 ${t.countdown.days} 00h 00m 00s`;
@@ -51,7 +63,7 @@ export function CountdownBanner() {
         <div>
           <h3 className="font-bold text-lg">{t.countdown.title}</h3>
           <p className="text-white/70 text-sm">
-            {t.countdown.deadlineText} <strong className="text-white">{t.countdown.deadlineDate}</strong> {t.countdown.deadlineRest}
+            {t.countdown.deadlineText} <strong className="text-white">{deadlineDateText}</strong> {t.countdown.deadlineRest}
           </p>
         </div>
       </div>

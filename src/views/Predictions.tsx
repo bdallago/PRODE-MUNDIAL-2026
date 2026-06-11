@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { User } from "firebase/auth";
 import { doc, getDoc, getDocFromCache, getDocFromServer, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
@@ -17,7 +17,8 @@ import { Bracket } from "../components/Bracket";
 import { GROUPS, SPECIAL_QUESTIONS, KNOCKOUT_STAGES, ALL_TEAMS, MATCHES, TEAM_FLAGS } from "../data";
 import { useLanguage } from "../i18n/LanguageContext";
 
-const DEFAULT_DEADLINE = new Date('2026-06-11T00:00:00').getTime();
+// 2026-06-12 00:00 ART — matches config/tournament.deadline in Firestore
+const DEFAULT_DEADLINE = 1781233200000;
 
 export default function Predictions({ user, companyDetails }: { user: User; companyDetails?: any }) {
   const { t, lang } = useLanguage();
@@ -40,8 +41,6 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
   const [knockoutPredictions, setKnockoutPredictions] = useState<Record<string, string[]>>({});
   const [matchPredictions, setMatchPredictions] = useState<Record<string, {home: number | '', away: number | ''}>>({});
   
-  const savePredictionsRef = useRef<(lock?: boolean, matchesOnly?: boolean) => Promise<void>>(async () => {});
-
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: {
@@ -72,11 +71,12 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
 
         // 2. Fetch User Predictions
         const docRef = doc(db, "predictions", user.uid);
+        // Server-first: a stale cached doc must never drive lock state
         let docSnap;
         try {
-          docSnap = await getDocFromCache(docRef);
-        } catch (cacheError) {
           docSnap = await getDocFromServer(docRef);
+        } catch (serverError) {
+          docSnap = await getDocFromCache(docRef);
         }
 
         if (docSnap.exists()) {
@@ -114,18 +114,18 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
     fetchData();
   }, [user.uid]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const remaining = deadline - Date.now();
-      setTimeLeft(remaining);
+  // Company-level deadline override takes precedence over the global deadline
+  const effectiveDeadline = companyDetails?.deadlineOverride ?? deadline;
 
-      if (remaining <= 0 && !isLocked && !loading) {
-        setIsLocked(true);
-        savePredictionsRef.current(true);
-      }
+  // The countdown only drives the UI lock (isTimeUp); the client never writes
+  // isLocked on its own — the Firestore rules enforce the deadline server-side.
+  useEffect(() => {
+    setTimeLeft(effectiveDeadline - Date.now());
+    const interval = setInterval(() => {
+      setTimeLeft(effectiveDeadline - Date.now());
     }, 1000);
     return () => clearInterval(interval);
-  }, [deadline, isLocked, loading]);
+  }, [effectiveDeadline]);
 
   const checkMatchLocked = (matchDateStr: string, matchTimeStr: string) => {
     // Note: This relies on matching browser timezone handling to target time, 
@@ -207,11 +207,6 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
     });
   };
 
-  // Keep ref always pointing to the latest savePredictions (fixes stale closure in auto-lock)
-  useEffect(() => {
-    savePredictionsRef.current = savePredictions;
-  });
-
   // Unified auto-save for all prediction types
   useEffect(() => {
     if (loading) return;
@@ -229,16 +224,24 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
     
     try {
       const docRef = doc(db, "predictions", user.uid);
-      await setDoc(docRef, {
+      const payload: any = {
         uid: user.uid,
         groups: groupPredictions,
         specials: specialPredictions,
         knockouts: knockoutPredictions,
         matches: matchesToSave || matchPredictions,
         confirmedGroups: confirmedGroups,
-        isLocked: lock || effectiveIsLocked,
         updatedAt: new Date().toISOString()
-      }, { merge: true });
+      };
+      // Auto-saves never touch isLocked on an existing doc — a stale tab must not
+      // re-lock a user the admin unlocked. Only explicit user actions (or the
+      // initial doc creation) set the flag.
+      if (!isAutoSave) {
+        payload.isLocked = lock || effectiveIsLocked;
+      } else if (!hasSavedDoc) {
+        payload.isLocked = false;
+      }
+      await setDoc(docRef, payload, { merge: true });
       
       try {
         const userRef = doc(db, "users", user.uid);
