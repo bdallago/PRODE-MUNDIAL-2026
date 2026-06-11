@@ -165,8 +165,17 @@ export default function Dashboard({ user, userData, companyName, companyDetails 
       }
     });
 
+    // When match results update, wait 5s for recalculatePoints to finish then refresh leaderboard
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const unsubscribeResults = onSnapshot(doc(db, "results", "actual"), () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => fetchPlayers(), 5000);
+    });
+
     return () => {
       unsubscribeCompany();
+      unsubscribeResults();
+      if (refreshTimer) clearTimeout(refreshTimer);
     };
   }, [userData?.companyId]);
 
