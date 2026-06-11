@@ -19,6 +19,8 @@ function getDb(): Firestore {
     app = getApps()[0];
   }
   _db = getFirestore(app, dbId);
+  // Non-default Firestore databases fail with gRPC in Vercel serverless — force REST transport
+  _db.settings({ preferRest: true });
   return _db;
 }
 
