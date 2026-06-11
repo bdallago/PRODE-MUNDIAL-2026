@@ -2,19 +2,20 @@ import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
 function getDb(): Firestore {
+  const dbId = (process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "(default)").replace(/^"|"$/g, "");
   if (getApps().length === 0) {
     const serviceAccount = JSON.parse(
       Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY!, "base64").toString("utf-8")
     );
-    const dbId = (process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "(default)").replace(/^"|"$/g, "");
-    console.log("[firebaseAdmin] projectId:", serviceAccount.project_id, "| dbId:", dbId);
     initializeApp({
       credential: cert(serviceAccount),
       projectId: serviceAccount.project_id,
     });
-    return getFirestore(dbId);
+    const db = getFirestore(dbId);
+    // Force REST transport — avoids gRPC binary parse errors in Vercel serverless
+    db.settings({ preferRest: true });
+    return db;
   }
-  const dbId = (process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "(default)").replace(/^"|"$/g, "");
   return getFirestore(dbId);
 }
 
