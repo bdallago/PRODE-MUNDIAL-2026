@@ -1,7 +1,10 @@
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
+let _db: Firestore | null = null;
+
 function getDb(): Firestore {
+  if (_db) return _db;
   const dbId = (process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "(default)").replace(/^"|"$/g, "");
   if (getApps().length === 0) {
     const serviceAccount = JSON.parse(
@@ -11,12 +14,11 @@ function getDb(): Firestore {
       credential: cert(serviceAccount),
       projectId: serviceAccount.project_id,
     });
-    const db = getFirestore(dbId);
-    // Force REST transport — avoids gRPC binary parse errors in Vercel serverless
-    db.settings({ preferRest: true });
-    return db;
   }
-  return getFirestore(dbId);
+  _db = getFirestore(dbId);
+  // Force REST transport — avoids gRPC binary parse errors in Vercel serverless
+  _db.settings({ preferRest: true });
+  return _db;
 }
 
 // Lazy proxy — initialization runs at first use, not at module load time.
