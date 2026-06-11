@@ -31,13 +31,11 @@ function kickoffUTC(dateStr: string, timeStr: string): number {
   const day = parseInt(parts[0]);
   const month = MONTHS_ES[parts[2].toLowerCase()];
   const [h, m] = timeStr.split(":").map(Number);
-  return Date.UTC(2026, month, day, h + 5, m);
+  return Date.UTC(2026, month, day, h + 3, m);
 }
 
-export function formatMatchTime(cdtTime: string): string {
-  const [h] = cdtTime.split(":").map(Number);
-  const artH = (h + 2) % 24;
-  return artH.toString().padStart(2, "0");
+export function formatMatchTime(artTime: string): string {
+  return artTime.split(":")[0].replace(/^0/, "");
 }
 
 export function getTodayMatches(): Match[] {
