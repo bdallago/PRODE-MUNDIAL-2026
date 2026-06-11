@@ -6,7 +6,10 @@ function getDb(): Firestore {
     const serviceAccount = JSON.parse(
       Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY!, "base64").toString("utf-8")
     );
-    initializeApp({ credential: cert(serviceAccount) });
+    initializeApp({
+      credential: cert(serviceAccount),
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || serviceAccount.project_id,
+    });
   }
   return getFirestore(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "(default)");
 }
