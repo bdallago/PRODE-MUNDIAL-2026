@@ -11,10 +11,12 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const dbId = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID;
+    console.log("[recalculate] DATABASE_ID =", JSON.stringify(dbId));
     await recalculatePoints();
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, dbId });
   } catch (err: any) {
     console.error("[recalculate]", err);
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: err.message, dbId: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID }, { status: 500 });
   }
 }
