@@ -1,6 +1,9 @@
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
+// Force REST transport before any Firestore initialization — avoids gRPC binary parse errors in Vercel serverless
+process.env.FIRESTORE_PREFER_REST = "true";
+
 let _db: Firestore | null = null;
 
 function getDb(): Firestore {
