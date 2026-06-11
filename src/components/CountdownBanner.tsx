@@ -5,8 +5,8 @@ import { Clock, Lock } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
 import { useAppContext } from "./Providers";
 
-// 2026-06-12 00:00 ART — matches config/tournament.deadline in Firestore
-const DEFAULT_DEADLINE = 1781233200000;
+// 2026-06-11 00:00 ART — matches config/tournament.deadline in Firestore
+const DEFAULT_DEADLINE = 1781146800000;
 
 export function CountdownBanner() {
   const { t, lang } = useLanguage();

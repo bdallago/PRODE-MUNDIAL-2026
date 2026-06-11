@@ -7,8 +7,8 @@ import { auth, db } from "../firebase";
 import { useRouter, usePathname } from "next/navigation";
 import { useLanguage } from "../i18n/LanguageContext";
 
-// 2026-06-12 00:00 ART — matches config/tournament.deadline in Firestore
-const DEFAULT_DEADLINE = 1781233200000;
+// 2026-06-11 00:00 ART — matches config/tournament.deadline in Firestore
+const DEFAULT_DEADLINE = 1781146800000;
 
 const PUBLIC_PATHS = ["/login", "/join-company", "/privacy", "/terms"];
 
@@ -283,8 +283,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const effectiveCompanyName = previewCompanyDetails?.name ?? companyName;
   const effectiveCompanyDetails = previewCompanyDetails ?? companyDetails;
 
-  // Company-level deadline override takes precedence over the global tournament deadline
-  const effectiveDeadline = effectiveCompanyDetails?.deadlineOverride ?? deadline;
+  // Deadline priority: per-user override > per-company override > global tournament deadline
+  const effectiveDeadline = effectiveUserData?.deadlineOverride ?? effectiveCompanyDetails?.deadlineOverride ?? deadline;
 
   const value = {
     user,

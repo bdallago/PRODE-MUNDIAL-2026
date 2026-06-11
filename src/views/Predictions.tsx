@@ -16,12 +16,14 @@ import { Fixture } from "../components/Fixture";
 import { Bracket } from "../components/Bracket";
 import { GROUPS, SPECIAL_QUESTIONS, KNOCKOUT_STAGES, ALL_TEAMS, MATCHES, TEAM_FLAGS } from "../data";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useAppContext } from "../components/Providers";
 
-// 2026-06-12 00:00 ART — matches config/tournament.deadline in Firestore
-const DEFAULT_DEADLINE = 1781233200000;
+// 2026-06-11 00:00 ART — matches config/tournament.deadline in Firestore
+const DEFAULT_DEADLINE = 1781146800000;
 
 export default function Predictions({ user, companyDetails }: { user: User; companyDetails?: any }) {
   const { t, lang } = useLanguage();
+  const { userData } = useAppContext() ?? {};
   const disabledSpecials: string[] = companyDetails?.disabledSpecials ?? [];
   const activeSpecialQuestions = SPECIAL_QUESTIONS.filter(q => !disabledSpecials.includes(q.id));
   const [loading, setLoading] = useState(true);
@@ -114,8 +116,8 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
     fetchData();
   }, [user.uid]);
 
-  // Company-level deadline override takes precedence over the global deadline
-  const effectiveDeadline = companyDetails?.deadlineOverride ?? deadline;
+  // Deadline priority: per-user override > per-company override > global deadline
+  const effectiveDeadline = userData?.deadlineOverride ?? companyDetails?.deadlineOverride ?? deadline;
 
   // The countdown only drives the UI lock (isTimeUp); the client never writes
   // isLocked on its own — the Firestore rules enforce the deadline server-side.

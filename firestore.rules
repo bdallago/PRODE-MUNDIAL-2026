@@ -37,6 +37,13 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId;
     }
 
+    // Per-user deadline override (admin grants an individual extension)
+    function hasUserDeadlineOverride() {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             ('deadlineOverride' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data);
+    }
+
     // Per-company deadline override (e.g. late-launch companies get extra time)
     function hasCompanyDeadlineOverride() {
       return isAuthenticated() &&
@@ -46,11 +53,14 @@ service cloud.firestore {
              ('deadlineOverride' in get(/databases/$(database)/documents/companies/$(userCompanyId())).data);
     }
 
+    // Priority: user override > company override > global config deadline
     function isBeforeTournamentDeadline() {
       let configPath = /databases/$(database)/documents/config/tournament;
-      return (hasCompanyDeadlineOverride() &&
+      return (hasUserDeadlineOverride() &&
+              request.time.toMillis() < get(/databases/$(database)/documents/users/$(request.auth.uid)).data.deadlineOverride) ||
+             (!hasUserDeadlineOverride() && hasCompanyDeadlineOverride() &&
               request.time.toMillis() < get(/databases/$(database)/documents/companies/$(userCompanyId())).data.deadlineOverride) ||
-             (!hasCompanyDeadlineOverride() && (
+             (!hasUserDeadlineOverride() && !hasCompanyDeadlineOverride() && (
               !exists(configPath) ||
               !('deadline' in get(configPath).data) ||
               request.time.toMillis() < get(configPath).data.deadline));
@@ -95,7 +105,8 @@ service cloud.firestore {
              (!('isBlocked' in data) || data.isBlocked is bool) &&
              (!('hasSeenTutorial' in data) || data.hasSeenTutorial is bool) &&
              (!('hasSavedPredictions' in data) || data.hasSavedPredictions is bool) &&
-             (!('predictionStatus' in data) || data.predictionStatus in ['complete', 'incomplete']);
+             (!('predictionStatus' in data) || data.predictionStatus in ['complete', 'incomplete']) &&
+             (!('deadlineOverride' in data) || data.deadlineOverride is number);
     }
 
     function isValidPrediction(data) {
@@ -171,7 +182,9 @@ service cloud.firestore {
                       (isCompanyAdmin(existing().companyId) &&
                        incoming().uid == existing().uid &&
                        incoming().companyId == existing().companyId &&
-                       incoming().role == existing().role)
+                       incoming().role == existing().role &&
+                       // Only the superadmin can grant individual deadline extensions
+                       !incoming().diff(existing()).affectedKeys().hasAny(['deadlineOverride']))
                     );
                     
       allow delete: if isAdmin() || (isAuthenticated() && isCompanyAdmin(existing().companyId));
