@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
     const result = await syncMatchResults(force);
     return NextResponse.json({ ok: true, ...result });
   } catch (err: any) {
-    console.error("[sync-results]", err);
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
+    console.error("[sync-results] error:", err?.message);
+    console.error("[sync-results] stack:", err?.stack?.split("\n").slice(0, 6).join(" | "));
+    return NextResponse.json({ ok: false, error: err.message, stack: err?.stack?.split("\n").slice(0, 4) }, { status: 500 });
   }
 }
