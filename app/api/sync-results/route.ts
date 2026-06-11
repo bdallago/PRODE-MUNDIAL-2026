@@ -11,7 +11,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = await syncMatchResults();
+    const force = request.nextUrl.searchParams.get("force") === "true";
+    const result = await syncMatchResults(force);
     return NextResponse.json({ ok: true, ...result });
   } catch (err: any) {
     console.error("[sync-results]", err);

@@ -102,12 +102,12 @@ function resolveMatchId(homeApi: string, awayApi: string): string | null {
 // Only record scores when the match is definitively over
 const LIVE_OR_DONE = new Set(["FT", "AET", "PEN"]);
 
-export async function syncMatchResults(): Promise<{
+export async function syncMatchResults(force = false): Promise<{
   synced: number;
   skipped?: string;
 }> {
   // 1. Skip if no match is expected to be active right now
-  if (!hasActiveWindow()) {
+  if (!force && !hasActiveWindow()) {
     return { synced: 0, skipped: "no_active_window" };
   }
 
