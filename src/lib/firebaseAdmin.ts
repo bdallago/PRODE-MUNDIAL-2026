@@ -6,12 +6,16 @@ function getDb(): Firestore {
     const serviceAccount = JSON.parse(
       Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_KEY!, "base64").toString("utf-8")
     );
+    const dbId = (process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "(default)").replace(/^"|"$/g, "");
+    console.log("[firebaseAdmin] projectId:", serviceAccount.project_id, "| dbId:", dbId);
     initializeApp({
       credential: cert(serviceAccount),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || serviceAccount.project_id,
+      projectId: serviceAccount.project_id,
     });
+    return getFirestore(dbId);
   }
-  return getFirestore(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "(default)");
+  const dbId = (process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "(default)").replace(/^"|"$/g, "");
+  return getFirestore(dbId);
 }
 
 // Lazy proxy — initialization runs at first use, not at module load time.
