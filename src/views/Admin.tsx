@@ -248,17 +248,13 @@ export default function Admin() {
       }
       const actualData = resultsSnap.data();
       
-      // Sanitize actualG
-      const sanitizedActualG: Record<string, string[]> = {};
-      const savedActualG = actualData.groups || {};
-      for (const [groupLetter, currentTeams] of Object.entries(GROUPS)) {
-        const savedTeams = savedActualG[groupLetter] || [];
-        const validSavedTeams = (savedTeams as string[]).filter(t => currentTeams.includes(t));
-        const missingTeams = currentTeams.filter(t => !validSavedTeams.includes(t));
-        sanitizedActualG[groupLetter] = [...validSavedTeams, ...missingTeams];
+      // Only score groups explicitly marked as finished (all 12 matches played).
+      const finishedGroups: string[] = actualData.finishedGroups || [];
+      const rawGroups: Record<string, string[]> = actualData.groups ?? {};
+      const actualG: Record<string, string[]> = {};
+      for (const letter of finishedGroups) {
+        if (rawGroups[letter]) actualG[letter] = rawGroups[letter];
       }
-      
-      const actualG = sanitizedActualG;
       const actualS = actualData.specials || {};
       const actualK = actualData.knockouts || {};
       const actualM = actualData.matches || {};
