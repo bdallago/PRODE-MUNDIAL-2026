@@ -25,6 +25,7 @@ const TEAM_MAP: Record<string, string> = {
   "Haiti": "Haití",
   "Scotland": "Escocia",
   "United States": "Estados Unidos",
+  "United States of America": "Estados Unidos",
   "USA": "Estados Unidos",
   "Paraguay": "Paraguay",
   "Australia": "Australia",
