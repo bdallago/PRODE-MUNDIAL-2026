@@ -76,6 +76,7 @@ export async function syncStandings(apiKey: string): Promise<void> {
 
   const standings = data.response[0].league.standings;
   const newGroups: Record<string, string[]> = {};
+  const newStandings: Record<string, Record<string, { pts: number; played: number; gf: number; ga: number; gd: number; w: number; d: number; l: number }>> = {};
   const finishedGroups: string[] = [];
 
   standings.forEach((groupStandings: any[]) => {
@@ -90,12 +91,28 @@ export async function syncStandings(apiKey: string): Promise<void> {
     groupStandings.sort((a: any, b: any) => a.rank - b.rank);
     newGroups[groupLetter] = groupStandings.map((s: any) => TEAM_NAME_MAPPING[s.team.name] ?? s.team.name);
 
+    newStandings[groupLetter] = {};
+    for (const s of groupStandings) {
+      const teamName = TEAM_NAME_MAPPING[s.team.name] ?? s.team.name;
+      newStandings[groupLetter][teamName] = {
+        pts: s.points ?? 0,
+        played: s.all?.played ?? 0,
+        gf: s.all?.goals?.for ?? 0,
+        ga: s.all?.goals?.against ?? 0,
+        gd: s.goalsDiff ?? 0,
+        w: s.all?.win ?? 0,
+        d: s.all?.draw ?? 0,
+        l: s.all?.lose ?? 0,
+      };
+    }
+
     if (totalPlayed >= GAMES_PER_GROUP) finishedGroups.push(groupLetter);
   });
 
   if (Object.keys(newGroups).length > 0) {
     await adminDb.collection("results").doc("actual").set({
       groups: newGroups,
+      standings: newStandings,
       finishedGroups,
     }, { merge: true });
   }

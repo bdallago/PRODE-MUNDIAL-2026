@@ -2,56 +2,44 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
-import { GROUPS, TEAM_FLAGS } from "../data";
+import { GROUPS, MATCHES, TEAM_FLAGS } from "../data";
 import { doc, getDocFromCache, getDocFromServer } from "firebase/firestore";
 import { db } from "../firebase";
 import { useLanguage } from "../i18n/LanguageContext";
 
-// Generar el fixture lógicamente
-const generateFixture = () => {
-  const matchdays = [
-    [[0, 1], [2, 3]], // Fecha 1: 1vs2, 3vs4
-    [[0, 2], [3, 1]], // Fecha 2: 1vs3, 4vs2
-    [[3, 0], [1, 2]]  // Fecha 3: 4vs1, 2vs3
-  ];
-
-  const dates = [
-    ["Jue 11/06", "Vie 12/06", "Sáb 13/06", "Dom 14/06", "Lun 15/06", "Mar 16/06"],
-    ["Mié 17/06", "Jue 18/06", "Vie 19/06", "Sáb 20/06", "Dom 21/06", "Lun 22/06"],
-    ["Mar 23/06", "Mié 24/06", "Jue 25/06", "Vie 26/06", "Sáb 27/06", "Dom 28/06"]
-  ];
-
-  const times = ["13:00", "16:00", "19:00", "22:00"];
-
-  const fixture: any[] = [[], [], []];
-
-  for (let f = 0; f < 3; f++) {
-    let matchCount = 0;
-    // Ordenar grupos alfabéticamente
-    const sortedGroups = Object.entries(GROUPS).sort(([a], [b]) => a.localeCompare(b));
-    
-    for (const [group, teams] of sortedGroups) {
-      for (const [t1, t2] of matchdays[f]) {
-        const dateIdx = Math.floor(matchCount / 4);
-        const timeIdx = matchCount % 4;
-        
-        fixture[f].push({
-          group,
-          date: dates[f][dateIdx] || dates[f][dates[f].length - 1],
-          time: times[timeIdx],
-          team1: teams[t1],
-          team2: teams[t2]
-        });
-        
-        matchCount++;
-      }
-    }
-  }
-
-  return fixture;
+const MONTHS_ES_IDX: Record<string, number> = {
+  enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+  julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11,
 };
+const DAY_SHORT_ES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-const FIXTURE_DATA = generateFixture();
+function parseDateStr(dateStr: string): Date {
+  const parts = dateStr.split(" ");
+  return new Date(2026, MONTHS_ES_IDX[parts[2].toLowerCase()], parseInt(parts[0]));
+}
+
+function formatDisplayDate(dateStr: string): string {
+  const d = parseDateStr(dateStr);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  return `${DAY_SHORT_ES[d.getDay()]} ${day}/${month}`;
+}
+
+const FIXTURE_DATA = (() => {
+  const result: Array<Array<{ group: string; date: string; displayDate: string; time: string; team1: string; team2: string }>> = [[], [], []];
+  for (const m of MATCHES) {
+    const day = parseDateStr(m.date).getDate();
+    const fecha = day <= 17 ? 0 : day <= 23 ? 1 : 2;
+    result[fecha].push({ group: m.group, date: m.date, displayDate: formatDisplayDate(m.date), time: m.time, team1: m.home, team2: m.away });
+  }
+  for (const f of result) {
+    f.sort((a, b) => {
+      const diff = parseDateStr(a.date).getTime() - parseDateStr(b.date).getTime();
+      return diff !== 0 ? diff : a.time.localeCompare(b.time);
+    });
+  }
+  return result;
+})();
 
 const TeamFlag = ({ teamName }: { teamName: string }) => {
   const code = TEAM_FLAGS[teamName];
@@ -78,6 +66,7 @@ export function Fixture() {
   };
   const [currentFecha, setCurrentFecha] = useState(0);
   const [actualGroups, setActualGroups] = useState<Record<string, string[]>>(GROUPS);
+  const [groupStandings, setGroupStandings] = useState<Record<string, Record<string, { pts: number; played: number; gf: number; ga: number; gd: number; w: number; d: number; l: number }>>>({});
 
   useEffect(() => {
     const fetchActualResults = async () => {
@@ -91,6 +80,9 @@ export function Fixture() {
         }
         if (docSnap.exists()) {
           const data = docSnap.data();
+          if (data.standings) {
+            setGroupStandings(data.standings);
+          }
           if (data.groups) {
             const sanitizedGroups: Record<string, string[]> = {};
             for (const [groupLetter, teams] of Object.entries(data.groups)) {
@@ -130,10 +122,10 @@ export function Fixture() {
   // Agrupar partidos por fecha
   const groupedMatches: Record<string, any[]> = {};
   matches.forEach(match => {
-    if (!groupedMatches[match.date]) {
-      groupedMatches[match.date] = [];
+    if (!groupedMatches[match.displayDate]) {
+      groupedMatches[match.displayDate] = [];
     }
-    groupedMatches[match.date].push(match);
+    groupedMatches[match.displayDate].push(match);
   });
 
   return (
@@ -231,13 +223,30 @@ export function Fixture() {
                               <span className="truncate">{tTeams[team] || team}</span>
                             </div>
                           </td>
-                          <td className="py-2 text-center font-bold text-slate-800">0</td>
-                          <td className="py-2 text-center text-slate-500">0</td>
-                          <td className="py-2 text-center text-slate-500">0:0</td>
-                          <td className="py-2 text-center text-slate-500">0</td>
-                          <td className="py-2 text-center text-slate-500">0</td>
-                          <td className="py-2 text-center text-slate-500">0</td>
-                          <td className="py-2 text-center text-slate-500">0</td>
+                          {(() => {
+                            const s = groupStandings[groupLetter]?.[team];
+                            return s ? (
+                              <>
+                                <td className="py-2 text-center font-bold text-slate-800">{s.pts}</td>
+                                <td className="py-2 text-center text-slate-500">{s.played}</td>
+                                <td className="py-2 text-center text-slate-500">{s.gf}:{s.ga}</td>
+                                <td className="py-2 text-center text-slate-500">{s.gd > 0 ? `+${s.gd}` : s.gd}</td>
+                                <td className="py-2 text-center text-slate-500">{s.w}</td>
+                                <td className="py-2 text-center text-slate-500">{s.d}</td>
+                                <td className="py-2 text-center text-slate-500">{s.l}</td>
+                              </>
+                            ) : (
+                              <>
+                                <td className="py-2 text-center font-bold text-slate-800">0</td>
+                                <td className="py-2 text-center text-slate-500">0</td>
+                                <td className="py-2 text-center text-slate-500">0:0</td>
+                                <td className="py-2 text-center text-slate-500">0</td>
+                                <td className="py-2 text-center text-slate-500">0</td>
+                                <td className="py-2 text-center text-slate-500">0</td>
+                                <td className="py-2 text-center text-slate-500">0</td>
+                              </>
+                            );
+                          })()}
                         </tr>
                       ))}
                     </tbody>

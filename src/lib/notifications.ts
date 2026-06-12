@@ -45,22 +45,7 @@ export function getTodayMatches(): Match[] {
   const todayMonth = MONTH_NAMES_ES[artDate.getMonth()];
   const todayStr = `${todayDay} de ${todayMonth}`;
 
-  const prevArtDate = new Date(artDate);
-  prevArtDate.setDate(prevArtDate.getDate() - 1);
-  const prevDay = prevArtDate.getDate();
-  const prevMonth = MONTH_NAMES_ES[prevArtDate.getMonth()];
-  const prevStr = `${prevDay} de ${prevMonth}`;
-
-  return (MATCHES as Match[]).filter((m) => {
-    if (m.date === todayStr) return true;
-    // Partido del día anterior CDT que pasa a ART de hoy (hora CDT >= 22:00 → ART wrapeó medianoche)
-    if (m.date === prevStr) {
-      const [h] = m.time.split(":").map(Number);
-      const artH = (h + 2) % 24;
-      return artH < h;
-    }
-    return false;
-  });
+  return (MATCHES as Match[]).filter((m) => m.date === todayStr);
 }
 
 export function formatMorningMessage(matches: Match[]): string {
