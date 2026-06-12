@@ -207,8 +207,8 @@ service cloud.firestore {
                        (
                          // If not locked, must be before tournament general deadline
                          (existing().isLocked == false && isBeforeTournamentDeadline()) ||
-                         // If locked, can only update matches
-                         (existing().isLocked == true && incoming().diff(existing()).affectedKeys().hasOnly(['matches', 'updatedAt']))
+                         // After deadline (locked or not), can only update matches
+                         incoming().diff(existing()).affectedKeys().hasOnly(['matches', 'updatedAt'])
                        )
                       )
                     )
