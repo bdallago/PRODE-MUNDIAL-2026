@@ -124,10 +124,12 @@ export async function syncMatchResults(force = false): Promise<{
   }
   await lastRunRef.set({ runAt: Date.now() });
 
-  // 3. Fetch today's fixtures from API-Football
-  const today = new Date().toISOString().split("T")[0];
+  // 3. Fetch ALL tournament fixtures from API-Football.
+  // We sync every finished match (not just today's) so a result that was
+  // missed on its match day — e.g. the sync window was throttled — still gets
+  // backfilled on the next run instead of being lost forever.
   const res = await fetch(
-    `${API_BASE}/fixtures?league=${LEAGUE}&season=${SEASON}&date=${today}`,
+    `${API_BASE}/fixtures?league=${LEAGUE}&season=${SEASON}`,
     {
       headers: { "x-apisports-key": API_KEY },
       cache: "no-store",
