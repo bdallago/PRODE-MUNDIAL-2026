@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getTodayMatches,
+  getEarlyNextDayMatches,
   formatMorningMessage,
   sendNotification,
   getEnabledCompanies,
@@ -17,12 +18,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const todayMatches = getTodayMatches();
-  if (todayMatches.length === 0) {
+  const allTodayMatches = getTodayMatches();
+  // Exclude matches at 00:00–02:00 — those were already shown as "trasnochados" in yesterday's message
+  const todayMatches = allTodayMatches.filter((m) => {
+    const h = parseInt(m.time.split(":")[0], 10);
+    return h > 2;
+  });
+  const trasnochados = getEarlyNextDayMatches();
+  if (todayMatches.length === 0 && trasnochados.length === 0) {
     return NextResponse.json({ ok: true, skipped: "no_matches" });
   }
 
-  const message = formatMorningMessage(todayMatches);
+  const message = formatMorningMessage(todayMatches, trasnochados);
   const companies = await getEnabledCompanies("morningMessage");
 
   const today = todayART();

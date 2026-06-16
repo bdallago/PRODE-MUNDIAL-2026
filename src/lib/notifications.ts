@@ -48,23 +48,48 @@ export function getTodayMatches(): Match[] {
   return (MATCHES as Match[]).filter((m) => m.date === todayStr);
 }
 
-export function formatMorningMessage(matches: Match[]): string {
+export function getEarlyNextDayMatches(): Match[] {
+  const now = new Date();
+  const artDate = new Date(now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
+  const tomorrow = new Date(artDate);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = `${tomorrow.getDate()} de ${MONTH_NAMES_ES[tomorrow.getMonth()]}`;
+
+  return (MATCHES as Match[]).filter((m) => {
+    if (m.date !== tomorrowStr) return false;
+    const [h] = m.time.split(":").map(Number);
+    return h >= 0 && h <= 2;
+  });
+}
+
+export function formatMorningMessage(matches: Match[], trasnochados: Match[] = []): string {
   const now = new Date();
   const artDate = new Date(now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
   const dayName = DAY_NAMES_ES[artDate.getDay()];
   const dayNum = artDate.getDate();
   const monthName = MONTH_NAMES_ES[artDate.getMonth()];
-  const n = matches.length;
-  const partidoWord = n === 1 ? "partido" : "partidos";
 
-  const lines = matches.map((m) => {
+  const sorted = [...matches].sort((a, b) => a.time.localeCompare(b.time));
+  const lines = sorted.map((m) => {
     const artHour = formatMatchTime(m.time);
     return `⚽ ${m.home} vs ${m.away} a las ${artHour}hs`;
   });
 
+  const trasnochadoLines = trasnochados.length > 0
+    ? [
+        "",
+        "Y para los más trasnochados:",
+        ...trasnochados.sort((a, b) => a.time.localeCompare(b.time)).map((m) => {
+          const artHour = formatMatchTime(m.time);
+          return `⚽ ${m.home} vs ${m.away} a la ${artHour}hs`;
+        }),
+      ]
+    : [];
+
   return [
-    `Buenos días! Hoy ${dayName} ${dayNum} de ${monthName} hay ${n} ${partidoWord}:`,
+    `Buenos días! Hoy ${dayName} ${dayNum} de ${monthName} se juegan los siguientes partidos:`,
     ...lines,
+    ...trasnochadoLines,
     "",
     "No te olvides que tenés hasta 1 hora antes de cada partido para hacer tu predicción!",
   ].join("\n");
