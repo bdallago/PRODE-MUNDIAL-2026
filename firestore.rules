@@ -198,7 +198,13 @@ service cloud.firestore {
                     isValidPrediction(incoming()) &&
                     incoming().keys().hasAll(['uid', 'groups', 'specials', 'knockouts', 'isLocked']) &&
                     incoming().uid == userId &&
-                    isBeforeTournamentDeadline(); // Must be before deadline
+                    (
+                      isBeforeTournamentDeadline() ||
+                      // After deadline: allow creating the doc to capture match/knockout predictions.
+                      // specials must be empty and no groups confirmed — those stages are frozen.
+                      (incoming().specials.size() == 0 &&
+                       (!('confirmedGroups' in incoming()) || incoming().confirmedGroups.size() == 0))
+                    );
                     
       allow update: if isAuthenticated() && isValidId(userId) && isValidPrediction(incoming()) && (
                       isAdmin() ||
@@ -207,8 +213,8 @@ service cloud.firestore {
                        (
                          // If not locked, must be before tournament general deadline
                          (existing().isLocked == false && isBeforeTournamentDeadline()) ||
-                         // After deadline (locked or not), can only update matches
-                         incoming().diff(existing()).affectedKeys().hasOnly(['matches', 'updatedAt'])
+                         // After deadline (locked or not): can update matches and knockouts (ongoing stage)
+                         incoming().diff(existing()).affectedKeys().hasOnly(['matches', 'knockouts', 'updatedAt'])
                        )
                       )
                     )
