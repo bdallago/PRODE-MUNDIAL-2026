@@ -95,11 +95,20 @@ function hasActiveWindow(): boolean {
   });
 }
 
-// Resolves API team names to our internal match ID
-function resolveMatchId(homeApi: string, awayApi: string): string | null {
+// Resolves API team names to our internal match ID.
+// Returns the match id and whether home/away were swapped vs the API order.
+function resolveMatchId(
+  homeApi: string,
+  awayApi: string
+): { id: string; swapped: boolean } | null {
   const home = TEAM_MAP[homeApi] ?? homeApi;
   const away = TEAM_MAP[awayApi] ?? awayApi;
-  return MATCHES.find((m) => m.home === home && m.away === away)?.id ?? null;
+  const direct = MATCHES.find((m) => m.home === home && m.away === away);
+  if (direct) return { id: direct.id, swapped: false };
+  // API sometimes lists teams in the opposite order from data.ts
+  const inverted = MATCHES.find((m) => m.home === away && m.away === home);
+  if (inverted) return { id: inverted.id, swapped: true };
+  return null;
 }
 
 // Only record scores when the match is definitively over
@@ -153,16 +162,17 @@ export async function syncMatchResults(force = false): Promise<{
     const awayGoals = fixture.goals?.away;
     if (homeGoals == null || awayGoals == null) continue;
 
-    const matchId = resolveMatchId(
+    const resolved = resolveMatchId(
       fixture.teams?.home?.name,
       fixture.teams?.away?.name
     );
-    if (!matchId) continue;
+    if (!resolved) continue;
 
+    const { id: matchId, swapped } = resolved;
     // Dot-notation key → updates only this match, leaves others untouched
     updates[`matches.${matchId}`] = {
-      home: String(homeGoals),
-      away: String(awayGoals),
+      home: String(swapped ? awayGoals : homeGoals),
+      away: String(swapped ? homeGoals : awayGoals),
     };
   }
 
