@@ -165,11 +165,11 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
           <div>
             <h4 className="text-xl font-bold text-brand mb-4">Partidos</h4>
             <div className="space-y-6">
-              {Object.entries(matchesByDate).map(([date, dayMatches]) => (
+              {Object.entries(matchesByDate).sort(([a], [b]) => a.localeCompare(b)).map(([date, dayMatches]) => (
                 <div key={date}>
                   <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">{date}</p>
                   <div className="space-y-2">
-                    {dayMatches.map(match => {
+                    {[...dayMatches].sort((a, b) => a.time.localeCompare(b.time)).map(match => {
                       const pred = matchPreds[match.id];
                       const actual = actualMatches[match.id];
                       const outcome = getMatchOutcome(pred, actual);
