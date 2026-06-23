@@ -109,7 +109,7 @@ export const SortableItem: React.FC<{ id: string, team: string, index: number, d
         />
       )}
 
-      <span className="font-medium truncate flex-1">{(t.teams as Record<string, string>)[team] || team}</span>
+      <span translate="no" className="font-medium truncate flex-1">{(t.teams as Record<string, string>)[team] || team}</span>
 
 
     </div>

@@ -592,7 +592,7 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
                           <div className="shrink-0 w-6 h-4 sm:w-8 sm:h-6 rounded overflow-hidden flex items-center justify-center border border-gray-200">
                             {TEAM_FLAGS[match.home] ? <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[match.home]}.png`} alt={match.home} className="w-full h-full object-cover" /> : <span>🏳️</span>}
                           </div>
-                          <span className="font-bold text-gray-900 uppercase text-xs sm:text-sm truncate">{(t.teams as Record<string, string>)[match.home] || match.home}</span>
+                          <span translate="no" className="font-bold text-gray-900 uppercase text-xs sm:text-sm truncate">{(t.teams as Record<string, string>)[match.home] || match.home}</span>
                         </div>
 
                         <div className="flex items-center gap-1 rounded-lg p-0.5 sm:p-1 border border-gray-200 shrink-0">
@@ -611,7 +611,7 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
                           <div className="shrink-0 w-6 h-4 sm:w-8 sm:h-6 rounded overflow-hidden flex items-center justify-center border border-gray-200">
                             {TEAM_FLAGS[match.away] ? <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[match.away]}.png`} alt={match.away} className="w-full h-full object-cover" /> : <span>🏳️</span>}
                           </div>
-                          <span className="font-bold text-gray-900 uppercase text-xs sm:text-sm truncate">{(t.teams as Record<string, string>)[match.away] || match.away}</span>
+                          <span translate="no" className="font-bold text-gray-900 uppercase text-xs sm:text-sm truncate">{(t.teams as Record<string, string>)[match.away] || match.away}</span>
                         </div>
 
                         <div className="flex items-center gap-1 rounded-lg p-0.5 sm:p-1 border border-gray-200 shrink-0">
