@@ -27,20 +27,18 @@ function formatKickoff(ms: number): string {
 }
 
 // Builds a hybrid R32 seed:
-// - Real API fixture if available
-// - Otherwise: current standings position (even from unfinished groups)
-// Returns null for a side when no standings data exists at all for that group.
+// - Real API fixture if available (both teams known)
+// - Otherwise: current standings position for the fixed side, null for the opponent
 function buildHybridR32(
   seedR32: Record<string, [string, string]>,
   knownGroups: Record<string, string[]>,
-  finishedGroups: string[]
-): Record<string, { teamA: string | null; teamB: string | null; fromApi: boolean; confirmed: boolean }> {
-  const finished = new Set(finishedGroups);
-  const result: Record<string, { teamA: string | null; teamB: string | null; fromApi: boolean; confirmed: boolean }> = {};
+  qualifiedSet: Set<string>
+): Record<string, { teamA: string | null; teamB: string | null; fromApi: boolean }> {
+  const result: Record<string, { teamA: string | null; teamB: string | null; fromApi: boolean }> = {};
 
   for (const slot of BRACKET_TREE.filter(s => s.round === "R32")) {
     if (seedR32[slot.id]) {
-      result[slot.id] = { teamA: seedR32[slot.id][0], teamB: seedR32[slot.id][1], fromApi: true, confirmed: true };
+      result[slot.id] = { teamA: seedR32[slot.id][0], teamB: seedR32[slot.id][1], fromApi: true };
     } else {
       const groupSeed = slot.fixedSeed;
       let fixedTeam: string | null = null;
@@ -49,22 +47,16 @@ function buildHybridR32(
         const group = groupSeed.slice(1);
         fixedTeam = knownGroups[group]?.[pos] ?? null;
       }
-      const group = groupSeed?.slice(1) ?? "";
-      result[slot.id] = {
-        teamA: fixedTeam,
-        teamB: null,
-        fromApi: false,
-        confirmed: finished.has(group),
-      };
+      result[slot.id] = { teamA: fixedTeam, teamB: null, fromApi: false };
     }
   }
   return result;
 }
 
-function TeamRow({ name, confirmed }: { name: string | null; confirmed: boolean }) {
+function TeamRow({ name, qualified }: { name: string | null; qualified: boolean }) {
   const flagCode = name ? (TEAM_FLAGS[name] ?? null) : null;
   return (
-    <div className={`flex items-center gap-2 px-3 py-2.5 ${name ? (confirmed ? "font-medium text-gray-900" : "text-gray-600") : "text-gray-400 italic"}`}>
+    <div className={`flex items-center gap-2 px-3 py-2.5 ${name ? "font-medium text-gray-900" : "text-gray-400 italic"}`}>
       {name ? (
         <>
           {flagCode
@@ -72,7 +64,7 @@ function TeamRow({ name, confirmed }: { name: string | null; confirmed: boolean 
             : <span className="w-6 h-4 flex-shrink-0" />
           }
           <span>{name}</span>
-          {!confirmed && <span className="text-[10px] text-amber-600 font-medium ml-auto">provisional</span>}
+          {!qualified && <span className="text-[10px] text-amber-500 font-normal ml-auto">en curso</span>}
         </>
       ) : (
         <span className="text-gray-400 italic">Por definir</span>
@@ -89,6 +81,7 @@ export function KnockoutBracket({
   groupStageFinished,
   knownGroups = {},
   finishedGroups = [],
+  qualifiedTeams = [],
   bannerMessage,
   onPick,
 }: {
@@ -99,6 +92,7 @@ export function KnockoutBracket({
   groupStageFinished: boolean;
   knownGroups?: Record<string, string[]>;
   finishedGroups?: string[];
+  qualifiedTeams?: string[];
   bannerMessage?: string;
   onPick: (slotId: string, team: string) => void;
 }) {
@@ -117,7 +111,8 @@ export function KnockoutBracket({
 
   // --- Group stage not finished: provisional hybrid bracket (read-only) ---
   if (!groupStageFinished) {
-    const hybrid = buildHybridR32(seedR32, knownGroups, finishedGroups);
+    const qualifiedSet = new Set(qualifiedTeams);
+    const hybrid = buildHybridR32(seedR32, knownGroups, qualifiedSet);
     const r32Slots = BRACKET_TREE.filter(s => s.round === "R32");
     const hasAny = Object.keys(knownGroups).length > 0 || Object.keys(seedR32).length > 0;
 
@@ -143,7 +138,7 @@ export function KnockoutBracket({
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {sorted.map((s) => {
-                const { teamA, teamB, fromApi, confirmed } = hybrid[s.id] ?? { teamA: null, teamB: null, fromApi: false, confirmed: false };
+                const { teamA, teamB, fromApi } = hybrid[s.id] ?? { teamA: null, teamB: null, fromApi: false };
                 const ko = kickoffs[s.id];
                 return (
                   <div key={s.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
@@ -153,9 +148,9 @@ export function KnockoutBracket({
                       </div>
                     )}
                     <div className="border-b border-gray-100">
-                      <TeamRow name={teamA} confirmed={confirmed} />
+                      <TeamRow name={teamA} qualified={teamA ? qualifiedSet.has(teamA) : false} />
                     </div>
-                    <TeamRow name={fromApi ? teamB : null} confirmed={fromApi} />
+                    <TeamRow name={fromApi ? teamB : null} qualified={teamB ? qualifiedSet.has(teamB) : false} />
                   </div>
                 );
               })}

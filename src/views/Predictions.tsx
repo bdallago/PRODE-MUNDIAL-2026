@@ -48,7 +48,8 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
     kickoffs: Record<string, number>;
     finishedGroups: string[];
     groups: Record<string, string[]>;
-  }>({ seedR32: {}, winners: {}, kickoffs: {}, finishedGroups: [], groups: {} });
+    qualifiedTeams: string[];
+  }>({ seedR32: {}, winners: {}, kickoffs: {}, finishedGroups: [], groups: {}, qualifiedTeams: [] });
   const [knockoutBanner, setKnockoutBanner] = useState<string | undefined>(undefined);
   
   const sensors = useSensors(
@@ -131,6 +132,7 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
               kickoffs: r.bracketKickoffs || {},
               finishedGroups: r.finishedGroups || [],
               groups: r.groups || {},
+              qualifiedTeams: r.qualifiedTeams || [],
             });
           }
           if (configSnap.exists() && configSnap.data().knockoutBanner) {
@@ -680,6 +682,7 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
           groupStageFinished={actualBracket.finishedGroups.length === Object.keys(GROUPS).length}
           knownGroups={actualBracket.groups}
           finishedGroups={actualBracket.finishedGroups}
+          qualifiedTeams={actualBracket.qualifiedTeams}
           bannerMessage={knockoutBanner}
           onPick={handleKnockoutPick}
         />
