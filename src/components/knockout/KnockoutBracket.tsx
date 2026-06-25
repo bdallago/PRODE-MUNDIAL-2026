@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { BRACKET_TREE } from "../../lib/bracket/tree";
-import { R32_FIXED_SEEDS } from "../../lib/bracket/seedTable";
 import { buildDisplayBracket, SlotView } from "../../lib/bracket/displayBracket";
 import { isSlotLocked } from "../../lib/bracket/lock";
 import type { Round } from "../../lib/bracket/types";
@@ -14,11 +13,8 @@ const ROUND_ORDER: Round[] = ["R32", "R16", "QF", "SF", "F"];
 
 const DAYS_ES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-// Format a Unix ms timestamp to ART (UTC-3) readable string
 function formatKickoff(ms: number): string {
-  const d = new Date(ms);
-  // Convert to ART = UTC-3
-  const art = new Date(d.getTime() - 3 * 60 * 60 * 1000);
+  const art = new Date(ms - 3 * 60 * 60 * 1000);
   const day = DAYS_ES[art.getUTCDay()];
   const date = `${art.getUTCDate()}/${art.getUTCMonth() + 1}`;
   const hh = String(art.getUTCHours()).padStart(2, "0");
@@ -26,34 +22,7 @@ function formatKickoff(ms: number): string {
   return `${day} ${date} · ${hh}:${mm}`;
 }
 
-// Builds a hybrid R32 seed:
-// - Real API fixture if available (both teams known)
-// - Otherwise: current standings position for the fixed side, null for the opponent
-function buildHybridR32(
-  seedR32: Record<string, [string, string]>,
-  knownGroups: Record<string, string[]>,
-  qualifiedSet: Set<string>
-): Record<string, { teamA: string | null; teamB: string | null; fromApi: boolean }> {
-  const result: Record<string, { teamA: string | null; teamB: string | null; fromApi: boolean }> = {};
-
-  for (const slot of BRACKET_TREE.filter(s => s.round === "R32")) {
-    if (seedR32[slot.id]) {
-      result[slot.id] = { teamA: seedR32[slot.id][0], teamB: seedR32[slot.id][1], fromApi: true };
-    } else {
-      const groupSeed = slot.fixedSeed;
-      let fixedTeam: string | null = null;
-      if (groupSeed) {
-        const pos = parseInt(groupSeed[0], 10) - 1;
-        const group = groupSeed.slice(1);
-        fixedTeam = knownGroups[group]?.[pos] ?? null;
-      }
-      result[slot.id] = { teamA: fixedTeam, teamB: null, fromApi: false };
-    }
-  }
-  return result;
-}
-
-function TeamRow({ name, qualified }: { name: string | null; qualified: boolean }) {
+function TeamRow({ name }: { name: string | null }) {
   const flagCode = name ? (TEAM_FLAGS[name] ?? null) : null;
   return (
     <div className={`flex items-center gap-2 px-3 py-2.5 ${name ? "font-medium text-gray-900" : "text-gray-400 italic"}`}>
@@ -64,10 +33,9 @@ function TeamRow({ name, qualified }: { name: string | null; qualified: boolean 
             : <span className="w-6 h-4 flex-shrink-0" />
           }
           <span>{name}</span>
-          {!qualified && <span className="text-[10px] text-amber-500 font-normal ml-auto">en curso</span>}
         </>
       ) : (
-        <span className="text-gray-400 italic">Por definir</span>
+        <span>Por definir</span>
       )}
     </div>
   );
@@ -109,54 +77,54 @@ export function KnockoutBracket({
   const slotsOfRound = (r: Round): SlotView[] =>
     BRACKET_TREE.filter((s) => s.round === r).map((s) => view[s.id]);
 
-  // --- Group stage not finished: provisional hybrid bracket (read-only) ---
+  // --- Group stage not finished: provisional bracket (read-only) ---
   if (!groupStageFinished) {
-    const qualifiedSet = new Set(qualifiedTeams);
-    const hybrid = buildHybridR32(seedR32, knownGroups, qualifiedSet);
-    const r32Slots = BRACKET_TREE.filter(s => s.round === "R32");
-    const hasAny = Object.keys(knownGroups).length > 0 || Object.keys(seedR32).length > 0;
+    // Confirmed fixtures from API (both teams known)
+    const confirmedFixtures = Object.entries(seedR32)
+      .map(([slotId, [teamA, teamB]]) => ({ slotId, teamA, teamB, kickoff: kickoffs[slotId] ?? null }))
+      .sort((a, b) => (a.kickoff ?? Infinity) - (b.kickoff ?? Infinity));
 
-    // Sort: API fixtures with kickoff first (by date), then provisional by slot id
-    const sorted = [...r32Slots].sort((a, b) => {
-      const ka = kickoffs[a.id];
-      const kb = kickoffs[b.id];
-      if (ka && kb) return ka - kb;
-      if (ka) return -1;
-      if (kb) return 1;
-      return a.id.localeCompare(b.id);
-    });
+    // Confirmed qualifiers not yet paired in a fixture
+    const teamsInFixtures = new Set(confirmedFixtures.flatMap(f => [f.teamA, f.teamB]));
+    const waitingQualified = qualifiedTeams.filter(t => !teamsInFixtures.has(t));
+
+    if (qualifiedTeams.length === 0 && confirmedFixtures.length === 0) {
+      return (
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-sm font-medium">
+          {bannerMessage || t.knockoutUi.availableBannerDefault}
+        </div>
+      );
+    }
 
     return (
       <div className="space-y-4">
         <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-sm font-medium">
           {bannerMessage || t.knockoutUi.availableBannerDefault}
         </div>
-        {hasAny && (
-          <>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              {t.knockoutUi.provisionalR32 ?? "Clasificados a 16avos"}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {sorted.map((s) => {
-                const { teamA, teamB, fromApi } = hybrid[s.id] ?? { teamA: null, teamB: null, fromApi: false };
-                const ko = kickoffs[s.id];
-                return (
-                  <div key={s.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
-                    {ko && (
-                      <div className="px-3 pt-2 pb-1 text-[11px] text-gray-400 font-medium border-b border-gray-50">
-                        {formatKickoff(ko)}
-                      </div>
-                    )}
-                    <div className="border-b border-gray-100">
-                      <TeamRow name={teamA} qualified={teamA ? qualifiedSet.has(teamA) : false} />
-                    </div>
-                    <TeamRow name={fromApi ? teamB : null} qualified={teamB ? qualifiedSet.has(teamB) : false} />
-                  </div>
-                );
-              })}
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          {t.knockoutUi.provisionalR32 ?? "Clasificados a 16avos"} ({qualifiedTeams.length + teamsInFixtures.size > 0 ? teamsInFixtures.size + waitingQualified.length : 0}/32)
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {/* Confirmed fixtures: show both teams + date */}
+          {confirmedFixtures.map(({ slotId, teamA, teamB, kickoff }) => (
+            <div key={slotId} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
+              {kickoff && (
+                <div className="px-3 pt-2 pb-1 text-[11px] text-gray-400 font-medium border-b border-gray-50">
+                  {formatKickoff(kickoff)}
+                </div>
+              )}
+              <div className="border-b border-gray-100"><TeamRow name={teamA} /></div>
+              <TeamRow name={teamB} />
             </div>
-          </>
-        )}
+          ))}
+          {/* Confirmed qualifiers waiting for opponent */}
+          {waitingQualified.map(team => (
+            <div key={team} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
+              <div className="border-b border-gray-100"><TeamRow name={team} /></div>
+              <TeamRow name={null} />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
