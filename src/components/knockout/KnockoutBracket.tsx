@@ -22,12 +22,26 @@ function formatKickoff(ms: number): string {
   return `${day} ${date} · ${hh}:${mm}`;
 }
 
-// Fixtures conocidos con fecha pero sin rival aún publicado por la API.
-// Se reemplazan solos en cuanto los grupos cierren y la API publique el cruce real.
-const HARDCODED_PENDING: { team: string; kickoffMs: number }[] = [
-  { team: "Alemania",       kickoffMs: Date.UTC(2026, 5, 29, 20, 30) }, // Lun 29/6 17:30 ART
-  { team: "Estados Unidos", kickoffMs: Date.UTC(2026, 6,  2,  0,  0) }, // Mié 1/7 21:00 ART
-  { team: "Argentina",      kickoffMs: Date.UTC(2026, 6,  3, 22,  0) }, // Vie 3/7 19:00 ART
+// Calendario completo R32 del Mundial 2026 (fechas en UTC, equipos conocidos al 25/6).
+// Cuando los grupos cierren y la API publique los fixtures reales, groupStageFinished
+// se vuelve true y esta vista es reemplazada por el bracket interactivo.
+const R32_SCHEDULE: { kickoffMs: number; teamA: string | null; teamB: string | null }[] = [
+  { kickoffMs: Date.UTC(2026, 5, 28, 19,  0), teamA: "Sudáfrica",      teamB: "Canadá"  },
+  { kickoffMs: Date.UTC(2026, 5, 29, 17,  0), teamA: "Brasil",         teamB: null       },
+  { kickoffMs: Date.UTC(2026, 5, 29, 20, 30), teamA: "Alemania",       teamB: null       },
+  { kickoffMs: Date.UTC(2026, 5, 30,  1,  0), teamA: null,             teamB: "Marruecos"},
+  { kickoffMs: Date.UTC(2026, 5, 30, 17,  0), teamA: null,             teamB: null       },
+  { kickoffMs: Date.UTC(2026, 5, 30, 21,  0), teamA: null,             teamB: null       },
+  { kickoffMs: Date.UTC(2026, 6,  1,  1,  0), teamA: "México",         teamB: null       },
+  { kickoffMs: Date.UTC(2026, 6,  1, 16,  0), teamA: null,             teamB: null       },
+  { kickoffMs: Date.UTC(2026, 6,  1, 20,  0), teamA: null,             teamB: null       },
+  { kickoffMs: Date.UTC(2026, 6,  2,  0,  0), teamA: "Estados Unidos", teamB: null       },
+  { kickoffMs: Date.UTC(2026, 6,  2, 19,  0), teamA: null,             teamB: null       },
+  { kickoffMs: Date.UTC(2026, 6,  2, 23,  0), teamA: null,             teamB: null       },
+  { kickoffMs: Date.UTC(2026, 6,  3,  3,  0), teamA: "Suiza",          teamB: null       },
+  { kickoffMs: Date.UTC(2026, 6,  3, 18,  0), teamA: null,             teamB: null       },
+  { kickoffMs: Date.UTC(2026, 6,  3, 22,  0), teamA: "Argentina",      teamB: null       },
+  { kickoffMs: Date.UTC(2026, 6,  4,  1, 30), teamA: null,             teamB: null       },
 ];
 
 function TeamRow({ name }: { name: string | null }) {
@@ -85,60 +99,27 @@ export function KnockoutBracket({
   const slotsOfRound = (r: Round): SlotView[] =>
     BRACKET_TREE.filter((s) => s.round === r).map((s) => view[s.id]);
 
-  // --- Group stage not finished: provisional bracket (read-only) ---
+  // --- Group stage not finished: mostrar calendario R32 completo (read-only) ---
   if (!groupStageFinished) {
-    // 1. Confirmed API fixtures (both teams, with date from kickoffs)
-    const apiFixtures = Object.entries(seedR32).map(([slotId, [teamA, teamB]]) => ({
-      key: slotId, teamA, teamB: teamB as string | null, kickoffMs: kickoffs[slotId] ?? null,
-    }));
-    const teamsAlreadyShown = new Set(apiFixtures.flatMap(f => [f.teamA, f.teamB].filter(Boolean) as string[]));
-
-    // 2. Hardcoded pending fixtures (confirmed team + date, opponent TBD)
-    //    Only show if the team isn't already in an API fixture (will be replaced when groups close)
-    const pendingCards = HARDCODED_PENDING
-      .filter(h => !teamsAlreadyShown.has(h.team))
-      .map(h => { teamsAlreadyShown.add(h.team); return { key: h.team, teamA: h.team, teamB: null, kickoffMs: h.kickoffMs }; });
-
-    // 3. Teams from CLOSED groups only (not already shown above)
-    const closedTeams = finishedGroups.flatMap(g => knownGroups[g] ?? []).filter(t => !teamsAlreadyShown.has(t));
-
-    // Merge all cards and sort by kickoff (no date → end)
-    const allCards = [
-      ...apiFixtures,
-      ...pendingCards,
-      ...closedTeams.map(t => ({ key: t, teamA: t, teamB: null as string | null, kickoffMs: null as number | null })),
-    ].sort((a, b) => {
-      if (a.kickoffMs && b.kickoffMs) return a.kickoffMs - b.kickoffMs;
-      if (a.kickoffMs) return -1;
-      if (b.kickoffMs) return 1;
-      return 0;
-    });
-
     return (
       <div className="space-y-4">
         <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-sm font-medium">
           {bannerMessage || t.knockoutUi.availableBannerDefault}
         </div>
-        {allCards.length > 0 && (
-          <>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              {t.knockoutUi.provisionalR32 ?? "Clasificados a 16avos"}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {allCards.map(({ key, teamA, teamB, kickoffMs }) => (
-                <div key={key} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
-                  {kickoffMs && (
-                    <div className="px-3 pt-2 pb-1 text-[11px] text-gray-400 font-medium border-b border-gray-50">
-                      {formatKickoff(kickoffMs)}
-                    </div>
-                  )}
-                  <div className="border-b border-gray-100"><TeamRow name={teamA} /></div>
-                  <TeamRow name={teamB} />
-                </div>
-              ))}
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          {t.knockoutUi.provisionalR32 ?? "Clasificados a 16avos"}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {R32_SCHEDULE.map(({ kickoffMs, teamA, teamB }, i) => (
+            <div key={i} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
+              <div className="px-3 pt-2 pb-1 text-[11px] text-gray-400 font-medium border-b border-gray-50">
+                {formatKickoff(kickoffMs)}
+              </div>
+              <div className="border-b border-gray-100"><TeamRow name={teamA} /></div>
+              <TeamRow name={teamB} />
             </div>
-          </>
-        )}
+          ))}
+        </div>
       </div>
     );
   }
