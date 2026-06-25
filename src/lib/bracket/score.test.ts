@@ -1,0 +1,27 @@
+import { describe, it, expect } from "vitest";
+import { scoreBracket } from "./score";
+
+describe("scoreBracket", () => {
+  it("suma los puntos de la ronda por cada slot acertado", () => {
+    const pred = { "R32-1": "Argentina", "R16-1": "Argentina" };
+    const actual = { "R32-1": "Argentina", "R16-1": "Brasil" };
+    // R32-1 acertado (+2), R16-1 errado (+0)
+    expect(scoreBracket(pred, actual)).toBe(2);
+  });
+
+  it("cada ronda puntúa independiente (errar R32 no anula R16)", () => {
+    const pred = { "R32-1": "Jordania", "R16-1": "Argentina" };
+    const actual = { "R32-1": "Argentina", "R16-1": "Argentina" };
+    // R32-1 errado (+0), R16-1 acertado (+4)
+    expect(scoreBracket(pred, actual)).toBe(4);
+  });
+
+  it("campeón (slot F) vale 15", () => {
+    expect(scoreBracket({ F: "Argentina" }, { F: "Argentina" })).toBe(15);
+  });
+
+  it("ignora slots sin resultado o sin pick", () => {
+    expect(scoreBracket({ "R32-1": "Argentina" }, {})).toBe(0);
+    expect(scoreBracket({}, { "R32-1": "Argentina" })).toBe(0);
+  });
+});
