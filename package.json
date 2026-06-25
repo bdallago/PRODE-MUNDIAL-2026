@@ -7,7 +7,9 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -19,6 +21,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "axios": "^1.17.0",
     "clsx": "^2.1.1",
+    "exceljs": "^4.4.0",
     "firebase": "^12.11.0",
     "firebase-admin": "^13.9.0",
     "lucide-react": "^0.546.0",
@@ -38,6 +41,7 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
-    "typescript": "~5.8.2"
+    "typescript": "~5.8.2",
+    "vitest": "^2.1.9"
   }
 }

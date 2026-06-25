@@ -223,6 +223,16 @@ export const en = {
     final: "Final",
     champion: "World Champion",
   },
+  knockoutUi: {
+    availableBannerDefault: "Heads up: Round of 32 picks unlock when the Group J matches finish. You have until 1 hour before each match to decide.",
+    lockedSlot: "Closed",
+    tapToPick: "Tap the team that advances",
+    fullBracket: "View full bracket",
+    backToRounds: "Back to rounds",
+    correct: "Correct",
+    wrong: "Missed",
+    rounds: { R32: "Round of 32", R16: "Round of 16", QF: "Quarters", SF: "Semis", F: "Final" },
+  },
   specialQuestions: {
     topScorer: "WHO WILL BE THE TOP SCORER OF THE TOURNAMENT?",
     missedPenalty: "WHICH PLAYER WILL MISS A PENALTY DURING THE TOURNAMENT?",

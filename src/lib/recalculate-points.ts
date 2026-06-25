@@ -1,5 +1,6 @@
 import { adminDb } from "./firebaseAdmin";
-import { GROUPS, KNOCKOUT_STAGES } from "../data";
+import { GROUPS } from "../data";
+import { scoreBracket } from "./bracket/score";
 
 export async function recalculatePoints(): Promise<void> {
   const resultsDoc = await adminDb.collection("results").doc("actual").get();
@@ -16,7 +17,7 @@ export async function recalculatePoints(): Promise<void> {
   }
 
   const actualS: Record<string, string> = actualData.specials || {};
-  const actualK: Record<string, string[]> = actualData.knockouts || {};
+  const actualK: Record<string, string> = actualData.knockouts || {};
   const actualM: Record<string, any> = actualData.matches || {};
 
   const predictionsSnap = await adminDb.collection("predictions").get();
@@ -72,15 +73,8 @@ export async function recalculatePoints(): Promise<void> {
         }
       }
 
-      // Knockouts
-      const pKnockouts = pred.knockouts || {};
-      for (const stage of KNOCKOUT_STAGES) {
-        const actualTeams = actualK[stage.id] || [];
-        const predictedTeams: string[] = pKnockouts[stage.id] || [];
-        for (const pTeam of Array.from(new Set(predictedTeams.filter(Boolean)))) {
-          if (actualTeams.includes(pTeam)) totalPoints += stage.points;
-        }
-      }
+      // Knockouts — nuevo formato { slotId: equipo }, puntúa por ronda
+      totalPoints += scoreBracket(pred.knockouts || {}, actualK as Record<string, string>);
 
       // Matches
       const pMatches = pred.matches || {};
