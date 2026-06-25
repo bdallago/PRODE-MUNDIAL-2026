@@ -41,8 +41,7 @@ export async function syncKnockouts(): Promise<{
   const json = await res.json();
   const apiFixtures: any[] = json.response ?? [];
 
-  const { unmapped } = toKnockoutFixtures(apiFixtures, TEAM_NAME_MAP);
-  const { fixtures: koFixtures } = toKnockoutFixtures(apiFixtures, TEAM_NAME_MAP);
+  const { fixtures: koFixtures, unmapped } = toKnockoutFixtures(apiFixtures, TEAM_NAME_MAP);
 
   // 4. Sembrar R32 por lado fijo.
   const seed = placeKnockoutFixtures(koFixtures, standings);
