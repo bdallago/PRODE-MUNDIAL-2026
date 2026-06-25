@@ -97,6 +97,9 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
   const actualMatches: Record<string, any> = results?.matches || {};
   const finishedGroups: string[] = results?.finishedGroups || [];
   const groupScoringEnabled = finishedGroups.length > 0;
+  // Las preguntas especiales se ocultan por ahora en esta visualización.
+  // Poner en true para volver a mostrarlas.
+  const SHOW_SPECIAL_RESULTS = false;
 
   // Group matches by date for display
   const matchesByDate: Record<string, typeof MATCHES> = {};
@@ -234,7 +237,8 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
             </div>
           </div>
 
-          {/* ── Preguntas Especiales ── */}
+          {/* ── Preguntas Especiales (ocultas por ahora) ── */}
+          {SHOW_SPECIAL_RESULTS && (
           <div>
             <h4 className="text-xl font-bold text-brand mb-4">Preguntas Especiales</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -268,13 +272,15 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
               })}
             </div>
           </div>
+          )}
 
-          {/* ── Fase de Grupos (solo cuando está habilitada la puntuación) ── */}
+          {/* ── Fase de Grupos (solo grupos cerrados) ── */}
           {groupScoringEnabled && (
             <div>
               <h4 className="text-xl font-bold text-brand mb-4">Fase de Grupos</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Object.entries(groups)
+                  .filter(([groupLetter]) => finishedGroups.includes(groupLetter))
                   .sort(([a], [b]) => a.localeCompare(b))
                   .map(([groupLetter, teams]) => {
                     const groupStatus = getGroupStatus(groupLetter, teams as string[]);
