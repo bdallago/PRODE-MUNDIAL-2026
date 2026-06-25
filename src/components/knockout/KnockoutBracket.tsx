@@ -101,6 +101,27 @@ export function KnockoutBracket({
 
   // --- Group stage not finished: mostrar calendario R32 completo (read-only) ---
   if (!groupStageFinished) {
+    // Merge real API data (seedR32 + kickoffs) over the hardcoded schedule.
+    // Match by kickoff time first, then by team name as fallback.
+    const apiFixtures = Object.entries(seedR32).map(([slotId, [a, b]]) => ({
+      teamA: a, teamB: b, kickoffMs: kickoffs[slotId] ?? null,
+    }));
+
+    const merged = R32_SCHEDULE.map(slot => {
+      // 1. Match by kickoff (exact ms match from API timestamp)
+      const byKickoff = apiFixtures.find(f => f.kickoffMs === slot.kickoffMs);
+      if (byKickoff) return { ...slot, teamA: byKickoff.teamA, teamB: byKickoff.teamB };
+
+      // 2. Match by known team name (fills in the opponent when API publishes the fixture)
+      const knownTeam = slot.teamA ?? slot.teamB;
+      if (knownTeam) {
+        const byTeam = apiFixtures.find(f => f.teamA === knownTeam || f.teamB === knownTeam);
+        if (byTeam) return { ...slot, teamA: byTeam.teamA, teamB: byTeam.teamB };
+      }
+
+      return slot;
+    });
+
     return (
       <div className="space-y-4">
         <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-sm font-medium">
@@ -110,7 +131,7 @@ export function KnockoutBracket({
           {t.knockoutUi.provisionalR32 ?? "Clasificados a 16avos"}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {R32_SCHEDULE.map(({ kickoffMs, teamA, teamB }, i) => (
+          {merged.map(({ kickoffMs, teamA, teamB }, i) => (
             <div key={i} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
               <div className="px-3 pt-2 pb-1 text-[11px] text-gray-400 font-medium border-b border-gray-50">
                 {formatKickoff(kickoffMs)}
