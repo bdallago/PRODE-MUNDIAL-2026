@@ -223,6 +223,16 @@ export const es = {
     final: "Final",
     champion: "Campeón del Mundo",
   },
+  knockoutUi: {
+    availableBannerDefault: "Atención: al término de los partidos del Grupo J se habilitarán las elecciones de 16avos. Tenés hasta 1 hora antes de cada partido para decidir.",
+    lockedSlot: "Cerrado",
+    tapToPick: "Tocá el equipo que pasa",
+    fullBracket: "Ver cuadro completo",
+    backToRounds: "Volver a las rondas",
+    correct: "Acertaste",
+    wrong: "Falló",
+    rounds: { R32: "16avos", R16: "Octavos", QF: "Cuartos", SF: "Semis", F: "Final" },
+  },
   specialQuestions: {
     topScorer: "¿QUIÉN SERÁ EL GOLEADOR DEL TORNEO?",
     missedPenalty: "¿QUÉ JUGADOR FALLARÁ UN PENAL EN ALGÚN MOMENTO DEL TORNEO?",
