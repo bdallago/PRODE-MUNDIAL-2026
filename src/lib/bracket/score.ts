@@ -9,7 +9,11 @@ export function scoreBracket(
 ): number {
   let total = 0;
   for (const [slotId, actualTeam] of Object.entries(resultKnockouts)) {
-    if (!actualTeam || !hasSlot(slotId)) continue;
+    if (!actualTeam) continue;
+    if (!hasSlot(slotId)) {
+      console.warn(`[scoreBracket] slot desconocido en resultados, ignorado: ${slotId}`);
+      continue;
+    }
     const picked = predKnockouts[slotId];
     if (picked && picked === actualTeam) {
       total += pointsForSlot(slotId);

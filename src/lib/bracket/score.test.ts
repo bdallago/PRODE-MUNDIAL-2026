@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { scoreBracket } from "./score";
 
 describe("scoreBracket", () => {
@@ -23,6 +23,14 @@ describe("scoreBracket", () => {
   it("ignora slots sin resultado o sin pick", () => {
     expect(scoreBracket({ "R32-1": "Argentina" }, {})).toBe(0);
     expect(scoreBracket({}, { "R32-1": "Argentina" })).toBe(0);
+  });
+
+  it("loguea un warning por cada slot desconocido en los resultados", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    scoreBracket({ "R32-1": "Argentina" }, { "R32-1": "Argentina", "BOGUS-99": "x" });
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0].join(" ")).toContain("BOGUS-99");
+    warnSpy.mockRestore();
   });
 
   it("ignora slot ids desconocidos en los resultados sin tirar excepción", () => {
