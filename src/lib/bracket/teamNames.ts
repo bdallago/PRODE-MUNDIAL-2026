@@ -12,6 +12,7 @@ export const TEAM_NAME_MAP: Record<string, string> = {
   "Canada":                          "Canadá",
   "Bosnia":                          "Bosnia y Herzegovina",
   "Bosnia and Herzegovina":          "Bosnia y Herzegovina",
+  "Bosnia & Herzegovina":            "Bosnia y Herzegovina",
   "Switzerland":                     "Suiza",
   // Grupo C
   "Brazil":                          "Brasil",
@@ -42,6 +43,7 @@ export const TEAM_NAME_MAP: Record<string, string> = {
   // Grupo H
   "Spain":                           "España",
   "Cape Verde":                      "Cabo Verde",
+  "Cape Verde Islands":              "Cabo Verde",
   "Saudi Arabia":                    "Arabia Saudita",
   // Grupo I
   "France":                          "Francia",
