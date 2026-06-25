@@ -8,38 +8,77 @@ import { buildDisplayBracket, SlotView } from "../../lib/bracket/displayBracket"
 import { isSlotLocked } from "../../lib/bracket/lock";
 import type { Round } from "../../lib/bracket/types";
 import { KnockoutMatchCard } from "./KnockoutMatchCard";
+import { TEAM_FLAGS } from "../../data";
 
 const ROUND_ORDER: Round[] = ["R32", "R16", "QF", "SF", "F"];
 
-// Builds a hybrid R32 seed: real API data where available, provisional standings otherwise.
-// Returns null for each side that is genuinely unknown.
+const DAYS_ES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+// Format a Unix ms timestamp to ART (UTC-3) readable string
+function formatKickoff(ms: number): string {
+  const d = new Date(ms);
+  // Convert to ART = UTC-3
+  const art = new Date(d.getTime() - 3 * 60 * 60 * 1000);
+  const day = DAYS_ES[art.getUTCDay()];
+  const date = `${art.getUTCDate()}/${art.getUTCMonth() + 1}`;
+  const hh = String(art.getUTCHours()).padStart(2, "0");
+  const mm = String(art.getUTCMinutes()).padStart(2, "0");
+  return `${day} ${date} · ${hh}:${mm}`;
+}
+
+// Builds a hybrid R32 seed:
+// - Real API fixture if available
+// - Otherwise: current standings position (even from unfinished groups)
+// Returns null for a side when no standings data exists at all for that group.
 function buildHybridR32(
   seedR32: Record<string, [string, string]>,
   knownGroups: Record<string, string[]>,
   finishedGroups: string[]
-): Record<string, [string | null, string | null]> {
+): Record<string, { teamA: string | null; teamB: string | null; fromApi: boolean; confirmed: boolean }> {
   const finished = new Set(finishedGroups);
-  const result: Record<string, [string | null, string | null]> = {};
+  const result: Record<string, { teamA: string | null; teamB: string | null; fromApi: boolean; confirmed: boolean }> = {};
 
   for (const slot of BRACKET_TREE.filter(s => s.round === "R32")) {
     if (seedR32[slot.id]) {
-      // Real API fixture: use as-is
-      result[slot.id] = [seedR32[slot.id][0], seedR32[slot.id][1]];
+      result[slot.id] = { teamA: seedR32[slot.id][0], teamB: seedR32[slot.id][1], fromApi: true, confirmed: true };
     } else {
-      // No API fixture yet: derive fixed seed from standings if group is done
       const groupSeed = slot.fixedSeed;
       let fixedTeam: string | null = null;
       if (groupSeed) {
         const pos = parseInt(groupSeed[0], 10) - 1;
         const group = groupSeed.slice(1);
-        if (finished.has(group)) {
-          fixedTeam = knownGroups[group]?.[pos] ?? null;
-        }
+        fixedTeam = knownGroups[group]?.[pos] ?? null;
       }
-      result[slot.id] = [fixedTeam, null];
+      const group = groupSeed?.slice(1) ?? "";
+      result[slot.id] = {
+        teamA: fixedTeam,
+        teamB: null,
+        fromApi: false,
+        confirmed: finished.has(group),
+      };
     }
   }
   return result;
+}
+
+function TeamRow({ name, confirmed }: { name: string | null; confirmed: boolean }) {
+  const flagCode = name ? (TEAM_FLAGS[name] ?? null) : null;
+  return (
+    <div className={`flex items-center gap-2 px-3 py-2.5 ${name ? (confirmed ? "font-medium text-gray-900" : "text-gray-600") : "text-gray-400 italic"}`}>
+      {name ? (
+        <>
+          {flagCode
+            ? <img src={`https://flagcdn.com/w40/${flagCode}.png`} alt={name} className="w-6 h-4 object-cover rounded-sm flex-shrink-0" />
+            : <span className="w-6 h-4 flex-shrink-0" />
+          }
+          <span>{name}</span>
+          {!confirmed && <span className="text-[10px] text-amber-600 font-medium ml-auto">provisional</span>}
+        </>
+      ) : (
+        <span className="text-gray-400 italic">Por definir</span>
+      )}
+    </div>
+  );
 }
 
 export function KnockoutBracket({
@@ -76,11 +115,21 @@ export function KnockoutBracket({
   const slotsOfRound = (r: Round): SlotView[] =>
     BRACKET_TREE.filter((s) => s.round === r).map((s) => view[s.id]);
 
-  // --- Group stage not finished: show provisional hybrid bracket (read-only) ---
+  // --- Group stage not finished: provisional hybrid bracket (read-only) ---
   if (!groupStageFinished) {
     const hybrid = buildHybridR32(seedR32, knownGroups, finishedGroups);
     const r32Slots = BRACKET_TREE.filter(s => s.round === "R32");
-    const hasAny = finishedGroups.length > 0 || Object.keys(seedR32).length > 0;
+    const hasAny = Object.keys(knownGroups).length > 0 || Object.keys(seedR32).length > 0;
+
+    // Sort: API fixtures with kickoff first (by date), then provisional by slot id
+    const sorted = [...r32Slots].sort((a, b) => {
+      const ka = kickoffs[a.id];
+      const kb = kickoffs[b.id];
+      if (ka && kb) return ka - kb;
+      if (ka) return -1;
+      if (kb) return 1;
+      return a.id.localeCompare(b.id);
+    });
 
     return (
       <div className="space-y-4">
@@ -90,23 +139,23 @@ export function KnockoutBracket({
         {hasAny && (
           <>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              {t.knockoutUi.provisionalR32 ?? "Clasificados confirmados a 16avos"}
+              {t.knockoutUi.provisionalR32 ?? "Clasificados a 16avos"}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {r32Slots.map((s) => {
-                const [teamA, teamB] = hybrid[s.id] ?? [null, null];
-                const isFull = teamA !== null && teamB !== null;
+              {sorted.map((s) => {
+                const { teamA, teamB, fromApi, confirmed } = hybrid[s.id] ?? { teamA: null, teamB: null, fromApi: false, confirmed: false };
+                const ko = kickoffs[s.id];
                 return (
-                  <div
-                    key={s.id}
-                    className={`bg-white border rounded-lg overflow-hidden text-sm shadow-sm ${isFull ? "border-green-300" : "border-gray-200"}`}
-                  >
-                    <div className={`px-3 py-2.5 border-b border-gray-100 ${teamA ? "font-medium text-gray-900" : "text-gray-400 italic"}`}>
-                      {teamA ?? t.bracket.tbd}
+                  <div key={s.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
+                    {ko && (
+                      <div className="px-3 pt-2 pb-1 text-[11px] text-gray-400 font-medium border-b border-gray-50">
+                        {formatKickoff(ko)}
+                      </div>
+                    )}
+                    <div className="border-b border-gray-100">
+                      <TeamRow name={teamA} confirmed={confirmed} />
                     </div>
-                    <div className={`px-3 py-2.5 ${teamB ? "font-medium text-gray-900" : "text-gray-400 italic"}`}>
-                      {teamB ?? t.bracket.tbd}
-                    </div>
+                    <TeamRow name={fromApi ? teamB : null} confirmed={fromApi} />
                   </div>
                 );
               })}
