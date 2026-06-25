@@ -24,4 +24,12 @@ describe("scoreBracket", () => {
     expect(scoreBracket({ "R32-1": "Argentina" }, {})).toBe(0);
     expect(scoreBracket({}, { "R32-1": "Argentina" })).toBe(0);
   });
+
+  it("ignora slot ids desconocidos en los resultados sin tirar excepción", () => {
+    const pred = { "R32-1": "Argentina", "BOGUS-99": "Argentina" };
+    const actual = { "R32-1": "Argentina", "BOGUS-99": "Argentina" };
+    // R32-1 acertado (+2); el slot inválido se ignora, no rompe.
+    expect(() => scoreBracket(pred, actual)).not.toThrow();
+    expect(scoreBracket(pred, actual)).toBe(2);
+  });
 });

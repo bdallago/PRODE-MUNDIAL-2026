@@ -1,4 +1,4 @@
-import { pointsForSlot } from "./tree";
+import { pointsForSlot, hasSlot } from "./tree";
 import type { SlotId } from "./types";
 
 // Puntaje del cuadro: por cada slot donde el equipo elegido coincide con el
@@ -9,7 +9,7 @@ export function scoreBracket(
 ): number {
   let total = 0;
   for (const [slotId, actualTeam] of Object.entries(resultKnockouts)) {
-    if (!actualTeam) continue;
+    if (!actualTeam || !hasSlot(slotId)) continue;
     const picked = predKnockouts[slotId];
     if (picked && picked === actualTeam) {
       total += pointsForSlot(slotId);

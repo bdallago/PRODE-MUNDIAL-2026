@@ -39,6 +39,10 @@ export function getSlot(id: SlotId): BracketSlot {
   return slot;
 }
 
+export function hasSlot(id: SlotId): boolean {
+  return SLOT_BY_ID.has(id);
+}
+
 export function pointsForSlot(id: SlotId): number {
   return ROUND_POINTS[getSlot(id).round];
 }
