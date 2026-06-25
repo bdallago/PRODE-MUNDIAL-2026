@@ -10,6 +10,7 @@ prompt.txt
 firebase-applet-config.json
 
 # Build artifacts
+.superpowers/
 .next/
 .vercel/
 tsconfig.tsbuildinfo
