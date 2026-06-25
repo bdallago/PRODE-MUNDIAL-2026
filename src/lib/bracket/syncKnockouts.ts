@@ -1,5 +1,4 @@
 import { adminDb } from "../firebaseAdmin";
-import { GROUPS } from "../../data";
 import { placeKnockoutFixtures } from "./placeFixtures";
 import { toKnockoutFixtures } from "./apiMapping";
 import { winnerOf } from "./winner";
@@ -21,13 +20,9 @@ export async function syncKnockouts(): Promise<{
   resultsApplied: number;
   skipped?: string;
 }> {
-  // 1. Sólo correr si la fase de grupos terminó (12 grupos cerrados).
+  // 1. Leer resultados actuales (funciona con grupos parcialmente cerrados).
   const resultsSnap = await adminDb.doc("results/actual").get();
   const data = resultsSnap.data() || {};
-  const finishedGroups: string[] = data.finishedGroups || [];
-  if (finishedGroups.length < Object.keys(GROUPS).length) {
-    return { seededSlots: 0, resultsApplied: 0, skipped: "group_stage_not_finished" };
-  }
 
   // 2. Standings ya sincronizados (results/actual.groups: {grupo: [equipos ordenados]}).
   const standings: Standings = data.groups || {};

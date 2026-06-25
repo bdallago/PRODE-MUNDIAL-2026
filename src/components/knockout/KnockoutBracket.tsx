@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { BRACKET_TREE } from "../../lib/bracket/tree";
+import { R32_FIXED_SEEDS } from "../../lib/bracket/seedTable";
 import { buildDisplayBracket, SlotView } from "../../lib/bracket/displayBracket";
 import { isSlotLocked } from "../../lib/bracket/lock";
 import type { Round } from "../../lib/bracket/types";
@@ -10,12 +11,45 @@ import { KnockoutMatchCard } from "./KnockoutMatchCard";
 
 const ROUND_ORDER: Round[] = ["R32", "R16", "QF", "SF", "F"];
 
+// Builds a hybrid R32 seed: real API data where available, provisional standings otherwise.
+// Returns null for each side that is genuinely unknown.
+function buildHybridR32(
+  seedR32: Record<string, [string, string]>,
+  knownGroups: Record<string, string[]>,
+  finishedGroups: string[]
+): Record<string, [string | null, string | null]> {
+  const finished = new Set(finishedGroups);
+  const result: Record<string, [string | null, string | null]> = {};
+
+  for (const slot of BRACKET_TREE.filter(s => s.round === "R32")) {
+    if (seedR32[slot.id]) {
+      // Real API fixture: use as-is
+      result[slot.id] = [seedR32[slot.id][0], seedR32[slot.id][1]];
+    } else {
+      // No API fixture yet: derive fixed seed from standings if group is done
+      const groupSeed = slot.fixedSeed;
+      let fixedTeam: string | null = null;
+      if (groupSeed) {
+        const pos = parseInt(groupSeed[0], 10) - 1;
+        const group = groupSeed.slice(1);
+        if (finished.has(group)) {
+          fixedTeam = knownGroups[group]?.[pos] ?? null;
+        }
+      }
+      result[slot.id] = [fixedTeam, null];
+    }
+  }
+  return result;
+}
+
 export function KnockoutBracket({
   seedR32,
   userPicks,
   actualWinners,
   kickoffs,
   groupStageFinished,
+  knownGroups = {},
+  finishedGroups = [],
   bannerMessage,
   onPick,
 }: {
@@ -24,6 +58,8 @@ export function KnockoutBracket({
   actualWinners: Record<string, string>;
   kickoffs: Record<string, number>;
   groupStageFinished: boolean;
+  knownGroups?: Record<string, string[]>;
+  finishedGroups?: string[];
   bannerMessage?: string;
   onPick: (slotId: string, team: string) => void;
 }) {
@@ -37,17 +73,51 @@ export function KnockoutBracket({
     [seedR32, userPicks, actualWinners]
   );
 
+  const slotsOfRound = (r: Round): SlotView[] =>
+    BRACKET_TREE.filter((s) => s.round === r).map((s) => view[s.id]);
+
+  // --- Group stage not finished: show provisional hybrid bracket (read-only) ---
   if (!groupStageFinished) {
+    const hybrid = buildHybridR32(seedR32, knownGroups, finishedGroups);
+    const r32Slots = BRACKET_TREE.filter(s => s.round === "R32");
+    const hasAny = finishedGroups.length > 0 || Object.keys(seedR32).length > 0;
+
     return (
-      <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-5 text-sm font-medium">
-        {bannerMessage || t.knockoutUi.availableBannerDefault}
+      <div className="space-y-4">
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-sm font-medium">
+          {bannerMessage || t.knockoutUi.availableBannerDefault}
+        </div>
+        {hasAny && (
+          <>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              {t.knockoutUi.provisionalR32 ?? "Clasificados confirmados a 16avos"}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {r32Slots.map((s) => {
+                const [teamA, teamB] = hybrid[s.id] ?? [null, null];
+                const isFull = teamA !== null && teamB !== null;
+                return (
+                  <div
+                    key={s.id}
+                    className={`bg-white border rounded-lg overflow-hidden text-sm shadow-sm ${isFull ? "border-green-300" : "border-gray-200"}`}
+                  >
+                    <div className={`px-3 py-2.5 border-b border-gray-100 ${teamA ? "font-medium text-gray-900" : "text-gray-400 italic"}`}>
+                      {teamA ?? t.bracket.tbd}
+                    </div>
+                    <div className={`px-3 py-2.5 ${teamB ? "font-medium text-gray-900" : "text-gray-400 italic"}`}>
+                      {teamB ?? t.bracket.tbd}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     );
   }
 
-  const slotsOfRound = (r: Round): SlotView[] =>
-    BRACKET_TREE.filter((s) => s.round === r).map((s) => view[s.id]);
-
+  // --- Group stage finished: full interactive bracket ---
   if (showTree) {
     return (
       <div className="space-y-3">

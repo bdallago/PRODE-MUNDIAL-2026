@@ -232,6 +232,7 @@ export const en = {
     correct: "Correct",
     wrong: "Missed",
     rounds: { R32: "Round of 32", R16: "Round of 16", QF: "Quarters", SF: "Semis", F: "Final" },
+    provisionalR32: "Confirmed qualifiers to Round of 32",
   },
   specialQuestions: {
     topScorer: "WHO WILL BE THE TOP SCORER OF THE TOURNAMENT?",

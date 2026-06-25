@@ -232,6 +232,7 @@ export const es = {
     correct: "Acertaste",
     wrong: "Falló",
     rounds: { R32: "16avos", R16: "Octavos", QF: "Cuartos", SF: "Semis", F: "Final" },
+    provisionalR32: "Clasificados confirmados a 16avos",
   },
   specialQuestions: {
     topScorer: "¿QUIÉN SERÁ EL GOLEADOR DEL TORNEO?",
