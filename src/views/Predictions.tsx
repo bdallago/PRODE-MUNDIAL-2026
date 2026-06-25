@@ -13,7 +13,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { Save, Lock, AlertCircle, CheckCircle2, Calendar, Clock, Bell, Plus, Minus } from "lucide-react";
 import { CountdownBanner } from "../components/CountdownBanner";
 import { Fixture } from "../components/Fixture";
-import { Bracket } from "../components/Bracket";
+import { KnockoutBracket } from "../components/knockout/KnockoutBracket";
 import { GROUPS, SPECIAL_QUESTIONS, KNOCKOUT_STAGES, ALL_TEAMS, MATCHES, TEAM_FLAGS } from "../data";
 import { useLanguage } from "../i18n/LanguageContext";
 import { useAppContext } from "../components/Providers";
@@ -40,8 +40,15 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
   // State for predictions
   const [groupPredictions, setGroupPredictions] = useState<Record<string, string[]>>(GROUPS);
   const [specialPredictions, setSpecialPredictions] = useState<Record<string, string>>({});
-  const [knockoutPredictions, setKnockoutPredictions] = useState<Record<string, string[]>>({});
+  const [knockoutPredictions, setKnockoutPredictions] = useState<Record<string, string>>({});
   const [matchPredictions, setMatchPredictions] = useState<Record<string, {home: number | '', away: number | ''}>>({});
+  const [actualBracket, setActualBracket] = useState<{
+    seedR32: Record<string, [string, string]>;
+    winners: Record<string, string>;
+    kickoffs: Record<string, number>;
+    finishedGroups: string[];
+  }>({ seedR32: {}, winners: {}, kickoffs: {}, finishedGroups: [] });
+  const [knockoutBanner, setKnockoutBanner] = useState<string | undefined>(undefined);
   
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -105,6 +112,30 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
         } else {
           // Initialize with default order if no prediction exists
           setGroupPredictions(GROUPS);
+        }
+
+        // Knockout bracket structure (seeded by the sync)
+        try {
+          const resultsSnap = await getDoc(doc(db, "results", "actual"));
+          if (resultsSnap.exists()) {
+            const r = resultsSnap.data();
+            const allMatchups: Record<string, [string, string]> = r.bracketMatchups || {};
+            const seedR32: Record<string, [string, string]> = {};
+            for (const [slotId, pair] of Object.entries(allMatchups)) {
+              if (slotId.startsWith("R32-")) seedR32[slotId] = pair as [string, string];
+            }
+            setActualBracket({
+              seedR32,
+              winners: r.knockouts || {},
+              kickoffs: r.bracketKickoffs || {},
+              finishedGroups: r.finishedGroups || [],
+            });
+          }
+          if (configSnap.exists() && configSnap.data().knockoutBanner) {
+            setKnockoutBanner(configSnap.data().knockoutBanner);
+          }
+        } catch (e) {
+          console.error("Error fetching bracket structure:", e);
         }
       } catch (error) {
         console.error("Error fetching predictions:", error);
@@ -176,6 +207,10 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
   const handleSpecialChange = (id: string, value: string) => {
     if (effectiveIsLocked) return;
     setSpecialPredictions(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleKnockoutPick = (slotId: string, team: string) => {
+    setKnockoutPredictions(prev => ({ ...prev, [slotId]: team }));
   };
 
   const handleMatchScoreIncrement = (matchId: string, team: 'home' | 'away', delta: number, matchDate: string, matchTime: string) => {
@@ -635,7 +670,15 @@ export default function Predictions({ user, companyDetails }: { user: User; comp
       <div className="space-y-6 pb-12">
         <h2 className="text-2xl font-bold pb-2" style={{ borderBottom: '2px solid var(--brand-color, #1e3a8a)', color: 'var(--brand-color, #1e3a8a)' }}>{t.predictions.knockoutStage}</h2>
         <p className="text-sm text-gray-800 mb-4 text-justify">{t.predictions.knockoutDesc}</p>
-        <Bracket />
+        <KnockoutBracket
+          seedR32={actualBracket.seedR32}
+          userPicks={knockoutPredictions}
+          actualWinners={actualBracket.winners}
+          kickoffs={actualBracket.kickoffs}
+          groupStageFinished={actualBracket.finishedGroups.length === Object.keys(GROUPS).length}
+          bannerMessage={knockoutBanner}
+          onPick={handleKnockoutPick}
+        />
       </div>
       )}
 
