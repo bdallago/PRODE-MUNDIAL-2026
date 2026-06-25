@@ -22,6 +22,14 @@ function formatKickoff(ms: number): string {
   return `${day} ${date} · ${hh}:${mm}`;
 }
 
+// Fixtures conocidos con fecha pero sin rival aún publicado por la API.
+// Se reemplazan solos en cuanto los grupos cierren y la API publique el cruce real.
+const HARDCODED_PENDING: { team: string; kickoffMs: number }[] = [
+  { team: "Alemania",       kickoffMs: Date.UTC(2026, 5, 29, 20, 30) }, // Lun 29/6 17:30 ART
+  { team: "Estados Unidos", kickoffMs: Date.UTC(2026, 6,  2,  0,  0) }, // Mié 1/7 21:00 ART
+  { team: "Argentina",      kickoffMs: Date.UTC(2026, 6,  3, 22,  0) }, // Vie 3/7 19:00 ART
+];
+
 function TeamRow({ name }: { name: string | null }) {
   const flagCode = name ? (TEAM_FLAGS[name] ?? null) : null;
   return (
@@ -79,52 +87,58 @@ export function KnockoutBracket({
 
   // --- Group stage not finished: provisional bracket (read-only) ---
   if (!groupStageFinished) {
-    // Confirmed fixtures from API (both teams known)
-    const confirmedFixtures = Object.entries(seedR32)
-      .map(([slotId, [teamA, teamB]]) => ({ slotId, teamA, teamB, kickoff: kickoffs[slotId] ?? null }))
-      .sort((a, b) => (a.kickoff ?? Infinity) - (b.kickoff ?? Infinity));
+    // 1. Confirmed API fixtures (both teams, with date from kickoffs)
+    const apiFixtures = Object.entries(seedR32).map(([slotId, [teamA, teamB]]) => ({
+      key: slotId, teamA, teamB: teamB as string | null, kickoffMs: kickoffs[slotId] ?? null,
+    }));
+    const teamsAlreadyShown = new Set(apiFixtures.flatMap(f => [f.teamA, f.teamB].filter(Boolean) as string[]));
 
-    // Confirmed qualifiers not yet paired in a fixture
-    const teamsInFixtures = new Set(confirmedFixtures.flatMap(f => [f.teamA, f.teamB]));
-    const waitingQualified = qualifiedTeams.filter(t => !teamsInFixtures.has(t));
+    // 2. Hardcoded pending fixtures (confirmed team + date, opponent TBD)
+    //    Only show if the team isn't already in an API fixture (will be replaced when groups close)
+    const pendingCards = HARDCODED_PENDING
+      .filter(h => !teamsAlreadyShown.has(h.team))
+      .map(h => { teamsAlreadyShown.add(h.team); return { key: h.team, teamA: h.team, teamB: null, kickoffMs: h.kickoffMs }; });
 
-    if (qualifiedTeams.length === 0 && confirmedFixtures.length === 0) {
-      return (
-        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-sm font-medium">
-          {bannerMessage || t.knockoutUi.availableBannerDefault}
-        </div>
-      );
-    }
+    // 3. Teams from CLOSED groups only (not already shown above)
+    const closedTeams = finishedGroups.flatMap(g => knownGroups[g] ?? []).filter(t => !teamsAlreadyShown.has(t));
+
+    // Merge all cards and sort by kickoff (no date → end)
+    const allCards = [
+      ...apiFixtures,
+      ...pendingCards,
+      ...closedTeams.map(t => ({ key: t, teamA: t, teamB: null as string | null, kickoffMs: null as number | null })),
+    ].sort((a, b) => {
+      if (a.kickoffMs && b.kickoffMs) return a.kickoffMs - b.kickoffMs;
+      if (a.kickoffMs) return -1;
+      if (b.kickoffMs) return 1;
+      return 0;
+    });
 
     return (
       <div className="space-y-4">
         <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-sm font-medium">
           {bannerMessage || t.knockoutUi.availableBannerDefault}
         </div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-          {t.knockoutUi.provisionalR32 ?? "Clasificados a 16avos"} ({qualifiedTeams.length + teamsInFixtures.size > 0 ? teamsInFixtures.size + waitingQualified.length : 0}/32)
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {/* Confirmed fixtures: show both teams + date */}
-          {confirmedFixtures.map(({ slotId, teamA, teamB, kickoff }) => (
-            <div key={slotId} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
-              {kickoff && (
-                <div className="px-3 pt-2 pb-1 text-[11px] text-gray-400 font-medium border-b border-gray-50">
-                  {formatKickoff(kickoff)}
+        {allCards.length > 0 && (
+          <>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              {t.knockoutUi.provisionalR32 ?? "Clasificados a 16avos"}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {allCards.map(({ key, teamA, teamB, kickoffMs }) => (
+                <div key={key} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
+                  {kickoffMs && (
+                    <div className="px-3 pt-2 pb-1 text-[11px] text-gray-400 font-medium border-b border-gray-50">
+                      {formatKickoff(kickoffMs)}
+                    </div>
+                  )}
+                  <div className="border-b border-gray-100"><TeamRow name={teamA} /></div>
+                  <TeamRow name={teamB} />
                 </div>
-              )}
-              <div className="border-b border-gray-100"><TeamRow name={teamA} /></div>
-              <TeamRow name={teamB} />
+              ))}
             </div>
-          ))}
-          {/* Confirmed qualifiers waiting for opponent */}
-          {waitingQualified.map(team => (
-            <div key={team} className="bg-white border border-gray-200 rounded-lg overflow-hidden text-sm shadow-sm">
-              <div className="border-b border-gray-100"><TeamRow name={team} /></div>
-              <TeamRow name={null} />
-            </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
     );
   }
