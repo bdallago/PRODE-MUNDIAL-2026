@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, Lock } from "lucide-react";
+import { Clock, AlertTriangle } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
 import { useAppContext } from "./Providers";
 
@@ -43,13 +43,9 @@ export function CountdownBanner() {
 
   if (isTimeUp) {
     return (
-      <div className="bg-red-50 text-red-900 p-4 rounded-lg shadow-sm flex items-center gap-3 border border-red-200 mb-6">
-        <Lock className="w-6 h-6 text-red-600 shrink-0" />
-        <div>
-          <h3 className="font-bold">{t.countdown.timeUp}</h3>
-          <p className="text-sm">{t.countdown.timeUpDesc}</p>
-          <p className="text-xs mt-1 text-red-700">{t.countdown.pointsDelay}</p>
-        </div>
+      <div className="bg-amber-50 text-amber-900 p-4 rounded-lg shadow-sm flex items-center gap-3 border border-amber-200 mb-6">
+        <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
+        <p className="text-sm font-medium">{t.knockoutUi.availableBannerDefault}</p>
       </div>
     );
   }
