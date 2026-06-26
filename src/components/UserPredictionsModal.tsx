@@ -4,7 +4,14 @@ import { useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { GROUPS, MATCHES, SPECIAL_QUESTIONS, TEAM_FLAGS } from "../data";
+import { BRACKET_TREE, pointsForSlot } from "../lib/bracket/tree";
+import type { Round } from "../lib/bracket/types";
 import { useAppContext } from "./Providers";
+
+const KO_ROUND_ORDER: Round[] = ["R32", "R16", "QF", "SF", "F"];
+const KO_ROUND_LABEL: Record<Round, string> = {
+  R32: "16avos", R16: "Octavos", QF: "Cuartos", SF: "Semifinal", F: "Final",
+};
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { X, Lock, Unlock, CheckCircle2, XCircle, Minus } from "lucide-react";
 import { Button } from "./ui/button";
@@ -358,41 +365,58 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
             </div>
           )}
 
-          {/* ── Fases Finales ── */}
-          {predictions.knockouts && (
-            <div>
-              <h4 className="text-xl font-bold text-brand mb-4">Fases Finales (Eliminatorias)</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {Object.entries(predictions.knockouts).map(([stage, teams]) => {
-                  const items = Array.isArray(teams) ? teams : [];
-                  return (
-                    <Card key={stage} className="border-brand/20">
-                      <CardHeader className="bg-brand/5 py-2 px-4 border-b">
-                        <CardTitle className="text-sm uppercase tracking-wider text-brand/80">
-                          {stage.replace('octavos', 'Octavos').replace('cuartos', 'Cuartos').replace('semis', 'Semis').replace('final', 'Final').replace('campeon', 'Campeón')}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-3">
-                        <ul className="space-y-1">
-                          {items.filter(Boolean).map((t: string) => (
-                            <li key={t} className="flex items-center gap-2 text-sm text-gray-700">
-                              {TEAM_FLAGS[t] && (
-                                <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[t]}.png`} alt="" className="w-4 h-3 object-cover rounded-sm" referrerPolicy="no-referrer" />
-                              )}
-                              <span className="truncate">{t}</span>
-                            </li>
-                          ))}
-                          {items.filter(Boolean).length === 0 && (
-                            <li className="text-xs text-gray-400 italic">Sin clasificados</li>
-                          )}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+          {/* ── Fases Finales (picks por casillero + puntos) ── */}
+          {(() => {
+            const koPicks: Record<string, string> = (predictions.knockouts && !Array.isArray(predictions.knockouts)) ? predictions.knockouts : {};
+            const koResults: Record<string, string> = results?.knockouts || {};
+            if (Object.keys(koPicks).length === 0) return null;
+            return (
+              <div>
+                <h4 className="text-xl font-bold text-brand mb-4">Fases Finales (Eliminatorias)</h4>
+                <div className="space-y-4">
+                  {KO_ROUND_ORDER.map((r) => {
+                    const slots = BRACKET_TREE.filter((s) => s.round === r && koPicks[s.id]);
+                    if (slots.length === 0) return null;
+                    return (
+                      <div key={r}>
+                        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">{KO_ROUND_LABEL[r]}</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                          {slots.map((s) => {
+                            const pick = koPicks[s.id];
+                            const actual = koResults[s.id];
+                            const resolved = !!actual;
+                            const correct = resolved && pick === actual;
+                            const earned = correct ? pointsForSlot(s.id) : 0;
+                            const tone = resolved
+                              ? (correct ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200")
+                              : "bg-gray-50 border-gray-200";
+                            return (
+                              <div key={s.id} className={`flex items-center justify-between gap-2 p-2.5 rounded-lg border ${tone}`}>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  {TEAM_FLAGS[pick] && (
+                                    <img src={`https://flagcdn.com/w40/${TEAM_FLAGS[pick]}.png`} alt="" className="w-5 h-3.5 object-cover rounded-sm shrink-0" referrerPolicy="no-referrer" />
+                                  )}
+                                  <span className="truncate text-sm font-medium text-gray-800">{pick}</span>
+                                </div>
+                                {resolved && (
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <span className={`text-sm font-bold ${correct ? "text-green-600" : "text-red-500"}`}>+{earned} pts</span>
+                                    {correct
+                                      ? <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                      : <XCircle className="w-4 h-4 text-red-500" />}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
         </div>
       </div>
