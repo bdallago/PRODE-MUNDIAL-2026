@@ -1,6 +1,12 @@
 import { MATCHES } from "../data";
 import { adminDb } from "./firebaseAdmin";
 import { recalculatePoints } from "./recalculate-points";
+import { syncKnockouts } from "./bracket/syncKnockouts";
+import { inActiveWindow, extractKoSchedule, koKickoffs } from "./ko-schedule";
+
+// El calendario KO es dinámico (API), no está en matches.json. Cacheamos los próximos
+// kickoffs KO para gatear el cron en fase eliminatoria. TTL para refrescar el cache.
+const KO_CACHE_TTL_MS = 30 * 60_000;
 
 const API_BASE = process.env.FOOTBALL_API_BASE_URL || "https://v3.football.api-sports.io";
 const API_KEY  = process.env.FOOTBALL_API_KEY || "";
@@ -84,10 +90,9 @@ function kickoffUTC(dateStr: string, timeStr: string): number {
   return Date.UTC(2026, month, parseInt(day), h + 3, m);
 }
 
-// Returns true if at least one match might be finishing or recently finished.
-// Window starts at +80 min (earliest a match can end) and ends at +180 min
-// (covers 90 min regulation + extra time + penalties + buffer).
-function hasActiveWindow(): boolean {
+// Ventana activa de los partidos de FASE DE GRUPOS (estáticos en matches.json).
+// Empieza a +80 min (lo antes que puede terminar) y termina a +180 min.
+function hasGroupWindow(): boolean {
   const now = Date.now();
   return MATCHES.some((match) => {
     const ko = kickoffUTC(match.date, match.time);
@@ -118,8 +123,18 @@ export async function syncMatchResults(force = false): Promise<{
   synced: number;
   skipped?: string;
 }> {
-  // 1. Skip if no match is expected to be active right now
-  if (!force && !hasActiveWindow()) {
+  // 1. Gate: activo si hay partido de grupos (estático) o KO (cache de kickoffs) en
+  //    ventana. Si el cache está viejo, igual seguimos para refrescarlo (destraba la
+  //    fase eliminatoria sin intervención manual).
+  const koCacheRef = adminDb.doc("sync/koKickoffs");
+  const koCacheSnap = await koCacheRef.get();
+  const cachedIso: string[] = koCacheSnap.data()?.kickoffs ?? [];
+  const koCacheUpdatedAt = (koCacheSnap.data()?.updatedAt as number) || 0;
+  const cachedKo = cachedIso.map((s) => new Date(s).getTime());
+  const koCacheStale = Date.now() - koCacheUpdatedAt > KO_CACHE_TTL_MS;
+  const active = hasGroupWindow() || inActiveWindow(cachedKo);
+
+  if (!force && !active && !koCacheStale) {
     return { synced: 0, skipped: "no_active_window" };
   }
 
@@ -151,6 +166,16 @@ export async function syncMatchResults(force = false): Promise<{
   const json = await res.json();
   const fixtures: any[] = json.response ?? [];
 
+  // 3b. Refrescar cache de kickoffs KO y persistir el calendario KO (lista por día/hora,
+  //     con estado y score al minuto durante la ventana).
+  const koRows = extractKoSchedule(fixtures, TEAM_MAP);
+  await koCacheRef.set({ kickoffs: koKickoffs(koRows), updatedAt: Date.now() });
+  if (koRows.length > 0) {
+    const koMap: Record<string, any> = {};
+    for (const r of koRows) koMap[r.fixtureId] = r;
+    await adminDb.doc("results/actual").set({ koSchedule: koMap }, { merge: true });
+  }
+
   // 4. Build Firestore dot-notation updates for each scored match
   const updates: Record<string, any> = {};
 
@@ -176,28 +201,36 @@ export async function syncMatchResults(force = false): Promise<{
     };
   }
 
-  if (Object.keys(updates).length === 0) return { synced: 0 };
-
-  updates.updatedAt = new Date().toISOString();
-
-  // 5. Write to Firestore (Admin SDK bypasses security rules)
-  const resultsRef = adminDb.doc("results/actual");
-  try {
-    await resultsRef.update(updates);
-  } catch (err: any) {
-    // Document doesn't exist yet — create a minimal one
-    if (err.code === 5) {
-      await resultsRef.set({
-        groups: {}, specials: {}, knockouts: {}, matches: {},
-        updatedAt: new Date().toISOString(),
-      });
+  // 5. Write scored group matches (si hay) y recalcular.
+  const groupSynced = Object.keys(updates).length;
+  if (groupSynced > 0) {
+    updates.updatedAt = new Date().toISOString();
+    const resultsRef = adminDb.doc("results/actual");
+    try {
       await resultsRef.update(updates);
-    } else {
-      throw err;
+    } catch (err: any) {
+      // Document doesn't exist yet — create a minimal one
+      if (err.code === 5) {
+        await resultsRef.set({
+          groups: {}, specials: {}, knockouts: {}, matches: {},
+          updatedAt: new Date().toISOString(),
+        });
+        await resultsRef.update(updates);
+      } else {
+        throw err;
+      }
     }
+    await recalculatePoints();
   }
 
-  await recalculatePoints();
+  // 6. Eliminatorias: detectar ganadores de fixtures KO finalizados, propagarlos por el
+  //    árbol y recalcular. Corre aunque no haya resultados de grupos nuevos (los KO no
+  //    generan updates de grupo). No bloquea la respuesta si falla.
+  try {
+    await syncKnockouts();
+  } catch (err) {
+    console.error("[sync-results] syncKnockouts falló:", err);
+  }
 
-  return { synced: Object.keys(updates).length - 1 }; // -1 for updatedAt
+  return { synced: groupSynced };
 }
