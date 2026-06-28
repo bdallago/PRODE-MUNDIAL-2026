@@ -55,9 +55,13 @@ export async function recalculatePoints(): Promise<void> {
         sanitizedPGroups[letter] = [...valid, ...missing];
       }
 
-      for (const [letter, actualTeams] of Object.entries(actualG)) {
+      for (const [letter, rawActualTeams] of Object.entries(actualG)) {
         const predictedTeams = sanitizedPGroups[letter];
         if (!predictedTeams) continue;
+        // Defensa adicional: deduplicar equipos del lado real por si llegaran
+        // standings con filas repetidas (la API duplicaba equipos y corría las
+        // posiciones). El fix primario está en sync-standings, esto es red de seguridad.
+        const actualTeams = rawActualTeams.filter((t, i) => rawActualTeams.indexOf(t) === i);
         let exact = 0;
         for (let i = 0; i < 4; i++) {
           if (actualTeams[i] && predictedTeams[i] === actualTeams[i]) { exact++; totalPoints++; }

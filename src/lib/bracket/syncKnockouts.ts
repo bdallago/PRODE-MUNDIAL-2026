@@ -1,5 +1,5 @@
 import { adminDb } from "../firebaseAdmin";
-import { placeKnockoutFixtures } from "./placeFixtures";
+import { placeKnockoutFixtures, seedBracketFromStandings } from "./placeFixtures";
 import { toKnockoutFixtures } from "./apiMapping";
 import { winnerOf } from "./winner";
 import { identifySlotByTeams } from "./identify";
@@ -38,9 +38,13 @@ export async function syncKnockouts(): Promise<{
 
   const { fixtures: koFixtures, unmapped } = toKnockoutFixtures(apiFixtures, TEAM_NAME_MAP);
 
-  // 4. Sembrar R32 por lado fijo.
+  // 4. Sembrar R32: base desde standings con el cuadro oficial (no depende de que
+  //    la API publique todos los fixtures KO), refinada por los fixtures de la API.
   const seed = placeKnockoutFixtures(koFixtures, standings);
-  let matchups: Record<SlotId, [string, string]> = { ...seed.placements };
+  let matchups: Record<SlotId, [string, string]> = {
+    ...seedBracketFromStandings(standings),
+    ...seed.placements,
+  };
 
   // 5. Recolectar ganadores de fixtures KO finalizados, identificando el slot
   //    por identidad de equipos contra los matchups conocidos (en cascada).
