@@ -2,6 +2,7 @@
 
 import { TEAM_FLAGS } from "../../data";
 import { useLanguage } from "../../i18n/LanguageContext";
+import { pointsForSlot } from "../../lib/bracket/tree";
 import type { SlotView } from "../../lib/bracket/displayBracket";
 
 function Flag({ team }: { team: string | null }) {
@@ -58,7 +59,7 @@ export function KnockoutMatchCard({
       )}
       {team && slot.resolved && slot.pick === team && (
         <span className={`ml-auto text-[10px] font-bold ${slot.status === "correct" ? "text-green-600" : "text-red-600"}`}>
-          {slot.status === "correct" ? t.knockoutUi.correct : t.knockoutUi.wrong}
+          {slot.status === "correct" ? `${t.knockoutUi.correct} +${pointsForSlot(slot.id)}` : t.knockoutUi.wrong}
         </span>
       )}
     </button>
