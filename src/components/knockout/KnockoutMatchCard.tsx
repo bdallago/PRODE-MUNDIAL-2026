@@ -21,10 +21,12 @@ export function KnockoutMatchCard({
   slot,
   locked,
   onPick,
+  kickoffLabel,
 }: {
   slot: SlotView;
   locked: boolean;
   onPick: (slotId: string, team: string) => void;
+  kickoffLabel?: string;
 }) {
   const { t } = useLanguage();
   const teamsKnown = !!slot.teamA && !!slot.teamB;
@@ -64,6 +66,11 @@ export function KnockoutMatchCard({
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+      {kickoffLabel && (
+        <div className="text-[11px] text-gray-400 font-medium px-3 pt-2 pb-1 border-b border-gray-50">
+          {kickoffLabel}
+        </div>
+      )}
       <Row team={slot.teamA} />
       <Row team={slot.teamB} />
       {locked && (

@@ -26,22 +26,22 @@ function formatKickoff(ms: number): string {
 // Cuando los grupos cierren y la API publique los fixtures reales, groupStageFinished
 // se vuelve true y esta vista es reemplazada por el bracket interactivo.
 const R32_SCHEDULE: { kickoffMs: number; teamA: string | null; teamB: string | null }[] = [
-  { kickoffMs: Date.UTC(2026, 5, 28, 19,  0), teamA: "Sudáfrica",      teamB: "Canadá"  },
-  { kickoffMs: Date.UTC(2026, 5, 29, 17,  0), teamA: "Brasil",         teamB: null       },
-  { kickoffMs: Date.UTC(2026, 5, 29, 20, 30), teamA: "Alemania",       teamB: null       },
-  { kickoffMs: Date.UTC(2026, 5, 30,  1,  0), teamA: null,             teamB: "Marruecos"},
-  { kickoffMs: Date.UTC(2026, 5, 30, 17,  0), teamA: null,             teamB: null       },
-  { kickoffMs: Date.UTC(2026, 5, 30, 21,  0), teamA: null,             teamB: null       },
-  { kickoffMs: Date.UTC(2026, 6,  1,  1,  0), teamA: "México",         teamB: null       },
-  { kickoffMs: Date.UTC(2026, 6,  1, 16,  0), teamA: null,             teamB: null       },
-  { kickoffMs: Date.UTC(2026, 6,  1, 20,  0), teamA: null,             teamB: null       },
-  { kickoffMs: Date.UTC(2026, 6,  2,  0,  0), teamA: "Estados Unidos", teamB: null       },
-  { kickoffMs: Date.UTC(2026, 6,  2, 19,  0), teamA: null,             teamB: null       },
-  { kickoffMs: Date.UTC(2026, 6,  2, 23,  0), teamA: null,             teamB: null       },
-  { kickoffMs: Date.UTC(2026, 6,  3,  3,  0), teamA: "Suiza",          teamB: null       },
-  { kickoffMs: Date.UTC(2026, 6,  3, 18,  0), teamA: null,             teamB: null       },
-  { kickoffMs: Date.UTC(2026, 6,  3, 22,  0), teamA: "Argentina",      teamB: null       },
-  { kickoffMs: Date.UTC(2026, 6,  4,  1, 30), teamA: null,             teamB: null       },
+  { kickoffMs: Date.UTC(2026, 5, 28, 19,  0), teamA: "Sudáfrica",      teamB: "Canadá"               },
+  { kickoffMs: Date.UTC(2026, 5, 29, 17,  0), teamA: "Brasil",         teamB: "Japón"                },
+  { kickoffMs: Date.UTC(2026, 5, 29, 20, 30), teamA: "Alemania",       teamB: null                   },
+  { kickoffMs: Date.UTC(2026, 5, 30,  1,  0), teamA: "Países Bajos",   teamB: "Marruecos"            },
+  { kickoffMs: Date.UTC(2026, 5, 30, 17,  0), teamA: "Costa de Marfil", teamB: null                  },
+  { kickoffMs: Date.UTC(2026, 5, 30, 21,  0), teamA: null,             teamB: null                   },
+  { kickoffMs: Date.UTC(2026, 6,  1,  1,  0), teamA: "México",         teamB: null                   },
+  { kickoffMs: Date.UTC(2026, 6,  1, 16,  0), teamA: null,             teamB: null                   },
+  { kickoffMs: Date.UTC(2026, 6,  1, 20,  0), teamA: null,             teamB: null                   },
+  { kickoffMs: Date.UTC(2026, 6,  2,  0,  0), teamA: "Estados Unidos", teamB: "Bosnia y Herzegovina" },
+  { kickoffMs: Date.UTC(2026, 6,  2, 19,  0), teamA: null,             teamB: null                   },
+  { kickoffMs: Date.UTC(2026, 6,  2, 23,  0), teamA: null,             teamB: null                   },
+  { kickoffMs: Date.UTC(2026, 6,  3,  3,  0), teamA: "Suiza",          teamB: null                   },
+  { kickoffMs: Date.UTC(2026, 6,  3, 18,  0), teamA: "Australia",      teamB: null                   },
+  { kickoffMs: Date.UTC(2026, 6,  3, 22,  0), teamA: "Argentina",      teamB: null                   },
+  { kickoffMs: Date.UTC(2026, 6,  4,  1, 30), teamA: null,             teamB: null                   },
 ];
 
 function TeamRow({ name }: { name: string | null }) {
@@ -98,6 +98,12 @@ export function KnockoutBracket({
 
   const slotsOfRound = (r: Round): SlotView[] =>
     BRACKET_TREE.filter((s) => s.round === r).map((s) => view[s.id]);
+
+  // Cards de una ronda ordenadas cronológicamente por kickoff (los sin horario van al
+  // final). El cuadro completo (árbol) mantiene el orden posicional.
+  const slotsByKickoff = (r: Round): SlotView[] =>
+    slotsOfRound(r).slice().sort(
+      (a, b) => (kickoffs[a.id] ?? Infinity) - (kickoffs[b.id] ?? Infinity));
 
   // --- Group stage not finished: mostrar calendario R32 completo (read-only) ---
   if (!groupStageFinished) {
@@ -204,8 +210,14 @@ export function KnockoutBracket({
       </div>
       <p className="text-xs text-gray-500">{t.knockoutUi.tapToPick}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {slotsOfRound(round).map((s) => (
-          <KnockoutMatchCard key={s.id} slot={s} locked={isSlotLocked(kickoffs[s.id], now)} onPick={onPick} />
+        {slotsByKickoff(round).map((s) => (
+          <KnockoutMatchCard
+            key={s.id}
+            slot={s}
+            locked={isSlotLocked(kickoffs[s.id], now)}
+            kickoffLabel={kickoffs[s.id] ? formatKickoff(kickoffs[s.id]) : undefined}
+            onPick={onPick}
+          />
         ))}
       </div>
     </div>
