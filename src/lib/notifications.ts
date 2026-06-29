@@ -1,5 +1,6 @@
 import { MATCHES } from "../data";
 import { adminDb } from "./firebaseAdmin";
+import type { KoScheduleRow } from "./ko-schedule";
 
 export type NotificationChannel = "google_chat" | "slack" | "teams";
 
@@ -60,6 +61,57 @@ export function getEarlyNextDayMatches(): Match[] {
     const [h] = m.time.split(":").map(Number);
     return h >= 0 && h <= 2;
   });
+}
+
+// Convierte un kickoff ISO (UTC) a sus componentes en horario argentino (UTC-3).
+function koArtParts(iso: string): { dateStr: string; time: string; hour: number } {
+  const d = new Date(iso);
+  const art = new Date(d.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
+  const day = art.getDate();
+  const month = MONTH_NAMES_ES[art.getMonth()];
+  const hour = art.getHours();
+  const min = art.getMinutes();
+  return {
+    dateStr: `${day} de ${month}`,
+    time: `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`,
+    hour,
+  };
+}
+
+// Lee el calendario de eliminatorias persistido por el sync de resultados.
+// Cada fila trae los equipos ya resueltos y el kickoff ISO de la API.
+async function getKoSchedule(): Promise<KoScheduleRow[]> {
+  const snap = await adminDb.doc("results/actual").get();
+  const ko = snap.data()?.koSchedule as Record<string, KoScheduleRow> | undefined;
+  return ko ? Object.values(ko) : [];
+}
+
+// Partidos de eliminatoria que se juegan hoy (día ART). Misma forma que getTodayMatches.
+export async function getTodayKoMatches(): Promise<Match[]> {
+  const rows = await getKoSchedule();
+  const now = new Date();
+  const artDate = new Date(now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
+  const todayStr = `${artDate.getDate()} de ${MONTH_NAMES_ES[artDate.getMonth()]}`;
+
+  return rows
+    .map((r) => ({ r, p: koArtParts(r.date) }))
+    .filter(({ p }) => p.dateStr === todayStr)
+    .map(({ r, p }) => ({ id: r.fixtureId, home: r.teamA, away: r.teamB, date: p.dateStr, time: p.time }));
+}
+
+// Partidos de eliminatoria "trasnochados": mañana (ART) entre las 00:00 y 02:00.
+export async function getEarlyNextDayKoMatches(): Promise<Match[]> {
+  const rows = await getKoSchedule();
+  const now = new Date();
+  const artDate = new Date(now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
+  const tomorrow = new Date(artDate);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = `${tomorrow.getDate()} de ${MONTH_NAMES_ES[tomorrow.getMonth()]}`;
+
+  return rows
+    .map((r) => ({ r, p: koArtParts(r.date) }))
+    .filter(({ p }) => p.dateStr === tomorrowStr && p.hour >= 0 && p.hour <= 2)
+    .map(({ r, p }) => ({ id: r.fixtureId, home: r.teamA, away: r.teamB, date: p.dateStr, time: p.time }));
 }
 
 export function formatMorningMessage(matches: Match[], trasnochados: Match[] = []): string {

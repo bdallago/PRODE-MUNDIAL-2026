@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getTodayMatches,
   getEarlyNextDayMatches,
+  getTodayKoMatches,
+  getEarlyNextDayKoMatches,
   formatMorningMessage,
   sendNotification,
   getEnabledCompanies,
@@ -18,13 +20,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const allTodayMatches = getTodayMatches();
+  // Partidos del día: fase de grupos (matches.json) + eliminatorias (results/actual.koSchedule).
+  // En fase KO ya no hay partidos de grupo, así que en la práctica salen solo los cruces.
+  const [koToday, koTrasnochados] = await Promise.all([
+    getTodayKoMatches(),
+    getEarlyNextDayKoMatches(),
+  ]);
+  const allTodayMatches = [...getTodayMatches(), ...koToday];
   // Exclude matches at 00:00–02:00 — those were already shown as "trasnochados" in yesterday's message
   const todayMatches = allTodayMatches.filter((m) => {
     const h = parseInt(m.time.split(":")[0], 10);
     return h > 2;
   });
-  const trasnochados = getEarlyNextDayMatches();
+  const trasnochados = [...getEarlyNextDayMatches(), ...koTrasnochados];
   if (todayMatches.length === 0 && trasnochados.length === 0) {
     return NextResponse.json({ ok: true, skipped: "no_matches" });
   }
