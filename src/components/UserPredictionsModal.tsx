@@ -5,6 +5,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { GROUPS, MATCHES, SPECIAL_QUESTIONS, TEAM_FLAGS } from "../data";
 import { BRACKET_TREE, pointsForSlot } from "../lib/bracket/tree";
+import { isSpecialCorrect } from "../lib/specials";
 import type { Round } from "../lib/bracket/types";
 import { useAppContext } from "./Providers";
 
@@ -104,9 +105,7 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
   const actualMatches: Record<string, any> = results?.matches || {};
   const finishedGroups: string[] = results?.finishedGroups || [];
   const groupScoringEnabled = finishedGroups.length > 0;
-  // Las preguntas especiales se ocultan por ahora en esta visualización.
-  // Poner en true para volver a mostrarlas.
-  const SHOW_SPECIAL_RESULTS = false;
+  const SHOW_SPECIAL_RESULTS = true;
 
   // Group matches by date for display
   const matchesByDate: Record<string, typeof MATCHES> = {};
@@ -129,10 +128,9 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
   };
 
   const getSpecialStatus = (questionId: string, answer: string) => {
-    if (!results?.specials?.[questionId] || !answer) return null;
-    const actualAnswer = results.specials[questionId];
-    if (!actualAnswer) return null;
-    return answer.trim().toLowerCase() === actualAnswer.trim().toLowerCase()
+    const actualAnswer = results?.specials?.[questionId];
+    if (!actualAnswer || !answer) return null;
+    return isSpecialCorrect(answer, actualAnswer)
       ? { correct: true, points: 10 }
       : { correct: false, points: 0 };
   };
