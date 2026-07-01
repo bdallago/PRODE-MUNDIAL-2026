@@ -12,6 +12,10 @@ import { useAppContext } from "../components/Providers";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "../i18n/LanguageContext";
 import { isSpecialCorrect } from "../lib/specials";
+import { BRACKET_TREE } from "../lib/bracket/tree";
+import { propagateWinners } from "../lib/bracket/propagate";
+import { buildDisplayBracket } from "../lib/bracket/displayBracket";
+import { buildManualKoSchedule, KO_KICKOFFS } from "../lib/bracket/manualBracket";
 
 interface UserProfile {
   uid: string;
@@ -47,8 +51,10 @@ export default function Admin() {
   // State for actual results
   const [actualGroups, setActualGroups] = useState<Record<string, string[]>>(GROUPS);
   const [actualSpecials, setActualSpecials] = useState<Record<string, string>>({});
-  const [actualKnockouts, setActualKnockouts] = useState<Record<string, string[]>>({});
+  const [actualKnockouts, setActualKnockouts] = useState<Record<string, any>>({});
   const [actualMatches, setActualMatches] = useState<Record<string, {home: string, away: string}>>({});
+  const [bracketMatchups, setBracketMatchups] = useState<Record<string, [string, string]>>({});
+  const [savingSlot, setSavingSlot] = useState<string | null>(null);
   
   // State for users
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -113,6 +119,7 @@ export default function Admin() {
           setActualSpecials(data.specials || {});
           setActualKnockouts(data.knockouts || {});
           setActualMatches(data.matches || {});
+          setBracketMatchups(data.bracketMatchups || {});
         } else {
           setActualGroups(GROUPS);
         }
@@ -195,6 +202,34 @@ export default function Admin() {
       setMessage({ type: 'error', text: 'Hubo un error al guardar los resultados.' });
     } finally {
       setSaving(false);
+      setTimeout(() => setMessage(null), 5000);
+    }
+  };
+
+  const saveKnockoutWinner = async (slotId: string, winner: string) => {
+    setSavingSlot(slotId);
+    setMessage(null);
+    try {
+      const newKnockouts = { ...actualKnockouts, [slotId]: winner };
+      // Propagar para armar la ronda siguiente y reconstruir el calendario KO.
+      const newMatchups = propagateWinners({ ...bracketMatchups }, newKnockouts as Record<string, string>);
+      const koSchedule = buildManualKoSchedule(newMatchups, KO_KICKOFFS);
+
+      await setDoc(doc(db, "results", "actual"), {
+        knockouts: newKnockouts,
+        bracketMatchups: newMatchups,
+        koSchedule,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+
+      setActualKnockouts(newKnockouts);
+      setBracketMatchups(newMatchups);
+      setMessage({ type: 'success', text: `Ganador guardado: ${winner}. Los puntos se recalculan solos en ~1 min.` });
+    } catch (error) {
+      console.error("Error saving knockout winner:", error);
+      setMessage({ type: 'error', text: 'Error al guardar el ganador del cruce.' });
+    } finally {
+      setSavingSlot(null);
       setTimeout(() => setMessage(null), 5000);
     }
   };
@@ -1087,12 +1122,64 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="space-y-6 pt-8 pb-12 border-t border-gray-200 opacity-50">
-        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">{t.admin.knockoutResultsTitle}</h2>
-        <div className="bg-gray-100 p-8 rounded-lg text-center border-2 border-dashed border-gray-300">
-          <p className="text-gray-600 font-medium">{t.admin.tbdBracket}</p>
-          <p className="text-sm text-gray-500 mt-2">{t.admin.tbdBracketDesc}</p>
-        </div>
+      <div className="space-y-6 pt-8 pb-12 border-t border-gray-200">
+        <h2 className="text-2xl font-bold text-blue-900 border-b pb-2">Eliminatoria</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Elegí el ganador de cada cruce y guardalo. Al guardar se arma la ronda siguiente
+          y, en ~1 minuto, el sistema reparte los puntos automáticamente.
+        </p>
+        {(() => {
+          const seedR32: Record<string, [string, string]> = {};
+          for (const [id, pair] of Object.entries(bracketMatchups)) {
+            if (id.startsWith("R32-")) seedR32[id] = pair;
+          }
+          const view = buildDisplayBracket(seedR32, {}, actualKnockouts as Record<string, string>);
+          const rounds: { round: string; label: string }[] = [
+            { round: "R32", label: "16avos" },
+            { round: "R16", label: "Octavos" },
+            { round: "QF", label: "Cuartos" },
+            { round: "SF", label: "Semifinal" },
+            { round: "F", label: "Final" },
+          ];
+          return rounds.map(({ round, label }) => {
+            const slots = BRACKET_TREE.filter(s => s.round === round)
+              .map(s => view[s.id])
+              .filter(v => v.teamA && v.teamB);
+            if (slots.length === 0) return null;
+            return (
+              <div key={round} className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-800">{label}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {slots.map(v => {
+                    const winner = actualKnockouts[v.id];
+                    return (
+                      <Card key={v.id}>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex gap-2">
+                            {[v.teamA!, v.teamB!].map(team => (
+                              <Button
+                                key={team}
+                                variant={winner === team ? "default" : "outline"}
+                                onClick={() => saveKnockoutWinner(v.id, team)}
+                                disabled={savingSlot === v.id}
+                                className={`flex-1 ${winner === team ? "bg-green-600 hover:bg-green-700" : ""}`}
+                              >
+                                {team}
+                              </Button>
+                            ))}
+                          </div>
+                          {winner && (
+                            <p className="text-xs text-green-700 font-medium">Ganador: {winner}</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          });
+        })()}
       </div>
       </>
       )}
