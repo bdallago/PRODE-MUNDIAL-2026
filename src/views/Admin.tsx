@@ -196,15 +196,17 @@ export default function Admin() {
       await setDoc(doc(db, "results", "actual"),
         { specials: { ...actualSpecials, [qId]: actualSpecials[qId] || "" }, updatedAt: new Date().toISOString() },
         { merge: true });
-      setMessage({ type: 'success', text: 'Respuesta guardada. Recalculando puntos...' });
-      await triggerRecalc();
+      setSavingSlot(null);
       flashSaved(`special-${qId}`);
-      setMessage({ type: 'success', text: 'Respuesta guardada. Puntos actualizados.' });
+      setMessage({ type: 'success', text: 'Respuesta guardada. Recalculando puntos...' });
+      triggerRecalc()
+        .then(() => setMessage({ type: 'success', text: 'Respuesta guardada. Puntos actualizados.' }))
+        .catch(() => setMessage({ type: 'success', text: 'Respuesta guardada. El recálculo se completará en el próximo ciclo.' }))
+        .finally(() => setTimeout(() => setMessage(null), 5000));
     } catch (error) {
       console.error("Error saving special answer:", error);
-      setMessage({ type: 'error', text: 'Error al guardar la respuesta.' });
-    } finally {
       setSavingSlot(null);
+      setMessage({ type: 'error', text: 'Error al guardar la respuesta.' });
       setTimeout(() => setMessage(null), 5000);
     }
   };
@@ -259,15 +261,18 @@ export default function Admin() {
 
       setActualKnockouts(newKnockouts);
       setBracketMatchups(newMatchups);
-      setMessage({ type: 'success', text: `Ganador guardado: ${winner}. Recalculando puntos...` });
-      await triggerRecalc();
+      // Confirmación inmediata (no espera al recálculo, que corre en segundo plano).
+      setSavingSlot(null);
       flashSaved(slotId);
-      setMessage({ type: 'success', text: `Ganador guardado: ${winner}. Puntos actualizados.` });
+      setMessage({ type: 'success', text: `Ganador guardado: ${winner}. Recalculando puntos...` });
+      triggerRecalc()
+        .then(() => setMessage({ type: 'success', text: `Ganador guardado: ${winner}. Puntos actualizados.` }))
+        .catch(() => setMessage({ type: 'success', text: `Ganador guardado: ${winner}. El recálculo se completará en el próximo ciclo.` }))
+        .finally(() => setTimeout(() => setMessage(null), 5000));
     } catch (error) {
       console.error("Error saving knockout winner:", error);
-      setMessage({ type: 'error', text: 'Error al guardar el ganador del cruce.' });
-    } finally {
       setSavingSlot(null);
+      setMessage({ type: 'error', text: 'Error al guardar el ganador del cruce.' });
       setTimeout(() => setMessage(null), 5000);
     }
   };
