@@ -182,6 +182,23 @@ export default function Admin() {
     setActualSpecials(prev => ({ ...prev, [id]: value }));
   };
 
+  const saveSpecialAnswer = async (qId: string) => {
+    setSavingSlot(`special-${qId}`);
+    setMessage(null);
+    try {
+      await setDoc(doc(db, "results", "actual"),
+        { specials: { ...actualSpecials, [qId]: actualSpecials[qId] || "" }, updatedAt: new Date().toISOString() },
+        { merge: true });
+      setMessage({ type: 'success', text: 'Respuesta guardada. Los puntos se recalculan solos en ~1 min.' });
+    } catch (error) {
+      console.error("Error saving special answer:", error);
+      setMessage({ type: 'error', text: 'Error al guardar la respuesta.' });
+    } finally {
+      setSavingSlot(null);
+      setTimeout(() => setMessage(null), 5000);
+    }
+  };
+
   const saveResults = async () => {
     setSaving(true);
     setMessage(null);
@@ -1105,17 +1122,29 @@ export default function Admin() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {SPECIAL_QUESTIONS.map((q) => (
             <Card key={q.id}>
-              <CardContent className="p-5">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <CardContent className="p-5 space-y-3">
+                <label className="block text-sm font-semibold text-gray-700">
                   {(t.specialQuestions as Record<string, string>)[q.id] || q.label}
                 </label>
                 <input
                   type="text"
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                  placeholder={t.admin.officialAnswer}
+                  placeholder="Respuesta(s) correcta(s), separadas por coma"
                   value={actualSpecials[q.id] || ""}
                   onChange={(e) => handleSpecialChange(q.id, e.target.value)}
                 />
+                <p className="text-xs text-gray-500">
+                  Podés poner más de una respuesta correcta separándolas por coma (ej: Messi, Mbappé).
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => saveSpecialAnswer(q.id)}
+                  disabled={savingSlot === `special-${q.id}`}
+                  className="flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" /> Guardar respuesta
+                </Button>
               </CardContent>
             </Card>
           ))}
