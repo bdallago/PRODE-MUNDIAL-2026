@@ -1,6 +1,7 @@
 import { adminDb } from "./firebaseAdmin";
 import { GROUPS } from "../data";
 import { scoreBracket } from "./bracket/score";
+import { isSpecialCorrect } from "./specials";
 
 export async function recalculatePoints(): Promise<void> {
   const resultsDoc = await adminDb.collection("results").doc("actual").get();
@@ -69,12 +70,9 @@ export async function recalculatePoints(): Promise<void> {
         if (exact === 4) totalPoints += 3;
       }
 
-      // Specials
+      // Specials — la respuesta oficial puede traer varias opciones separadas por coma.
       for (const [qId, actualAnswer] of Object.entries(actualS)) {
-        const predicted = (pred.specials || {})[qId];
-        if (predicted && typeof predicted === "string" && typeof actualAnswer === "string") {
-          if (predicted.trim().toLowerCase() === actualAnswer.trim().toLowerCase()) totalPoints += 10;
-        }
+        if (isSpecialCorrect((pred.specials || {})[qId], actualAnswer)) totalPoints += 10;
       }
 
       // Knockouts — nuevo formato { slotId: equipo }, puntúa por ronda

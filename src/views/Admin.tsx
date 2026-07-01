@@ -11,6 +11,7 @@ import CompanyAdmin from "./CompanyAdmin";
 import { useAppContext } from "../components/Providers";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "../i18n/LanguageContext";
+import { isSpecialCorrect } from "../lib/specials";
 
 interface UserProfile {
   uid: string;
@@ -314,11 +315,8 @@ export default function Admin() {
           }
 
           for (const [qId, actualAnswer] of Object.entries(actualS)) {
-            const predictedAnswer = pSpecials[qId];
-            if (predictedAnswer && actualAnswer && typeof actualAnswer === 'string' && typeof predictedAnswer === 'string') {
-              if (predictedAnswer.trim().toLowerCase() === actualAnswer.trim().toLowerCase()) {
-                totalPoints += 10;
-              }
+            if (isSpecialCorrect(pSpecials[qId], actualAnswer)) {
+              totalPoints += 10;
             }
           }
 
