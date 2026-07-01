@@ -242,42 +242,42 @@ export function UserPredictionsModal({ userId, userName, onClose }: UserPredicti
             </div>
           </div>
 
-          {/* ── Preguntas Especiales (ocultas por ahora) ── */}
-          {SHOW_SPECIAL_RESULTS && (
-          <div>
-            <h4 className="text-xl font-bold text-brand mb-4">Preguntas Especiales</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activeSpecialQuestions.map((q) => {
-                const answer = specials[q.id] || "Sin respuesta";
-                const status = getSpecialStatus(q.id, answer);
-                const bgColor = status ? (status.correct ? "bg-green-50" : "bg-red-50") : "bg-gray-50";
-                const borderColor = status ? (status.correct ? "border-green-200" : "border-red-200") : "border-gray-200";
-
-                return (
-                  <Card key={q.id} className={`border ${borderColor} ${bgColor}`}>
-                    <CardContent className="p-4">
-                      <p className="text-sm font-semibold text-gray-700 mb-2">{q.label}</p>
-                      <div className="flex items-center justify-between bg-white p-2 rounded border">
-                        <span className="font-medium text-gray-900">{answer}</span>
-                        {status && (
-                          <div className="flex items-center gap-2">
-                            <span className={`text-sm font-bold ${status.correct ? 'text-green-600' : 'text-red-500'}`}>
-                              +{status.points} pts
-                            </span>
-                            {status.correct
-                              ? <CheckCircle2 className="w-4 h-4 text-green-600" />
-                              : <XCircle className="w-4 h-4 text-red-500" />
-                            }
+          {/* ── Preguntas Especiales: solo se muestran las acertadas (y las aún no
+                resueltas como pendientes). Las resueltas y erradas NO se muestran. ── */}
+          {SHOW_SPECIAL_RESULTS && (() => {
+            const shown = activeSpecialQuestions
+              .map((q) => ({ q, status: getSpecialStatus(q.id, specials[q.id]) }))
+              .filter(({ status }) => !(status && !status.correct));
+            if (shown.length === 0) return null;
+            return (
+              <div>
+                <h4 className="text-xl font-bold text-brand mb-4">Preguntas Especiales</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {shown.map(({ q, status }) => {
+                    const answer = specials[q.id] || "Sin respuesta";
+                    const bgColor = status?.correct ? "bg-green-50" : "bg-gray-50";
+                    const borderColor = status?.correct ? "border-green-200" : "border-gray-200";
+                    return (
+                      <Card key={q.id} className={`border ${borderColor} ${bgColor}`}>
+                        <CardContent className="p-4">
+                          <p className="text-sm font-semibold text-gray-700 mb-2">{q.label}</p>
+                          <div className="flex items-center justify-between bg-white p-2 rounded border">
+                            <span className="font-medium text-gray-900">{answer}</span>
+                            {status?.correct && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold text-green-600">+{status.points} pts</span>
+                                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ── Fase de Grupos (solo grupos cerrados) ── */}
           {groupScoringEnabled && (
