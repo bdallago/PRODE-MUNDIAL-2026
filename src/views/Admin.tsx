@@ -189,7 +189,9 @@ export default function Admin() {
       await setDoc(doc(db, "results", "actual"),
         { specials: { ...actualSpecials, [qId]: actualSpecials[qId] || "" }, updatedAt: new Date().toISOString() },
         { merge: true });
-      setMessage({ type: 'success', text: 'Respuesta guardada. Los puntos se recalculan solos en ~1 min.' });
+      setMessage({ type: 'success', text: 'Respuesta guardada. Recalculando puntos...' });
+      await triggerRecalc();
+      setMessage({ type: 'success', text: 'Respuesta guardada. Puntos actualizados.' });
     } catch (error) {
       console.error("Error saving special answer:", error);
       setMessage({ type: 'error', text: 'Error al guardar la respuesta.' });
@@ -223,6 +225,14 @@ export default function Admin() {
     }
   };
 
+  // Dispara el recálculo de puntos en el servidor (autenticado con el ID token del
+  // admin logueado). Acopla el Guardar con la actualización de puntos: no espera al cron.
+  const triggerRecalc = async () => {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) return;
+    await fetch("/api/recalculate", { headers: { Authorization: `Bearer ${token}` } });
+  };
+
   const saveKnockoutWinner = async (slotId: string, winner: string) => {
     setSavingSlot(slotId);
     setMessage(null);
@@ -241,7 +251,9 @@ export default function Admin() {
 
       setActualKnockouts(newKnockouts);
       setBracketMatchups(newMatchups);
-      setMessage({ type: 'success', text: `Ganador guardado: ${winner}. Los puntos se recalculan solos en ~1 min.` });
+      setMessage({ type: 'success', text: `Ganador guardado: ${winner}. Recalculando puntos...` });
+      await triggerRecalc();
+      setMessage({ type: 'success', text: `Ganador guardado: ${winner}. Puntos actualizados.` });
     } catch (error) {
       console.error("Error saving knockout winner:", error);
       setMessage({ type: 'error', text: 'Error al guardar el ganador del cruce.' });

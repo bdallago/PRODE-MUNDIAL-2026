@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
+import { getAuth, type Auth } from "firebase-admin/auth";
 
 let _db: Firestore | null = null;
 
@@ -37,3 +38,10 @@ export const adminDb: Firestore = new Proxy({} as Firestore, {
     return (getDb() as any)[prop];
   },
 });
+
+// Auth del Admin SDK sobre la misma app. Se usa para verificar ID tokens de admin
+// en endpoints que dispara el cliente (ej. recálculo acoplado al Guardar).
+export function getAdminAuth(): Auth {
+  getDb(); // asegura que la app esté inicializada
+  return getAuth(getApps()[0]);
+}

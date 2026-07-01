@@ -22,7 +22,7 @@
     },
     {
       "path": "/api/recalculate",
-      "schedule": "*/1 * * * *"
+      "schedule": "0 7 * * *"
     }
   ]
 }
